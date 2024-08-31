@@ -1,8 +1,15 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Proo.APIs.Errors;
 using Proo.APIs.Middlewares;
+using Proo.Core.Contract.IdentityInterface;
+using Proo.Core.Entities;
 using Proo.Infrastructer.Data.Context;
+using Proo.Service.Identity;
+using System.Text;
 
 namespace Proo.APIs
 {
@@ -25,6 +32,34 @@ namespace Proo.APIs
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
+            #region Identity
+            builder.Services.AddIdentity < ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = false;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+            }).AddEntityFrameworkStores<ApplicationDbContext>();
+
+            builder.Services.AddScoped<ITokenService,TokenServices>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddJwtBearer(options =>
+                            {
+                                options.TokenValidationParameters = new TokenValidationParameters()
+                                {
+                                    ValidateIssuer = true,
+                                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                                    ValidateAudience = true,
+                                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                                    ValidateLifetime = true,
+                                    ValidateIssuerSigningKey = true,
+                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+                                };
+                            });
+            #endregion
             // generation response For validation errors [Factory]
             builder.Services.Configure<ApiBehaviorOptions>(Options =>
             {
@@ -76,7 +111,7 @@ namespace Proo.APIs
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseStaticFiles();
 
             app.MapControllers(); 
             #endregion
