@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proo.APIs.Errors;
+using Proo.APIs.Middlewares;
 using Proo.Infrastructer.Data.Context;
 
 namespace Proo.APIs
@@ -71,7 +72,7 @@ namespace Proo.APIs
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
