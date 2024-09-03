@@ -31,18 +31,13 @@ namespace Proo.APIs
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
-
-            #region Identity
-            builder.Services.AddIdentity < ApplicationUser, IdentityRole>(options =>
+            builder.Services.AddStackExchangeRedisCache(options =>
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = false;
-                options.SignIn.RequireConfirmedEmail = false;
-                options.SignIn.RequireConfirmedPhoneNumber = false;
-            }).AddEntityFrameworkStores<ApplicationDbContext>();
+                options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+            });
+            #region Identity
+            builder.Services.AddIdentity < ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<ITokenService,TokenServices>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -111,7 +106,7 @@ namespace Proo.APIs
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-            app.UseStaticFiles();
+            
 
             app.MapControllers(); 
             #endregion
