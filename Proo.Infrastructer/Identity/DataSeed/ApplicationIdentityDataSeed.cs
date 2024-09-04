@@ -22,5 +22,24 @@ namespace Proo.Infrastructer.Identity.DataSeed
             };
             await _userManager.CreateAsync(user, "Mo@@200300");
         }
+        public static async Task SeedRoleForUserAsync(RoleManager<IdentityRole> _roleManager)
+        {
+
+            var role = new List<IdentityRole> { new IdentityRole
+            {
+                Name="driver"
+            },
+            new IdentityRole
+            {
+                Name="passenger"
+            }
+
+
+            };
+            foreach (var r in role)
+            {
+             await  _roleManager.CreateAsync(r);
+            }
+        }
     }
 }

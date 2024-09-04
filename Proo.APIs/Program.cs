@@ -8,7 +8,9 @@ using Proo.APIs.Middlewares;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data.Context;
+using Proo.Infrastructer.Identity.DataSeed;
 using Proo.Service.Identity;
+using StackExchange.Redis;
 using System.Text;
 
 namespace Proo.APIs
@@ -31,10 +33,16 @@ namespace Proo.APIs
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
-            builder.Services.AddStackExchangeRedisCache(options =>
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
             {
-                options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+                var Connection = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(Connection);
             });
+            //builder.Services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+            //});
             #region Identity
             builder.Services.AddIdentity < ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -72,7 +80,7 @@ namespace Proo.APIs
                     return new BadRequestObjectResult(response);
                 };
             });
-
+          
 
             #endregion
 
@@ -82,10 +90,11 @@ namespace Proo.APIs
             var service = scope.ServiceProvider;
             var _context = service.GetRequiredService<ApplicationDbContext>();
             var loggerfactory = service.GetRequiredService<ILoggerFactory>();
-
+            var _roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
             try
             {
                 await _context.Database.MigrateAsync();
+                await ApplicationIdentityDataSeed.SeedRoleForUserAsync(_roleManager);
 
             }
             catch (Exception ex)
