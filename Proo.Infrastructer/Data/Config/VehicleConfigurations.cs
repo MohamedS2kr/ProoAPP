@@ -13,12 +13,13 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Vehicle> builder)
         {
-            builder.Property(v => v.Model).IsRequired().HasMaxLength(100);
-            builder.Property(v => v.Color).IsRequired().HasMaxLength(100);
-            builder.Property(v => v.Make).IsRequired().HasMaxLength(100);
-            builder.Property(v => v.LicensePlate).IsRequired().HasMaxLength(100);
+            builder.Property(v => v.Type).IsRequired().HasMaxLength(100);
+            builder.Property(v => v.Colour).IsRequired().HasMaxLength(100);
+            builder.Property(v => v.category).IsRequired().HasMaxLength(100);
+            builder.Property(v => v.VehicleLicenseIdBack).IsRequired().HasMaxLength(100);
+            builder.Property(v => v.VehicleLicenseIdFront).IsRequired().HasMaxLength(100);
 
-            
+
         }
     }
 }

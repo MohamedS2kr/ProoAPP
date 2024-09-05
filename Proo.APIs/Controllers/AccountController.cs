@@ -18,18 +18,22 @@ namespace Proo.APIs.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IGenaricRepositoy<Driver> _driverRepo;
+
         //private readonly ICachService _cachService;
 
         public AccountController(UserManager<ApplicationUser> userManager
             , SignInManager<ApplicationUser> signInManager
             , ITokenService tokenService
            // ,ICachService cachService
+           ,IGenaricRepositoy<Driver> DriverRepo
            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
-           // _cachService = cachService;
+            _driverRepo = DriverRepo;
+            // _cachService = cachService;
         }
        // Dictionary<string, string> SavedOTP = new Dictionary<string, string>();
        
@@ -107,6 +111,20 @@ namespace Proo.APIs.Controllers
                     Token = await _tokenService.CreateTokenAsync(user, _userManager)
                 });
         }
+
+        //End poit register for driver
+       //[HttpPost("driverRegister")]
+       // public async Task<ActionResult<DriverRegisterDto>> Register(DriverDto model, string role)
+       // {
+       //     var user = new ApplicationUser()
+       //     {
+       //         FirstName = model.FirstName,
+       //         LastName = model.LastName,
+       //         DateOfBirth = model.DateOfBirth,
+
+       //     };
+
+       // }
 
         [HttpPost("Login")]
         public async Task<ActionResult<UserLoginDto>> Login(LoginDto model)

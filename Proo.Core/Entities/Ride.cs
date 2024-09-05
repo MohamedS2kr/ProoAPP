@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Proo.Core.Entities
 {
-    public class Ride
+    public class Ride : BaseEntity
     {
-        public int Id { get; set; }
+
         public string PassengerId { get; set; }
         public Passenger Passenger { get; set; }
         public string DriverId { get; set; }

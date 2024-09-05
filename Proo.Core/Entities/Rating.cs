@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Proo.Core.Entities
 {
-    public class Rating
+    public class Rating : BaseEntity
     {
-        public int Id { get; set; }
-        public int RideId { get; set; }
+     
+        public string RideId { get; set; }
         public Ride Ride { get; set; }
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

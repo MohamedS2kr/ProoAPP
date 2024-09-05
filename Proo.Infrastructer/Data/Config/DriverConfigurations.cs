@@ -13,8 +13,8 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Driver> builder)
         {
-            builder.Property(d => d.LicenseNumber).IsRequired();
-            builder.Property(d => d.VehicleDetails).IsRequired();
+            builder.Property(d => d.LicenseIdBack).IsRequired();
+            builder.Property(d => d.LicenseIdFront).IsRequired();
         }
     }
 }

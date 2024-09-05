@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Proo.Core.Entities
 {
-    public class Payment
+    public class Payment : BaseEntity
     {
-        public int PaymentId { get; set; }
-        public int RideId { get; set; }
+       
+        public string RideId { get; set; }
         public Ride Ride { get; set; }
         public decimal Amount { get; set; }
         public PaymentMethod Method { get; set; }

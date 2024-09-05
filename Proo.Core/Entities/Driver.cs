@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace Proo.Core.Entities
 {
-    public class Driver
+    public class Driver : BaseEntity
     {
-        public string Id { get; set; }
         public ApplicationUser User { get; set; }
-        public string LicenseNumber { get; set; }
-        public string VehicleDetails { get; set; }
+        public string LicenseIdFront { get; set; }
+        public string LicenseIdBack { get; set; }
+        public DateTime ExpiringDate { get; set; }
+        //public string VehicleDetails { get; set; }
         public bool IsAvailable { get; set; }
         public ICollection<Ride> Rides { get; set; }
     }
