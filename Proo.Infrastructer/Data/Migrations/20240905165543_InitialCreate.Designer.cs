@@ -12,7 +12,7 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240829210240_InitialCreate")]
+    [Migration("20240905165543_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -217,7 +217,6 @@ namespace Proo.Infrastructer.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProfilePictureUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
@@ -248,20 +247,23 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("ExpiringDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LicenseNumber")
+                    b.Property<string>("LicenseIdBack")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseIdFront")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("VehicleDetails")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -272,11 +274,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.LocationHistory", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Latitude")
                         .IsRequired()
@@ -286,8 +285,9 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RideId")
-                        .HasColumnType("int");
+                    b.Property<string>("RideId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -321,11 +321,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
                 {
-                    b.Property<int>("PaymentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"), 1L, 1);
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -337,14 +334,15 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("RideId")
-                        .HasColumnType("int");
+                    b.Property<string>("RideId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("PaymentId");
+                    b.HasKey("Id");
 
                     b.HasIndex("RideId");
 
@@ -353,11 +351,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -366,8 +361,9 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RideId")
-                        .HasColumnType("int");
+                    b.Property<string>("RideId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
@@ -387,11 +383,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DriverId")
                         .IsRequired()
@@ -433,13 +426,13 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    b.Property<bool>("AirConditional")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Color")
+                    b.Property<string>("Colour")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -448,17 +441,34 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("LicensePlate")
+                    b.Property<DateTime>("ExpiringDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NumberOfPalet")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberOfPassenger")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Make")
+                    b.Property<string>("VehicleLicenseIdBack")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Model")
+                    b.Property<string>("VehicleLicenseIdFront")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("YeareOfManufacuter")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("category")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");

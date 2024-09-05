@@ -8,6 +8,7 @@ namespace Proo.Core.Entities
 {
     public class Vehicle : BaseEntity
     {
+        public string Id { get; set; }
         public string Type { get; set; }
         public string category { get; set; }
         public DateTime YeareOfManufacuter { get; set; }

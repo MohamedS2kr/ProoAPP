@@ -8,6 +8,7 @@ using Proo.APIs.Errors;
 using Proo.Core.Contract;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
+using Proo.Infrastructer.Document;
 using System.Security.Claims;
 
 namespace Proo.APIs.Controllers
@@ -18,7 +19,7 @@ namespace Proo.APIs.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
-        private readonly IGenaricRepositoy<Driver> _driverRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
         //private readonly ICachService _cachService;
 
@@ -26,13 +27,14 @@ namespace Proo.APIs.Controllers
             , SignInManager<ApplicationUser> signInManager
             , ITokenService tokenService
            // ,ICachService cachService
-           ,IGenaricRepositoy<Driver> DriverRepo
+           ,IUnitOfWork unitOfWork
            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
-            _driverRepo = DriverRepo;
+            _unitOfWork = unitOfWork;
+
             // _cachService = cachService;
         }
        // Dictionary<string, string> SavedOTP = new Dictionary<string, string>();
@@ -113,18 +115,64 @@ namespace Proo.APIs.Controllers
         }
 
         //End poit register for driver
-       //[HttpPost("driverRegister")]
-       // public async Task<ActionResult<DriverRegisterDto>> Register(DriverDto model, string role)
-       // {
-       //     var user = new ApplicationUser()
-       //     {
-       //         FirstName = model.FirstName,
-       //         LastName = model.LastName,
-       //         DateOfBirth = model.DateOfBirth,
+        [HttpPost("driverRegister")]
+        public async Task<ActionResult<DriverRegisterDto>> RegisterForDriver(DriverDto model, string role)
+        {
+            var user = new ApplicationUser()
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                DateOfBirth = model.DateOfBirth,
+                Email = model.Email,
+                UserName = model.Email.Split("@")[0],
+                Gender = model.Gender,
+                PhoneNumber = model.PhoneNumber
+            };
 
-       //     };
+            var result = await _userManager.CreateAsync(user);
+            if(!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-       // }
+            var drvierData = new Driver()
+            {
+                UserId = user.Id,
+                LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront , "LicenseId"),
+                LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
+                ExpiringDate = model.ExpiringDate,
+            };
+
+            var driverRepo = _unitOfWork.Repositoy<Driver>();
+            driverRepo.Add(drvierData);
+
+            var VehicleData = new Vehicle
+            {
+                DriverId = drvierData.Id,
+                Colour = model.Colour,
+                AirConditional = model.AirConditional,
+                category = model.category,
+                Type = model.Type,
+                NumberOfPassenger = model.NumberOfPassenger,
+                NumberOfPalet = model.NumberOfPalet,
+                ExpiringDate = model.ExpiringDate,
+                YeareOfManufacuter = model.YeareOfManufacuter,
+                VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
+                VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId")
+
+            };
+
+            var VehicleRepo = _unitOfWork.Repositoy<Vehicle>();
+            VehicleRepo.Add(VehicleData);
+
+            var count = await _unitOfWork.CompleteAsync(); // save cahnge
+            if (count <= 0) return BadRequest(new ApiResponse(400));
+
+            return Ok(new DriverRegisterDto
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Token = await  _tokenService.CreateTokenAsync(user, _userManager)
+            });
+
+        }
 
         [HttpPost("Login")]
         public async Task<ActionResult<UserLoginDto>> Login(LoginDto model)

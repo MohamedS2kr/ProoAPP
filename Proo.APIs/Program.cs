@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Proo.APIs.Errors;
 using Proo.APIs.Middlewares;
+using Proo.Core.Contract;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
+using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
 using Proo.Service.Identity;
@@ -43,11 +46,11 @@ namespace Proo.APIs
             //{
             //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
             //});
-            #region Identity
+       
             builder.Services.AddIdentity < ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            builder.Services.AddScoped<ITokenService,TokenServices>();
+            
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(options =>
                             {
@@ -62,7 +65,7 @@ namespace Proo.APIs
                                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
                                 };
                             });
-            #endregion
+           
             // generation response For validation errors [Factory]
             builder.Services.Configure<ApiBehaviorOptions>(Options =>
             {
@@ -80,13 +83,22 @@ namespace Proo.APIs
                     return new BadRequestObjectResult(response);
                 };
             });
-          
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 104857600; // 100 MB
+            });
+
+
+            builder.Services.AddScoped<ITokenService, TokenServices>();
+            builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
+
 
             #endregion
 
             var app = builder.Build();
             // update database 
-            var scope = app.Services.CreateScope();
+            using var scope = app.Services.CreateScope();
             var service = scope.ServiceProvider;
             var _context = service.GetRequiredService<ApplicationDbContext>();
             var loggerfactory = service.GetRequiredService<ILoggerFactory>();
@@ -114,6 +126,9 @@ namespace Proo.APIs
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
+            app.UseAuthentication();
             app.UseAuthorization();
             
 

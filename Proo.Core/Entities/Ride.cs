@@ -8,7 +8,7 @@ namespace Proo.Core.Entities
 {
     public class Ride : BaseEntity
     {
-
+        public string Id { get; set; }
         public string PassengerId { get; set; }
         public Passenger Passenger { get; set; }
         public string DriverId { get; set; }

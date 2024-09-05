@@ -17,10 +17,8 @@ namespace Proo.Infrastructer.Repositories
         {
             _context = context;
         }
-        public async Task<int> Add(T model)
-        {
-            _context.Set<T>().Add(model);
-            return await _context.SaveChangesAsync();
-        }
+        public void  Add(T model)
+            => _context.Set<T>().Add(model);
+           
     }
 }

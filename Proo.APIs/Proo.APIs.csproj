@@ -21,4 +21,9 @@
     <ProjectReference Include="..\Proo.Service\Proo.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\files\LicenseId\" />
+    <Folder Include="wwwroot\files\VehicleLicenseId\" />
+  </ItemGroup>
+
 </Project>

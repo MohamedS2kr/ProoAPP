@@ -8,7 +8,7 @@ namespace Proo.Core.Entities
 {
     public class LocationHistory : BaseEntity
     {
-        
+        public string Id { get; set; }
         public string RideId { get; set; }
         public Ride Ride { get; set; }
         public DateTime Timestamp { get; set; }

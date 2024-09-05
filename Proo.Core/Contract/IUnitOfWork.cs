@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace Proo.Core.Contract
 {
-    public interface IGenaricRepositoy<T> where T : BaseEntity
+    public interface IUnitOfWork : IAsyncDisposable
     {
-        void Add(T model);
+        IGenaricRepositoy<T> Repositoy<T>() where T : BaseEntity;
+
+        Task<int> CompleteAsync();
     }
 }
