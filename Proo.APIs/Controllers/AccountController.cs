@@ -138,6 +138,7 @@ namespace Proo.APIs.Controllers
                 LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront , "LicenseId"),
                 LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
                 ExpiringDate = model.ExpiringDate,
+                Status = DriverStatus.Pending
             };
 
             var driverRepo = _unitOfWork.Repositoy<Driver>();

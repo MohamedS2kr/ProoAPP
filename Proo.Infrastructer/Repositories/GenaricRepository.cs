@@ -19,6 +19,7 @@ namespace Proo.Infrastructer.Repositories
         }
         public void  Add(T model)
             => _context.Set<T>().Add(model);
+       
            
     }
 }
