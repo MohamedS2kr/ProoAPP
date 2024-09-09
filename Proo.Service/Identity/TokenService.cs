@@ -29,7 +29,7 @@ namespace Proo.Service.Identity
             //2.1 Private Claims (ده user الخاصه بال )
             var AuthClaims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Name , user.FirstName),
+                new Claim(ClaimTypes.MobilePhone , user.PhoneNumber),
                 new Claim(ClaimTypes.Email,user.Email),
             };
 

@@ -8,7 +8,7 @@ namespace Proo.APIs.Dtos.Identity
         public string LastName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public Gender Gender { get; set; }
         public IFormFile LicenseIdFront { get; set; }
         public IFormFile LicenseIdBack { get; set; }
@@ -27,5 +27,6 @@ namespace Proo.APIs.Dtos.Identity
         public int NumberOfPalet { get; set; }
         public string Colour { get; set; }
         public bool IsAvailable { get; set; }
+        public DriverStatus Status { get; set; } = DriverStatus.Pending;
     }
 }

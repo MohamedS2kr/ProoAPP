@@ -50,7 +50,11 @@ namespace Proo.APIs
             builder.Services.AddIdentity < ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(options =>
                             {
@@ -123,6 +127,7 @@ namespace Proo.APIs
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 

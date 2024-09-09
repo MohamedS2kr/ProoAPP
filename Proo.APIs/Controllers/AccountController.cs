@@ -157,7 +157,6 @@ namespace Proo.APIs.Controllers
                 YeareOfManufacuter = model.YeareOfManufacuter,
                 VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
                 VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId")
-
             };
 
             var VehicleRepo = _unitOfWork.Repositoy<Vehicle>();

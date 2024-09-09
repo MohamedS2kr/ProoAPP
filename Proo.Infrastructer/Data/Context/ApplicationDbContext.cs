@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Proo.Core.Entities;
 using System;
@@ -21,6 +22,7 @@ namespace Proo.Infrastructer.Data.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<IdentityRole>().ToTable("Roles");
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
