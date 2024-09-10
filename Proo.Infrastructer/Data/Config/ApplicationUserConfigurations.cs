@@ -13,8 +13,7 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            builder.Property(U => U.FirstName).IsRequired().HasMaxLength(20);
-            builder.Property(U => U.LastName).IsRequired().HasMaxLength(20);
+            builder.Property(U => U.FullName).HasMaxLength(100);
 
             builder.Property(U => U.Gender)
                 .HasConversion(gender => gender.ToString(), genderComparer => (Gender) Enum.Parse(typeof(Gender), genderComparer));

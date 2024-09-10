@@ -14,8 +14,7 @@ namespace Proo.Infrastructer.Identity.DataSeed
         {
             var user = new ApplicationUser()
             {
-                FirstName = "Mohamed",
-                LastName = " Gamal",
+                FullName = "mohamed gamal",
                 Email = "mohamedGamal@gmail.com",
                 UserName = "Mohamed.Gamal",
                 PhoneNumber = "01204138365",
@@ -25,20 +24,18 @@ namespace Proo.Infrastructer.Identity.DataSeed
         public static async Task SeedRoleForUserAsync(RoleManager<IdentityRole> _roleManager)
         {
 
-            var role = new List<IdentityRole> { new IdentityRole
+            if (_roleManager.Roles.Count() == 0)
             {
-                Name="driver"
-            },
-            new IdentityRole
-            {
-                Name="passenger"
-            }
-
-
-            };
-            foreach (var r in role)
-            {
-             await  _roleManager.CreateAsync(r);
+                var roles = new List<IdentityRole>
+                {
+                    new IdentityRole{Name = "passenger"},
+                    new IdentityRole{Name = "driver"}
+                };
+            
+                foreach (var role in roles)
+                {
+                    await _roleManager.CreateAsync(role);
+                } 
             }
         }
     }

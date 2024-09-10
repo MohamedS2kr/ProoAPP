@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Proo.APIs.Errors;
+using Proo.APIs.Helpers;
 using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
 using Proo.Core.Contract.IdentityInterface;
@@ -15,6 +17,7 @@ using Proo.Infrastructer.Identity.DataSeed;
 using Proo.Service.Identity;
 using StackExchange.Redis;
 using System.Text;
+
 
 namespace Proo.APIs
 {
@@ -96,7 +99,7 @@ namespace Proo.APIs
 
             builder.Services.AddScoped<ITokenService, TokenServices>();
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
-
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             #endregion
 

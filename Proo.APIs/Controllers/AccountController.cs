@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Proo.APIs.Dtos;
 using Proo.APIs.Dtos.Identity;
 using Proo.APIs.Errors;
 using Proo.Core.Contract;
@@ -10,6 +11,7 @@ using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Document;
 using System.Security.Claims;
+using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -19,169 +21,206 @@ namespace Proo.APIs.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
-        private readonly IUnitOfWork _unitOfWork;
 
         //private readonly ICachService _cachService;
 
         public AccountController(UserManager<ApplicationUser> userManager
             , SignInManager<ApplicationUser> signInManager
             , ITokenService tokenService
-           // ,ICachService cachService
-           ,IUnitOfWork unitOfWork
            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
-            _unitOfWork = unitOfWork;
-
-            // _cachService = cachService;
-        }
-       // Dictionary<string, string> SavedOTP = new Dictionary<string, string>();
-       
-        [HttpPost("send-otp")]
-        public IActionResult SendOtp(SendOTPDto model)
-        {
-            if (string.IsNullOrEmpty(model.PhoneNumber))
-            {
-                return BadRequest("Phone number is required.");
-            }
-
-            // Generate a static OTP
-            var otp = "123456";
-
-            // Simulate sending OTP (e.g., logging, printing, etc. - for now we just return it)
-            // In real implementation, you would send this OTP to the user's phone number via SMS gateway.
-            // _cachService.CacheOtpAsync(model.PhoneNumber, otp);
            
-          //  SavedOTP.Add(model.PhoneNumber, otp);
-            return Ok(new { Phone = model.PhoneNumber, Otp = otp });
         }
+
+
         [HttpPost("VerifyOtp")]
-        public async Task<IActionResult> VerifyOtp(VerifiDto model)
+        public async Task<ActionResult<ApiToReturnDtoResponse>> VerifyOtp(VerifiDto model)
         {
-            if (string.IsNullOrEmpty(model.PhoneNumber))
-            {
-                return BadRequest("Phone number is required.");
-            }
+            var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
+            if (user is null) return BadRequest(new ApiResponse(400));
 
-            //  var cachedOtp = await _cachService.GetCachedOtpAsync(model.PhoneNumber);
-            var cachedOtp = "123456";//SavedOTP[model.PhoneNumber];
-            if (cachedOtp != model.Otp)
-            {
-                return Ok(new { success = false, Message = "Invalid OTP" });
-            }
+            if (user.OtpCode != model.Otp || user.OtpExpiryTime < DateTime.UtcNow)
+                return BadRequest(new ApiResponse(400, "Invalid or expired OTP."));
 
-            return Ok(new { success = true, Message = "Verifi Succsed" });
-        }
-        // Register endpoint if role is passenger [user]
-        
-        [HttpPost("Register")] // POST : baseurl/api/Account/Rgister
-        public async Task<ActionResult<UserDto>> RegisterForUser(RegisterForUserDto model)
-        {
-            var PhoneExisting = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == model.PhoneNumber);
+            user.IsPhoneNumberConfirmed = true;
+            user.OtpCode = null;
+            user.OtpExpiryTime = null;
 
-            if (PhoneExisting !=null) 
-                
-                return Ok(new ApiResponse(200, "The Phone Is Already Exist."));
-
-            //var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == PhoneForUser);
-
-            var user = new ApplicationUser()
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                UserName = model.Email.Split("@")[0],
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                DateOfBirth = model.DataOfBirth,
-            };
-                var result = await _userManager.CreateAsync(user);
-                if (!result.Succeeded)
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) 
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-                var addRole = await _userManager.AddToRoleAsync(user, model.Role);
-                if (!addRole.Succeeded) 
-                return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-
-                return Ok(new UserDto
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
                 {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = _userManager.GetRolesAsync(user).Result,
-                    Token = await _tokenService.CreateTokenAsync(user, _userManager)
-                });
+                    Mas = "Verifi Succsed",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = new List<object>()
+                    {
+                        new VerifyOtpDto
+                        {
+                            Token = await _tokenService.CreateTokenAsync(user , _userManager)
+                        }
+                    }
+                    
+                },
+                Errors = new List<string>()
+            };
+
+            return Ok(response);
         }
 
-        //End poit register for driver
-        [HttpPost("driverRegister")]
-        public async Task<ActionResult<DriverRegisterDto>> RegisterForDriver(DriverDto model, string role)
+
+        // Register endpoint if role is passenger [user]
+        [Authorize]
+        [HttpPost("Register_for_user")] // POST : baseurl/api/Account/Register_for_user
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser([FromForm]RegisterForUserDto model )
         {
-            var user = new ApplicationUser()
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+
+            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+
+            if (GetUserByPhone is null) return BadRequest(400);
+
+            GetUserByPhone.FullName = model.FullName;
+            GetUserByPhone.Email = model.Email;
+            GetUserByPhone.Gender = model.Gender;
+            GetUserByPhone.DateOfBirth = model.DataOfBirth;
+            GetUserByPhone.ProfilePictureUrl = DocumentSettings.UploadFile(model.UploadFile, "ProfilePicture");
+
+
+            var result = await _userManager.UpdateAsync(GetUserByPhone);
+            if (!result.Succeeded)
+            return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+            var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+            if (!addRole.Succeeded) 
+            return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
+
+            var response = new ApiToReturnDtoResponse
             {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                DateOfBirth = model.DateOfBirth,
-                Email = model.Email,
-                UserName = model.Email.Split("@")[0],
-                Gender = model.Gender,
-                PhoneNumber = model.PhoneNumber
+                Data = new DataResponse
+                {
+                    Mas = "The User register succ",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = new List<object>
+                    {
+                        new UserDto
+                        {
+                            FullName = GetUserByPhone.FullName,
+                            Email = GetUserByPhone.Email,
+                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                            Gender = GetUserByPhone.Gender,
+                            PhoneNumber = GetUserByPhone.PhoneNumber,
+                            Role = _userManager.GetRolesAsync(GetUserByPhone).Result,
+                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone , _userManager)
+                        }
+                    }
+                },
+                Errors = new List<string>()
             };
 
-            var result = await _userManager.CreateAsync(user);
-            if(!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+            return Ok(response);
+        }
 
-            var drvierData = new Driver()
+        
+
+        [HttpPost("Login")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)
+        {
+            var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
+
+            if(existingUserByPhone is null)
             {
-                UserId = user.Id,
-                LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront , "LicenseId"),
-                LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                ExpiringDate = model.ExpiringDate,
-                Status = DriverStatus.Pending
-            };
+                // register
+                var user = new ApplicationUser
+                {
+                    PhoneNumber = model.PhoneNumber,
+                    UserName = model.PhoneNumber,
+                    IsPhoneNumberConfirmed = false
+                };
+                var result = await _userManager.CreateAsync(user);
 
-            var driverRepo = _unitOfWork.Repositoy<Driver>();
-            driverRepo.Add(drvierData);
+                if (!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-            var VehicleData = new Vehicle
+                // Generate OTP
+
+                user.OtpCode = "123456";
+                user.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+
+                var updateUser = await _userManager.UpdateAsync(user);
+
+                if (!updateUser.Succeeded) return Ok(new ApiValidationResponse() { Errors = updateUser.Errors.Select(E => E.Description) });
+
+                // Send OTP via SMS service
+
+              
+                return Ok(new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "Verification code sent to your phone.",
+                        StatusCode = StatusCodes.Status200OK,
+                        Body = new List<object>()
+
+                    },
+                    Errors = new List<string>()
+                });
+            }
+
+            // login 
+            if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
+
+
+            // Generate OTP
+
+            existingUserByPhone.OtpCode = "123456";
+            existingUserByPhone.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+
+            var updated = await _userManager.UpdateAsync(existingUserByPhone);
+
+            if (!updated.Succeeded) return Ok(new ApiValidationResponse() { Errors = updated.Errors.Select(E => E.Description) });
+
+            // Send OTP via SMS service
+
+
+            return Ok(new ApiToReturnDtoResponse
             {
-                DriverId = drvierData.Id,
-                Colour = model.Colour,
-                AirConditional = model.AirConditional,
-                category = model.category,
-                Type = model.Type,
-                NumberOfPassenger = model.NumberOfPassenger,
-                NumberOfPalet = model.NumberOfPalet,
-                ExpiringDate = model.ExpiringDate,
-                YeareOfManufacuter = model.YeareOfManufacuter,
-                VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
-                VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId")
-            };
+                Data = new DataResponse
+                {
+                    Mas = "Verification code sent to your phone.",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = new List<object>()
 
-            var VehicleRepo = _unitOfWork.Repositoy<Vehicle>();
-            VehicleRepo.Add(VehicleData);
-
-            var count = await _unitOfWork.CompleteAsync(); // save cahnge
-            if (count <= 0) return BadRequest(new ApiResponse(400));
-
-            return Ok(new DriverRegisterDto
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Token = await  _tokenService.CreateTokenAsync(user, _userManager)
+                },
+                Errors = new List<string>()
             });
 
         }
 
-        [HttpPost("Login")]
-        public async Task<ActionResult<UserLoginDto>> Login(LoginDto model)
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> Logout()
         {
-            var PhoneExisting = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == model.PhoneNumber);
+            await _signInManager.SignOutAsync();
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "Logged out successfully",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = new List<object>()
 
-            if (PhoneExisting is null) return BadRequest(new ApiResponse(400, "The Phone Is Already Exist."));
-
-            return Ok(new { success = true, Message = "Login Succsed"});
+                },
+                Errors = new List<string>()
+            });
         }
+
+
+    
     }
 }

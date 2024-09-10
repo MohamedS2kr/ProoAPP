@@ -15,11 +15,13 @@ namespace Proo.Core.Entities
     }
     public class ApplicationUser : IdentityUser
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public bool IsPhoneNumberConfirmed { get; set; }
+        public string? OtpCode { get; set; } // Store the OTP
+        public DateTime? OtpExpiryTime { get; set; } // OTP expiration time
+        public string? FullName { get; set; }
         public string? ProfilePictureUrl { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public Gender Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; } = DateTime.Now;
+        public Gender Gender { get; set; } = Gender.Male;
 
     }
 }

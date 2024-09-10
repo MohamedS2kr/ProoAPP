@@ -30,7 +30,7 @@ namespace Proo.Service.Identity
             var AuthClaims = new List<Claim>()
             {
                 new Claim(ClaimTypes.MobilePhone , user.PhoneNumber),
-                new Claim(ClaimTypes.Email,user.Email),
+                
             };
 
             var UserRoles = await userManager.GetRolesAsync(user);

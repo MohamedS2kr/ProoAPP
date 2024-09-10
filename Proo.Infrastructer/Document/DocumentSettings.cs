@@ -9,23 +9,27 @@ namespace Proo.Infrastructer.Document
 {
     public static class DocumentSettings
     {
-        public static string UploadFile(IFormFile file , string folderName)
+        public static string? UploadFile(IFormFile file , string folderName)
         {
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\files" , folderName );
+            if (file is null)
+            {
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\files", folderName);
 
-            if (!Directory.Exists(folderPath)) 
-                Directory.CreateDirectory(folderPath);
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
 
-            var fileName = $"{Guid.NewGuid()}{file.FileName}"; // UNIQ File name 
+                var fileName = $"{Guid.NewGuid()}{file.FileName}"; // UNIQ File name 
 
-            var filePath = Path.Combine(folderPath, fileName);
+                var filePath = Path.Combine(folderPath, fileName);
 
-            // save file as streams 
-            using var fileStream = new FileStream(filePath, FileMode.Create);
+                // save file as streams 
+                using var fileStream = new FileStream(filePath, FileMode.Create);
 
-            file.CopyTo(fileStream);
+                file.CopyTo(fileStream);
 
-            return fileName;
+                return fileName; 
+            }
+            return null;
         }
 
         public static void DeleteFile(string fileName ,  string folderName)
