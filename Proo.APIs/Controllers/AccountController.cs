@@ -156,7 +156,7 @@ namespace Proo.APIs.Controllers
 
                 if (!updateUser.Succeeded) return Ok(new ApiValidationResponse() { Errors = updateUser.Errors.Select(E => E.Description) });
 
-                // Send OTP via SMS service
+                // Send OTP via SMS service [pendding]
 
               
                 return Ok(new ApiToReturnDtoResponse
@@ -203,7 +203,7 @@ namespace Proo.APIs.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("logout")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> Logout()
         {
             await _signInManager.SignOutAsync();

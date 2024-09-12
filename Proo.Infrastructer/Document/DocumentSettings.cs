@@ -11,7 +11,7 @@ namespace Proo.Infrastructer.Document
     {
         public static string? UploadFile(IFormFile file , string folderName)
         {
-            if (file is null)
+            if (file is not null)
             {
                 var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\files", folderName);
 
