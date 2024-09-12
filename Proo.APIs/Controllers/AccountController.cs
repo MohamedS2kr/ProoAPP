@@ -76,7 +76,7 @@ namespace Proo.APIs.Controllers
 
 
         // Register endpoint if role is passenger [user]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost("Register_for_user")] // POST : baseurl/api/Account/Register_for_user
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser([FromForm]RegisterForUserDto model )
         {
@@ -202,7 +202,7 @@ namespace Proo.APIs.Controllers
 
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost]
         public async Task<ActionResult<ApiToReturnDtoResponse>> Logout()
         {

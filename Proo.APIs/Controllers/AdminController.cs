@@ -17,7 +17,7 @@ namespace Proo.APIs.Controllers
             _dbContext = dbContext;
         }
 
-        // عرض قائمة السائقين في حالة Pending
+        
         [HttpGet("drivers/Pending")]
         public async Task<ActionResult<IEnumerable<Driver>>> GetPendingDrivers()
         {
