@@ -135,11 +135,11 @@ namespace Proo.APIs
 
             #region Configure Kistrel Middleware
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+            // if (app.Environment.IsDevelopment())
+            // {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            // }
             
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
