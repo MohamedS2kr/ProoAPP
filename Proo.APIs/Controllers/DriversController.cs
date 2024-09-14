@@ -99,7 +99,7 @@ namespace Proo.APIs.Controllers
             {
                 Data = new DataResponse
                 {
-                    Mas = "The Passenger Data",
+                    Mas = "The Driver Data",
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>
                     {
