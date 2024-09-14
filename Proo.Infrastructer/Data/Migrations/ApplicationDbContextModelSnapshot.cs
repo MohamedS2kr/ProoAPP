@@ -276,7 +276,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Drivers");
+                    b.ToTable("Drivers", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.LocationHistory", b =>
@@ -303,7 +303,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideId");
 
-                    b.ToTable("LocationHistories");
+                    b.ToTable("LocationHistories", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
@@ -323,7 +323,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Passengers");
+                    b.ToTable("Passengers", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
@@ -353,7 +353,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
@@ -385,7 +385,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Ratings");
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -428,7 +428,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("PassengerId");
 
-                    b.ToTable("Rides");
+                    b.ToTable("Rides", (string)null);
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
@@ -484,7 +484,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("DriverId");
 
-                    b.ToTable("Vehicles");
+                    b.ToTable("Vehicles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

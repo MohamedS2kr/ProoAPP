@@ -1,4 +1,5 @@
 ﻿using Proo.Core.Entities;
+using Proo.Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,9 @@ namespace Proo.Core.Contract
     public interface IGenaricRepositoy<T> where T : BaseEntity
     {
         void Add(T model);
+
+        void Update(T model);
+
+        Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec);
     }
 }

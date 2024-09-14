@@ -22,6 +22,7 @@ namespace Proo.APIs.Dtos.Identity
         [Required]
         public DateTime DataOfBirth { get; set; } = DateTime.Now;
 
+
     }
     
 }

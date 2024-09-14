@@ -9,11 +9,14 @@ using Proo.APIs.Errors;
 using Proo.APIs.Helpers;
 using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
+using Proo.Infrastructer.Repositories;
+using Proo.Infrastructer.Repositories.DriverRepository;
 using Proo.Service.Identity;
 using StackExchange.Redis;
 using System.Text;
@@ -105,6 +108,8 @@ namespace Proo.APIs
             builder.Services.AddScoped<ITokenService, TokenServices>();
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
+            builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
 
             #endregion
 

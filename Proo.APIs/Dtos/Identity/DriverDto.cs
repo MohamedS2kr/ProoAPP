@@ -5,6 +5,7 @@ namespace Proo.APIs.Dtos.Identity
 {
     public class DriverDto
     {
+        
         [Required]
         public IFormFile LicenseIdFront { get; set; } 
 

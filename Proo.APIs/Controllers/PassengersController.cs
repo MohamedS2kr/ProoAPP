@@ -17,6 +17,7 @@ namespace Proo.APIs.Controllers
 
     public class PassengersController : BaseApiController
     {
+        private const string passenger = "passenger";
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -26,7 +27,9 @@ namespace Proo.APIs.Controllers
 
             _userManager = userManager;
         }
-        [Authorize(AuthenticationSchemes = "Bearer")]
+
+
+        [Authorize(Roles = passenger)]
         [HttpGet("Get_Spec_Passenger")]
         public async Task<ActionResult<ApplicationUser>> GetSpecPassengers()
         {
@@ -60,7 +63,7 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [Authorize(Roles = passenger)]
         [HttpPost("Update_for_Passenger")]
         public async Task<ActionResult<ApplicationUser>> UpdateSpecPassengers([FromForm] RegisterForUserDto model)
         {
