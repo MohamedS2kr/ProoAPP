@@ -13,6 +13,8 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Vehicle> builder)
         {
+            builder.Property(v => v.Id).ValueGeneratedOnAdd();
+
             builder.Property(v => v.Type).IsRequired().HasMaxLength(100);
             builder.Property(v => v.Colour).IsRequired().HasMaxLength(100);
             builder.Property(v => v.category).IsRequired().HasMaxLength(100);

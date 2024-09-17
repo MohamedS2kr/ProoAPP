@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,13 @@ namespace Proo.Infrastructer.Document
 
             if (File.Exists(FilePath))
                 File.Delete(FilePath);
+        }
+
+
+        // convert color to hexa 
+        public static string ColorToHex(Color color)
+        {
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
         }
     }
 }

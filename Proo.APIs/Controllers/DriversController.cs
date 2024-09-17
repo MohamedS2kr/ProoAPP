@@ -40,45 +40,6 @@ namespace Proo.APIs.Controllers
             _driverRepo = driverRepo;
         }
 
-        [Authorize(Roles = driver)]
-        [HttpPost("register")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> DriverRegister([FromForm]DriverDto model)
-        {
-            var UserPhone = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == UserPhone);
-
-            if (user is null) return BadRequest(new ApiResponse(400));
-
-
-
-            var driver = new Driver
-            {
-                UserId = user.Id,
-                LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
-                LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                ExpiringDate = model.ExpiringDate,
-                IsAvailable = model.IsAvailable,
-            };
-            
-            _unitOfWork.Repositoy<Driver>().Add(driver);
-            var count = await  _unitOfWork.CompleteAsync();
-
-            if (count <= 0) return BadRequest(new ApiResponse(400 , "The error logged when occured save changed."));
-
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "The driver register succ",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>()
-                    
-                },
-                Errors = new List<string>()
-            };
-
-            return Ok(response);
-        }
 
         [Authorize(Roles = driver)]
         [HttpGet("profile")]
@@ -106,8 +67,7 @@ namespace Proo.APIs.Controllers
                     {
                         driver
                     }
-                },
-                Errors = new List<string>()
+                }
             };
 
             return Ok(response);
@@ -157,10 +117,10 @@ namespace Proo.APIs.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>
                     {
-                        new UserDto
+                        new DriverToReturnDto
                         {
                             FullName = GetUserByPhone.FullName,
-                            Email = GetUserByPhone.Email,
+                            //Email = GetUserByPhone.Email,
                             DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
@@ -168,8 +128,7 @@ namespace Proo.APIs.Controllers
                         driver.LicenseIdFront,
                        driver.LicenseIdBack,
                     }
-                },
-                Errors = new List<string>()
+                }
             };
 
             return Ok(response);

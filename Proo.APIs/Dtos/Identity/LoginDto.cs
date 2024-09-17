@@ -8,7 +8,7 @@ namespace Proo.APIs.Dtos.Identity
         [Phone]
         public string PhoneNumber { get; set; }
 
-        [Required]
-        public string MacAddress { get; set; }
+        //[Required]
+        //public string MacAddress { get; set; }
     }
 }

@@ -11,16 +11,10 @@ namespace Proo.APIs.Dtos.Identity
         [MinLength(5 , ErrorMessage = "The min length is 5 char")]
         public string FullName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        public IFormFile? UploadFile { get; set; }
         public string Role { get; set; }
         [Required]
         public Gender Gender { get; set; }
-        [Required]
-        public DateTime DataOfBirth { get; set; } = DateTime.Now;
+       
 
 
     }

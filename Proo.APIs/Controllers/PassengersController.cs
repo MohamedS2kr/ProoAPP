@@ -32,7 +32,7 @@ namespace Proo.APIs.Controllers
 
         [Authorize(Roles = passenger)]
         [HttpGet("profile")]
-        public async Task<ActionResult<ApplicationUser>> GetSpecPassengers()
+        public async Task<ActionResult<ApiToReturnDtoResponse>> GetSpecPassengers()
         {
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
@@ -51,14 +51,13 @@ namespace Proo.APIs.Controllers
                         new UserDto
                         {
                             FullName = GetUserByPhone.FullName,
-                            Email = GetUserByPhone.Email,
-                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                            //Email = GetUserByPhone.Email,
+                            //DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                         }
                     }
-                },
-                Errors = new List<string>()
+                }
             };
 
             return Ok(response);
@@ -67,7 +66,7 @@ namespace Proo.APIs.Controllers
         
         [Authorize(Roles = passenger)]
         [HttpPost("Update_for_Passenger")]
-        public async Task<ActionResult<ApplicationUser>> UpdateSpecPassengers([FromForm] RegisterForUserDto model)
+        public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateSpecPassengers([FromForm] updateUserDto model)
         {
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
@@ -98,14 +97,13 @@ namespace Proo.APIs.Controllers
                         new UserDto
                         {
                             FullName = GetUserByPhone.FullName,
-                            Email = GetUserByPhone.Email,
-                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                            //Email = GetUserByPhone.Email,
+                            //DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                         }
                     }
-                },
-                Errors = new List<string>()
+                }
             };
 
             return Ok(response);
@@ -138,8 +136,7 @@ namespace Proo.APIs.Controllers
                     {
                         
                     }
-                },
-                Errors = new List<string>()
+                }
             };
 
             return Ok(response);
