@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proo.APIs.Dtos;
+using Proo.APIs.Dtos.Driver;
 using Proo.APIs.Dtos.Identity;
 using Proo.APIs.Errors;
 using Proo.Core.Contract;
@@ -174,9 +175,23 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
+        //[Authorize(Roles = driver)]
+        //[HttpPost("UpdateDriverLocation")]
+        //public async Task<ActionResult<bool>> UpdateDriverLocation (DriverLocationDto model)
+        //{
+        //    var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
+        //    var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
-       
+        //    if (GetUserByPhone is null) return NotFound(new ApiResponse(404,"The Driver Not Found");
+
+        //    var locationHistory = new LocationHistory
+        //    {
+                
+        //    };
+
+            
+        //}
 
     }
 }

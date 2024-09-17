@@ -11,6 +11,7 @@ using System.Security.Claims;
 using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
 using Proo.APIs.Errors;
 using Proo.Infrastructer.Document;
+using Proo.APIs.Dtos.Passenger;
 
 namespace Proo.APIs.Controllers
 {
@@ -63,6 +64,7 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
+        
         [Authorize(Roles = passenger)]
         [HttpPost("Update_for_Passenger")]
         public async Task<ActionResult<ApplicationUser>> UpdateSpecPassengers([FromForm] RegisterForUserDto model)
@@ -108,6 +110,39 @@ namespace Proo.APIs.Controllers
 
             return Ok(response);
 
+        }
+        
+        
+        [Authorize(Roles = passenger)]
+        [HttpPost("FindDriver")]
+        public async Task<ActionResult<ApplicationUser>> FindDriver(FindDriverDto model)
+        {
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+
+            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+
+            if (GetUserByPhone is null) return BadRequest(400);
+
+
+            //احسب المسافة بين النقطتين واحسب الاجره و اخزن ده و ابداء اعرضه علي السواقين
+            // محتاج كمان ارجع المسافة و الوقت والسعر المنطقي للرحله و كمان اسم المشتخدم 
+            // passenger واخزن ده في الداتا بيز و ابداء في جزء بقي اني انا سواق و بدور علي 
+
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Passenger Data",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = new List<object>
+                    {
+                        
+                    }
+                },
+                Errors = new List<string>()
+            };
+
+            return Ok(response);
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Proo.APIs.Controllers
             }
 
 
-            driver.Status = DriverStatus.Approved;
+            driver.Status = DriverStatus.Rejected;
 
             await _dbContext.SaveChangesAsync();
 
