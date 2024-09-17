@@ -19,6 +19,8 @@ namespace Proo.Core.Entities
         public bool IsVerified { get; set; } //( هل السائق موثق (تحقق من الهوية مثلاً
         public ICollection<Ride> Rides { get; set; }
         public DriverStatus Status { get; set; } = DriverStatus.Pending; // Defualt
+
+        public string ConnectionId { get; set; } // For real-time updates (SignalR)
     }
 
     public enum DriverStatus

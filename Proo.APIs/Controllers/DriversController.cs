@@ -80,7 +80,7 @@ namespace Proo.APIs.Controllers
         }
 
         [Authorize(Roles = driver)]
-        [HttpGet("getSpecDriver")]
+        [HttpGet("profile")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> GetSpecDriver()
         {
             var driverPhone = User.FindFirstValue(ClaimTypes.MobilePhone);

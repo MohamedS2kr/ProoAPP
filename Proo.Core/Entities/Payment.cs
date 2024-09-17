@@ -20,7 +20,6 @@ namespace Proo.Core.Entities
 
     public enum PaymentMethod
     {
-        CreditCard,
         Cash
     }
 

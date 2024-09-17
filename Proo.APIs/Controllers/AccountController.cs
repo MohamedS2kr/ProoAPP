@@ -163,7 +163,7 @@ namespace Proo.APIs.Controllers
                 {
                     Data = new DataResponse
                     {
-                        Mas = "Verification code sent to your phone.",
+                        Mas = "Registered succ , Verification code sent to your phone.",
                         StatusCode = StatusCodes.Status200OK,
                         Body = new List<object>()
 
@@ -192,7 +192,7 @@ namespace Proo.APIs.Controllers
             {
                 Data = new DataResponse
                 {
-                    Mas = "Verification code sent to your phone.",
+                    Mas = "Logined succ , Verification code sent to your phone.",
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>()
 

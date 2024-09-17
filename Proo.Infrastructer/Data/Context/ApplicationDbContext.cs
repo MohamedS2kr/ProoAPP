@@ -30,7 +30,7 @@ namespace Proo.Infrastructer.Data.Context
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Driver> Drivers { get; set; }
         public DbSet<Passenger> Passengers { get; set; }
-        public DbSet<LocationHistory> LocationHistories { get; set; }
+      
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<Ride> Rides { get; set; }

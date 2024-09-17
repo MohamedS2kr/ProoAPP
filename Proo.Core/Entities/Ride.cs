@@ -13,11 +13,15 @@ namespace Proo.Core.Entities
         public Passenger Passenger { get; set; }
         public string DriverId { get; set; }
         public Driver Driver { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public string PickupLocation { get; set; }
-        public string DropoffLocation { get; set; }
-        public decimal Fare { get; set; }
+
+        public Locations PickupLocation { get; set; }
+        public Locations DestinationLocation { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime? AssignedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+
+        public decimal FarePrice { get; set; }
         public RideStatus Status { get; set; }
     }
 

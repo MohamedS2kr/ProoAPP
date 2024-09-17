@@ -30,7 +30,7 @@ namespace Proo.APIs.Controllers
 
 
         [Authorize(Roles = passenger)]
-        [HttpGet("Get_Spec_Passenger")]
+        [HttpGet("profile")]
         public async Task<ActionResult<ApplicationUser>> GetSpecPassengers()
         {
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);

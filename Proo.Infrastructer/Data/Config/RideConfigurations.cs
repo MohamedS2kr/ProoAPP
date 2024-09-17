@@ -13,6 +13,10 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Ride> builder)
         {
+            builder.OwnsOne(ride => ride.PickupLocation, pickuplocation => pickuplocation.WithOwner());
+
+            builder.OwnsOne(ride => ride.DestinationLocation, destinationlocation => destinationlocation.WithOwner());
+
             builder.HasOne(r => r.Passenger).WithMany(p => p.Rides)
                 .HasForeignKey(r => r.PassengerId)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -21,13 +25,11 @@ namespace Proo.Infrastructer.Data.Config
                  .HasForeignKey(r => r.DriverId)
                  .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Property(r => r.DropoffLocation).IsRequired();
-            builder.Property(r => r.PickupLocation).IsRequired();
 
             builder.Property(r => r.Status)
                 .HasConversion(status => status.ToString(), StatusComparer => (RideStatus) Enum.Parse(typeof(RideStatus), StatusComparer));
 
-            builder.Property(r => r.Fare).HasColumnType("decimal(18,2)");
+            builder.Property(r => r.FarePrice).HasColumnType("decimal(18,2)");
 
         }
     }
