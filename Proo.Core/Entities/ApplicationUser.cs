@@ -15,7 +15,7 @@ namespace Proo.Core.Entities
     }
     public class ApplicationUser : IdentityUser
     {
-        public bool IsPhoneNumberConfirmed { get; set; }
+        public bool IsPhoneNumberConfirmed { get; set; } = false;
         public string? OtpCode { get; set; } // Store the OTP
         public DateTime? OtpExpiryTime { get; set; } // OTP expiration time
         public string? FullName { get; set; }

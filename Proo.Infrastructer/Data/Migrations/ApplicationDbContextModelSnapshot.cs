@@ -243,6 +243,39 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.Bid", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Eta")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OfferedPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("RideId");
+
+                    b.ToTable("Bids");
+                });
+
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
                 {
                     b.Property<string>("Id")
@@ -305,8 +338,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -318,9 +354,8 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -335,8 +370,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -345,9 +383,8 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
@@ -367,8 +404,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime?>("AssignedAt")
                         .HasColumnType("datetime2");
@@ -405,9 +445,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<bool>("AirConditional")
                         .HasColumnType("bit");
@@ -511,6 +553,25 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.Bid", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proo.Core.Entities.Ride", "Ride")
+                        .WithMany()
+                        .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Ride");
+                });
+
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
                 {
                     b.HasOne("Proo.Core.Entities.ApplicationUser", "User")
@@ -579,8 +640,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.OwnsOne("Proo.Core.Entities.Locations", "DestinationLocation", b1 =>
                         {
-                            b1.Property<string>("RideId")
-                                .HasColumnType("nvarchar(450)");
+                            b1.Property<int>("RideId")
+                                .HasColumnType("int");
 
                             b1.Property<string>("Address")
                                 .IsRequired()
@@ -602,8 +663,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.OwnsOne("Proo.Core.Entities.Locations", "PickupLocation", b1 =>
                         {
-                            b1.Property<string>("RideId")
-                                .HasColumnType("nvarchar(450)");
+                            b1.Property<int>("RideId")
+                                .HasColumnType("int");
 
                             b1.Property<string>("Address")
                                 .IsRequired()

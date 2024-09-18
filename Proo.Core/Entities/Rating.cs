@@ -8,8 +8,8 @@ namespace Proo.Core.Entities
 {
     public class Rating : BaseEntity
     {
-        public string Id { get; set; }
-        public string RideId { get; set; }
+        public int Id { get; set; }
+        public int RideId { get; set; }
         public Ride Ride { get; set; }
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

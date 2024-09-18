@@ -12,8 +12,8 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240907131917_addInDriver_PropertyStatus")]
-    partial class addInDriver_PropertyStatus
+    [Migration("20240918092926_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,7 @@ namespace Proo.Infrastructer.Data.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -169,7 +169,7 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -179,19 +179,16 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<string>("FullName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<bool>("IsPhoneNumberConfirmed")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -206,6 +203,12 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("OtpCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("OtpExpiryTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -245,7 +248,11 @@ namespace Proo.Infrastructer.Data.Migrations
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConnectionId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ExpiringDate")
                         .HasColumnType("datetime2");
@@ -278,33 +285,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.ToTable("Drivers");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.LocationHistory", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Latitude")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Longitude")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RideId");
-
-                    b.ToTable("LocationHistories");
-                });
-
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
                     b.Property<string>("Id")
@@ -327,8 +307,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -340,9 +323,8 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -357,8 +339,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -367,9 +352,8 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
@@ -389,33 +373,31 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DriverId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("DropoffLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Fare")
+                    b.Property<decimal>("FarePrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PassengerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PickupLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -432,8 +414,11 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<bool>("AirConditional")
                         .HasColumnType("bit");
@@ -548,17 +533,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.LocationHistory", b =>
-                {
-                    b.HasOne("Proo.Core.Entities.Ride", "Ride")
-                        .WithMany()
-                        .HasForeignKey("RideId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ride");
-                });
-
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
                     b.HasOne("Proo.Core.Entities.ApplicationUser", "User")
@@ -614,9 +588,61 @@ namespace Proo.Infrastructer.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.OwnsOne("Proo.Core.Entities.Locations", "DestinationLocation", b1 =>
+                        {
+                            b1.Property<int>("RideId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Address")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float");
+
+                            b1.HasKey("RideId");
+
+                            b1.ToTable("Rides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RideId");
+                        });
+
+                    b.OwnsOne("Proo.Core.Entities.Locations", "PickupLocation", b1 =>
+                        {
+                            b1.Property<int>("RideId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Address")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float");
+
+                            b1.HasKey("RideId");
+
+                            b1.ToTable("Rides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RideId");
+                        });
+
+                    b.Navigation("DestinationLocation")
+                        .IsRequired();
+
                     b.Navigation("Driver");
 
                     b.Navigation("Passenger");
+
+                    b.Navigation("PickupLocation")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
