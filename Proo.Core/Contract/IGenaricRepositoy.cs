@@ -15,5 +15,7 @@ namespace Proo.Core.Contract
         void Update(T model);
 
         Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec);
+
+        Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec);
     }
 }

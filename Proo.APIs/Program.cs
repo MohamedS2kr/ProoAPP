@@ -7,16 +7,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Proo.APIs.Errors;
 using Proo.APIs.Helpers;
+using Proo.APIs.Hubs;
 using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Contract.IdentityInterface;
+using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
 using Proo.Infrastructer.Repositories;
 using Proo.Infrastructer.Repositories.DriverRepository;
+using Proo.Service._RideService;
 using Proo.Service.Identity;
 using StackExchange.Redis;
 using System.Text;
@@ -34,9 +37,11 @@ namespace Proo.APIs
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();   
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -110,6 +115,7 @@ namespace Proo.APIs
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
             builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
+            builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
 
             #endregion
 
@@ -140,7 +146,9 @@ namespace Proo.APIs
                 app.UseSwagger();
                 app.UseSwaggerUI();
             // }
-            
+
+           
+
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 
@@ -148,7 +156,11 @@ namespace Proo.APIs
 
             app.UseAuthentication();
             app.UseAuthorization();
-            
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<RideHub>("/rideHub");
+            });
 
             app.MapControllers(); 
             #endregion

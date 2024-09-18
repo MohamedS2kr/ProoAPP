@@ -16,11 +16,10 @@ namespace Proo.Core.Entities
         public DateTime ExpiringDate { get; set; } = DateTime.Now;
         //public string VehicleDetails { get; set; }
         public bool IsAvailable { get; set; } = true;
-        public bool IsVerified { get; set; } = false; //( هل السائق موثق (تحقق من الهوية مثلاً
+        
         public ICollection<Ride> Rides { get; set; }
         public DriverStatus Status { get; set; } = DriverStatus.Pending; // Defualt
 
-        public string? ConnectionId { get; set; } // For real-time updates (SignalR)
     }
 
     public enum DriverStatus

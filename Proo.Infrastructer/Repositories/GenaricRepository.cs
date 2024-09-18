@@ -22,6 +22,10 @@ namespace Proo.Infrastructer.Repositories
         public void  Add(T model)
             => _context.Set<T>().Add(model);
 
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec)
+        {
+            return await ApplySpecification(spec).AsNoTracking().ToListAsync();
+        }
 
         public async Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec)
         {

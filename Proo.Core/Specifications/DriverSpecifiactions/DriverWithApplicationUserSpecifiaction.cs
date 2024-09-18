@@ -15,5 +15,11 @@ namespace Proo.Core.Specifications.DriverSpecifiactions
             Includes.Add(d => d.User);
         }
 
+        public DriverWithApplicationUserSpecifiaction()
+            :base()
+        {
+            Includes.Add(d => d.Rides);
+        }
+
     }
 }

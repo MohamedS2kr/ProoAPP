@@ -12,5 +12,7 @@ namespace Proo.Core.Contract
         IGenaricRepositoy<T> Repositoy<T>() where T : BaseEntity;
 
         Task<int> CompleteAsync();
+
+        
     }
 }

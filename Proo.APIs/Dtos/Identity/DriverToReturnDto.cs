@@ -40,6 +40,7 @@ namespace Proo.APIs.Dtos.Identity
      
         public int NumberOfPalet { get; set; }
     
+        public string ColourHexa { get; set; }
         public string Colour { get; set; }
       
         public string? VehicleLicenseIdFront { get; set; }
