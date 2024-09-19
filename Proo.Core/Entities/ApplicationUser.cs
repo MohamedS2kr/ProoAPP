@@ -22,6 +22,7 @@ namespace Proo.Core.Entities
         public string? ProfilePictureUrl { get; set; }
         public DateTime? DateOfBirth { get; set; } = DateTime.Now;
         public Gender Gender { get; set; } = Gender.Male;
+        public string? MacAddress { get; set; }
 
     }
 }

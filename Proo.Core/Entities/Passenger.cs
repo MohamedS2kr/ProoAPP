@@ -12,5 +12,6 @@ namespace Proo.Core.Entities
         public ApplicationUser User { get; set; }
         public string PreferredPaymentMethod { get; set; }
         public ICollection<Ride> Rides { get; set; }
+        public bool IsRiding { get; set; }
     }
 }

@@ -15,8 +15,7 @@ namespace Proo.Core.Entities
         public string LicenseIdBack { get; set; }
         public DateTime ExpiringDate { get; set; } = DateTime.Now;
         //public string VehicleDetails { get; set; }
-        public bool IsAvailable { get; set; } = true;
-        
+        public bool IsAvailable { get; set; }
         public ICollection<Ride> Rides { get; set; }
         public DriverStatus Status { get; set; } = DriverStatus.Pending; // Defualt
 

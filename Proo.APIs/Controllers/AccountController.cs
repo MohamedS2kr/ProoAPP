@@ -247,19 +247,91 @@ namespace Proo.APIs.Controllers
         }
 
 
-        [HttpPost("Login")]
+        ///[HttpPost("Login")]
+        ///public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)
+        ///{
+        ///    var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
+        ///
+        ///    if(existingUserByPhone is null)
+        ///    {
+        ///        // register
+        ///        var user = new ApplicationUser
+        ///        {
+        ///            PhoneNumber = model.PhoneNumber,
+        ///            UserName = model.PhoneNumber,
+        ///            IsPhoneNumberConfirmed = false
+        ///        };
+        ///        var result = await _userManager.CreateAsync(user);
+        ///
+        ///        if (!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+        ///
+        ///        // Generate OTP
+        ///
+        ///        user.OtpCode = "123456";
+        ///        user.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+        ///
+        ///        var updateUser = await _userManager.UpdateAsync(user);
+        ///
+        ///        if (!updateUser.Succeeded) return Ok(new ApiValidationResponse() { Errors = updateUser.Errors.Select(E => E.Description) });
+        ///
+        ///        // Send OTP via SMS service [pendding]
+        ///
+        ///     
+        ///        return Ok(new ApiToReturnDtoResponse
+        ///        {
+        ///            Data = new DataResponse
+        ///            {
+        ///                Mas = "Registered succ , Verification code sent to your phone.",
+        ///                StatusCode = StatusCodes.Status200OK,
+        ///                Body = new List<object>()
+        ///
+        ///            }
+        ///        });
+        ///    }
+        ///
+        ///    // login 
+        ///    if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
+        ///
+        ///
+        ///    // Generate OTP
+        ///
+        ///    existingUserByPhone.OtpCode = "123456";
+        ///    existingUserByPhone.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+        ///
+        ///    var updated = await _userManager.UpdateAsync(existingUserByPhone);
+        ///
+        ///    if (!updated.Succeeded) return Ok(new ApiValidationResponse() { Errors = updated.Errors.Select(E => E.Description) });
+        ///
+        ///    // Send OTP via SMS service
+        ///
+        ///
+        ///    return Ok(new ApiToReturnDtoResponse
+        ///    {
+        ///        Data = new DataResponse
+        ///        {
+        ///            Mas = "Logined succ.",
+        ///            StatusCode = StatusCodes.Status200OK,
+        ///            Body = new List<object>()
+        ///
+        ///        }
+        ///    });
+        ///
+        ///}
+
+        [HttpPost("Login|register")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)
         {
             var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
 
-            if(existingUserByPhone is null)
+            if (existingUserByPhone is null)
             {
                 // register
                 var user = new ApplicationUser
                 {
                     PhoneNumber = model.PhoneNumber,
                     UserName = model.PhoneNumber,
-                    IsPhoneNumberConfirmed = false
+                    IsPhoneNumberConfirmed = false,
+                    MacAddress = model.MacAddress
                 };
                 var result = await _userManager.CreateAsync(user);
 
@@ -276,7 +348,7 @@ namespace Proo.APIs.Controllers
 
                 // Send OTP via SMS service [pendding]
 
-              
+
                 return Ok(new ApiToReturnDtoResponse
                 {
                     Data = new DataResponse
@@ -292,12 +364,33 @@ namespace Proo.APIs.Controllers
             // login 
             if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
 
+            // cheack mac Address is valid or not 
+            if (model.MacAddress.ToUpper() == existingUserByPhone.MacAddress?.ToUpper())
+            {
+                return Ok(new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "Logined succ.",
+                        StatusCode = StatusCodes.Status200OK,
+                        Body = new List<object>()
+                        {
+                            new VerifyOtpDto
+                            {
+                               Token = await _tokenService.CreateTokenAsync(existingUserByPhone , _userManager)
+                            }
+                        }
 
+                    }
+                });
+
+            }
             // Generate OTP
 
             existingUserByPhone.OtpCode = "123456";
+            
             existingUserByPhone.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
-
+            existingUserByPhone.MacAddress = model.MacAddress;
             var updated = await _userManager.UpdateAsync(existingUserByPhone);
 
             if (!updated.Succeeded) return Ok(new ApiValidationResponse() { Errors = updated.Errors.Select(E => E.Description) });
@@ -309,7 +402,7 @@ namespace Proo.APIs.Controllers
             {
                 Data = new DataResponse
                 {
-                    Mas = "Logined succ.",
+                    Mas = "Verification code sent to your phone..",
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>()
 
@@ -317,6 +410,7 @@ namespace Proo.APIs.Controllers
             });
 
         }
+
 
         [Authorize]
         [HttpPost("logout")]
