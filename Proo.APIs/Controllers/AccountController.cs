@@ -49,7 +49,7 @@ namespace Proo.APIs.Controllers
             if (user is null) return NotFound(new ApiResponse(404, "The Number Not Registered yet"));
 
            if(user.OtpExpiryTime < DateTime.Now )
-            {
+           {
                 // generate new otp 
                 user.OtpCode = "123456";
                 user.OtpExpiryTime = DateTime.Now.AddMinutes(2);
@@ -72,7 +72,7 @@ namespace Proo.APIs.Controllers
                 };
 
                 return Ok(response);
-            }
+           }
 
 
             return BadRequest(new ApiResponse(400, "The Otp is not Expired .. "));
