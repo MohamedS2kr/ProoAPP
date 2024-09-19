@@ -17,6 +17,7 @@ namespace Proo.Infrastructer.Data.Config
 
             builder.Property(U => U.Gender)
                 .HasConversion(gender => gender.ToString(), genderComparer => (Gender) Enum.Parse(typeof(Gender), genderComparer));
+            
         }
     }
 }

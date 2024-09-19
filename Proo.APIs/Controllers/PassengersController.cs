@@ -48,11 +48,12 @@ namespace Proo.APIs.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>
                     {
-                        new UserDto
+                        new ProfileDto
                         {
+                            ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
                             FullName = GetUserByPhone.FullName,
-                            //Email = GetUserByPhone.Email,
-                            //DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                            Email = GetUserByPhone.Email,
+                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                         }
@@ -94,11 +95,12 @@ namespace Proo.APIs.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>
                     {
-                        new UserDto
+                        new ProfileDto
                         {
+                            ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
                             FullName = GetUserByPhone.FullName,
-                            //Email = GetUserByPhone.Email,
-                            //DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                            Email = GetUserByPhone.Email,
+                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                         }

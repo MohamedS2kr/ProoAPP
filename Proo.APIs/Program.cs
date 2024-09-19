@@ -157,10 +157,10 @@ namespace Proo.APIs
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<RideHub>("/rideHub");
-            });
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapHub<RideHub>("/rideHub");
+            //});
 
             app.MapControllers(); 
             #endregion

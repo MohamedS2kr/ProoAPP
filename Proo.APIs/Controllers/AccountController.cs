@@ -24,6 +24,8 @@ namespace Proo.APIs.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
+        private const string Passenger = "passenger";
+        private const string Driver = "Driver";
 
         //private readonly ICachService _cachService;
 
@@ -44,7 +46,7 @@ namespace Proo.APIs.Controllers
         public async Task<ActionResult<ApiToReturnDtoResponse>> VerifyOtp(VerifiDto model)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
-            if (user is null) return BadRequest(new ApiResponse(400));
+            if (user is null) return NotFound(new ApiResponse(404,"The Number Not Registered yet"));
 
             if (user.OtpCode != model.Otp || user.OtpExpiryTime < DateTime.UtcNow)
                 return BadRequest(new ApiResponse(400, "Invalid or expired OTP."));
@@ -84,36 +86,40 @@ namespace Proo.APIs.Controllers
         [HttpPost("Register_for_user")] // POST : baseurl/api/Account/Register_for_user
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser(RegisterForUserDto model )
         {
-            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-
-            if (GetUserByPhone is null) return BadRequest(400);
-
-            GetUserByPhone.FullName = model.FullName;
-            GetUserByPhone.Gender = model.Gender;
-
-
-            var result = await _userManager.UpdateAsync(GetUserByPhone);
-            if (!result.Succeeded)
-            return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
-
-            var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
-
-            if (getRole is null || getRole[0] != model.Role)
+            if (model.Role.ToLower() == Passenger.ToLower())
             {
-                var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
-                if (!addRole.Succeeded)
-                    return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-            }
+                var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
+                var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+
+                if (GetUserByPhone is null) return BadRequest(new ApiResponse(400,"The Number Not Found And Invaild Token Claims"));
+
+                GetUserByPhone.FullName = model.FullName;
+                GetUserByPhone.Gender = model.Gender;
+
+
+                var result = await _userManager.UpdateAsync(GetUserByPhone);
+                if (!result.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+                var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
+
+
+                if (getRole.Count() == 0 || getRole[0].ToLower() != model.Role.ToLower())
                 {
-                    Mas = "The User register succ",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>
+                    var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+                    if (!addRole.Succeeded)
+                        return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
+                }
+
+                var response = new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "The Passenger register succ",
+                        StatusCode = StatusCodes.Status200OK,
+                        Body = new List<object>
                     {
                         new UserDto
                         {
@@ -124,11 +130,13 @@ namespace Proo.APIs.Controllers
                             Token = await _tokenService.CreateTokenAsync(GetUserByPhone , _userManager)
                         }
                     }
-                }
-               
-            };
+                    }
 
-            return Ok(response);
+                };
+
+                return Ok(response); 
+            }
+            return BadRequest(new ApiResponse(400 , "The Role Must Be Passenger Only"));
         }
 
 
@@ -136,71 +144,73 @@ namespace Proo.APIs.Controllers
         [HttpPost("Register_for_driver")] // POST : baseurl/api/Account/Register_for_driver
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterFordriver([FromForm] DriverDto model)
         {
-            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-
-            if (GetUserByPhone is null) return BadRequest(400);
-
-            GetUserByPhone.FullName = model.FullName;
-            GetUserByPhone.Gender = model.Gender;
-            GetUserByPhone.DateOfBirth = model.DateOfBirth;
-            
-
-            var result = await _userManager.UpdateAsync(GetUserByPhone);
-            if (!result.Succeeded)
-                return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
-
-            var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
-
-            if(getRole is null || getRole[0] != model.Role)
+            if (model.Role.ToLower() == Driver.ToLower())
             {
-                var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
-                if (!addRole.Succeeded)
-                    return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-            }
+                var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var driver = new Driver
-            {
-                UserId = GetUserByPhone.Id,
-                LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
-                LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                ExpiringDate = model.ExpiringDate,
-                IsAvailable = model.IsAvailable,
-            };
+                var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
-            _unitOfWork.Repositoy<Driver>().Add(driver);
-            
+                if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
 
-            Color color = ColorTranslator.FromHtml(model.Colour);
+                GetUserByPhone.FullName = model.FullName;
+                GetUserByPhone.Gender = model.Gender;
+                GetUserByPhone.DateOfBirth = model.DateOfBirth;
 
-            var vehicle = new Vehicle
-            {
-                DriverId = driver.Id,
-                VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
-                VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
-                ExpiringDate = model.VehicleExpiringDate,
-                AirConditional = model.AirConditional,
-                category = model.category,
-                NumberOfPalet = model.NumberOfPalet,
-                NumberOfPassenger = model.NumberOfPassenger,
-                Type = model.Type,
-                YeareOfManufacuter = model.YeareOfManufacuter,
-                Colour = DocumentSettings.ColorToHex(color)
-            };
 
-            _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
-            var count = await _unitOfWork.CompleteAsync();
+                var result = await _userManager.UpdateAsync(GetUserByPhone);
+                if (!result.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-            if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
+                var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
 
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
+                if (getRole.Count() == 0 || getRole[0].ToLower() != model.Role.ToLower())
                 {
-                    Mas = "The driver register succ",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>
+                    var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+                    if (!addRole.Succeeded)
+                        return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
+                }
+
+                var driver = new Driver
+                {
+                    UserId = GetUserByPhone.Id,
+                    LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
+                    LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
+                    ExpiringDate = model.ExpiringDate,
+                    IsAvailable = model.IsAvailable,
+                };
+
+                _unitOfWork.Repositoy<Driver>().Add(driver);
+
+
+                Color color = ColorTranslator.FromHtml(model.Colour);
+
+                var vehicle = new Vehicle
+                {
+                    DriverId = driver.Id,
+                    VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
+                    VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
+                    ExpiringDate = model.VehicleExpiringDate,
+                    AirConditional = model.AirConditional,
+                    category = model.category,
+                    NumberOfPalet = model.NumberOfPalet,
+                    NumberOfPassenger = model.NumberOfPassenger,
+                    Type = model.Type,
+                    YeareOfManufacuter = model.YeareOfManufacuter,
+                    Colour = DocumentSettings.ColorToHex(color)
+                };
+
+                _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
+                var count = await _unitOfWork.CompleteAsync();
+
+                if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
+
+                var response = new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "The driver register succ",
+                        StatusCode = StatusCodes.Status200OK,
+                        Body = new List<object>
                     {
                         new DriverToReturnDto
                         {
@@ -227,11 +237,13 @@ namespace Proo.APIs.Controllers
                             YeareOfManufacuter = vehicle.YeareOfManufacuter
                         }
                     }
-                }
-               
-            };
+                    }
 
-            return Ok(response);
+                };
+
+                return Ok(response); 
+            }
+            return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
         }
 
 
@@ -297,7 +309,7 @@ namespace Proo.APIs.Controllers
             {
                 Data = new DataResponse
                 {
-                    Mas = "Logined succ , Verification code sent to your phone.",
+                    Mas = "Logined succ.",
                     StatusCode = StatusCodes.Status200OK,
                     Body = new List<object>()
 

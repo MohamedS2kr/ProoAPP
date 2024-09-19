@@ -14,8 +14,6 @@ namespace Proo.APIs.Dtos.Passenger
 
         [EmailAddress]
         public string? Email { get; set; }
-        [Phone]
-        public string PhoneNumber { get; set; }
 
         public IFormFile? UploadFile { get; set; }
 
