@@ -46,18 +46,16 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "The Passenger Data",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>
+                    Body = new ProfileDto
                     {
-                        new ProfileDto
-                        {
-                            ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                            FullName = GetUserByPhone.FullName,
-                            Email = GetUserByPhone.Email,
-                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                            Gender = GetUserByPhone.Gender,
-                            PhoneNumber = GetUserByPhone.PhoneNumber,
-                        }
+                        ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
+                        FullName = GetUserByPhone.FullName,
+                        Email = GetUserByPhone.Email,
+                        DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                        Gender = GetUserByPhone.Gender,
+                        PhoneNumber = GetUserByPhone.PhoneNumber,
                     }
+
                 }
             };
 
@@ -93,18 +91,16 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Update Passenger Data Succ",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>
+                    Body = new ProfileDto
                     {
-                        new ProfileDto
-                        {
-                            ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                            FullName = GetUserByPhone.FullName,
-                            Email = GetUserByPhone.Email,
-                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                            Gender = GetUserByPhone.Gender,
-                            PhoneNumber = GetUserByPhone.PhoneNumber,
-                        }
+                        ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
+                        FullName = GetUserByPhone.FullName,
+                        Email = GetUserByPhone.Email,
+                        DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                        Gender = GetUserByPhone.Gender,
+                        PhoneNumber = GetUserByPhone.PhoneNumber,
                     }
+
                 }
             };
 
@@ -113,35 +109,35 @@ namespace Proo.APIs.Controllers
         }
         
         
-        [Authorize(Roles = passenger)]
-        [HttpPost("FindDriver")]
-        public async Task<ActionResult<ApplicationUser>> FindDriver(FindDriverDto model)
-        {
-            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+        //[Authorize(Roles = passenger)]
+        //[HttpPost("FindDriver")]
+        //public async Task<ActionResult<ApplicationUser>> FindDriver(FindDriverDto model)
+        //{
+        //    var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+        //    var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
-            if (GetUserByPhone is null) return BadRequest(400);
+        //    if (GetUserByPhone is null) return BadRequest(400);
 
 
-            //احسب المسافة بين النقطتين واحسب الاجره و اخزن ده و ابداء اعرضه علي السواقين
-            // محتاج كمان ارجع المسافة و الوقت والسعر المنطقي للرحله و كمان اسم المشتخدم 
-            // passenger واخزن ده في الداتا بيز و ابداء في جزء بقي اني انا سواق و بدور علي 
+        //    //احسب المسافة بين النقطتين واحسب الاجره و اخزن ده و ابداء اعرضه علي السواقين
+        //    // محتاج كمان ارجع المسافة و الوقت والسعر المنطقي للرحله و كمان اسم المشتخدم 
+        //    // passenger واخزن ده في الداتا بيز و ابداء في جزء بقي اني انا سواق و بدور علي 
 
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "The Passenger Data",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>
-                    {
+        //    var response = new ApiToReturnDtoResponse
+        //    {
+        //        Data = new DataResponse
+        //        {
+        //            Mas = "The Passenger Data",
+        //            StatusCode = StatusCodes.Status200OK,
+        //            Body = new List<object>
+        //            {
                         
-                    }
-                }
-            };
+        //            }
+        //        }
+        //    };
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
     }
 }

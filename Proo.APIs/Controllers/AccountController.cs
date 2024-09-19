@@ -42,17 +42,58 @@ namespace Proo.APIs.Controllers
         }
 
 
+        [HttpPost("ResendOtp")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> ResendOtp(ResendOtpDto model)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
+            if (user is null) return NotFound(new ApiResponse(404, "The Number Not Registered yet"));
+
+           if(user.OtpExpiryTime < DateTime.Now )
+            {
+                // generate new otp 
+                user.OtpCode = "123456";
+                user.OtpExpiryTime = DateTime.Now.AddMinutes(2);
+                user.IsPhoneNumberConfirmed = false;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+                // send otp by sms provider 
+                var response = new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "ReSend new Otp succ ,verifiy the otp.",
+                        StatusCode = StatusCodes.Status200OK,
+                       
+                    }
+
+                };
+
+                return Ok(response);
+            }
+
+
+            return BadRequest(new ApiResponse(400, "The Otp is not Expired .. "));
+        }
+
+
         [HttpPost("VerifyOtp")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> VerifyOtp(VerifiDto model)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
             if (user is null) return NotFound(new ApiResponse(404,"The Number Not Registered yet"));
 
-            if (user.OtpCode != model.Otp || user.OtpExpiryTime < DateTime.UtcNow)
-                return BadRequest(new ApiResponse(400, "Invalid or expired OTP."));
+            if (user.OtpCode != model.Otp)
+                return BadRequest(new ApiResponse(400, "Invalid OTP."));
+
+            if(user.OtpExpiryTime < DateTime.Now)
+                return BadRequest(new ApiResponse(400, "expired OTP."));
 
             user.IsPhoneNumberConfirmed = true;
-            user.OtpCode = null;
+
+            //user.OtpCode = null;
             user.OtpExpiryTime = null;
 
             var result = await _userManager.UpdateAsync(user);
@@ -65,14 +106,12 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Verifi Succsed",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>()
+                    Body = new VerifyOtpDto
                     {
-                        new VerifyOtpDto
-                        {
-                            Token = await _tokenService.CreateTokenAsync(user , _userManager)
-                        }
+                        Token = await _tokenService.CreateTokenAsync(user, _userManager)
                     }
-                    
+
+
                 }
              
             };
@@ -119,17 +158,15 @@ namespace Proo.APIs.Controllers
                     {
                         Mas = "The Passenger register succ",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new List<object>
-                    {
-                        new UserDto
+                        Body = new UserDto
                         {
                             FullName = GetUserByPhone.FullName,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                             Role = _userManager.GetRolesAsync(GetUserByPhone).Result,
-                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone , _userManager)
+                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager)
                         }
-                    }
+
                     }
 
                 };
@@ -210,16 +247,14 @@ namespace Proo.APIs.Controllers
                     {
                         Mas = "The driver register succ",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new List<object>
-                    {
-                        new DriverToReturnDto
+                        Body = new DriverToReturnDto
                         {
                             FullName = GetUserByPhone.FullName,
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
-                            DateOfBirth = (DateTime) GetUserByPhone.DateOfBirth,
+                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
                             Role = _userManager.GetRolesAsync(GetUserByPhone).Result,
-                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone , _userManager),
+                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager),
                             LicenseIdFront = driver.LicenseIdFront,
                             LicenseIdBack = driver.LicenseIdBack,
                             ExpiringDate = driver.ExpiringDate,
@@ -236,7 +271,7 @@ namespace Proo.APIs.Controllers
                             Type = vehicle.Type,
                             YeareOfManufacuter = vehicle.YeareOfManufacuter
                         }
-                    }
+
                     }
 
                 };
@@ -337,10 +372,10 @@ namespace Proo.APIs.Controllers
 
                 if (!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-                // Generate OTP
+                // Generate OTP ------ pindding
 
                 user.OtpCode = "123456";
-                user.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+                user.OtpExpiryTime = DateTime.Now.AddMinutes(1); // Expiry after 2 minutes
 
                 var updateUser = await _userManager.UpdateAsync(user);
 
@@ -355,8 +390,7 @@ namespace Proo.APIs.Controllers
                     {
                         Mas = "Registered succ , Verification code sent to your phone.",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new List<object>()
-
+                        
                     }
                 });
             }
@@ -373,13 +407,12 @@ namespace Proo.APIs.Controllers
                     {
                         Mas = "Logined succ.",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new List<object>()
+                        Body = new LoginToreturnDto
                         {
-                            new VerifyOtpDto
-                            {
-                               Token = await _tokenService.CreateTokenAsync(existingUserByPhone , _userManager)
-                            }
+                            Otp = existingUserByPhone.OtpCode,
+                            Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager)
                         }
+
 
                     }
                 });
@@ -388,8 +421,9 @@ namespace Proo.APIs.Controllers
             // Generate OTP
 
             existingUserByPhone.OtpCode = "123456";
-            
-            existingUserByPhone.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
+
+            existingUserByPhone.OtpExpiryTime = DateTime.Now.AddMinutes(1); // Expiry after 2 minutes
+            existingUserByPhone.IsPhoneNumberConfirmed = false;
             existingUserByPhone.MacAddress = model.MacAddress;
             var updated = await _userManager.UpdateAsync(existingUserByPhone);
 
@@ -404,8 +438,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Verification code sent to your phone..",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>()
-
+                   
                 }
             });
 
@@ -423,7 +456,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Logged out successfully",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new List<object>()
+                   
 
                 }
             });

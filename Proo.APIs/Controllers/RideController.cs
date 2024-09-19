@@ -10,6 +10,7 @@ using Proo.Core.Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data.Context;
+using Proo.Service._RideService;
 using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
 
 namespace Proo.APIs.Controllers
@@ -85,6 +86,37 @@ namespace Proo.APIs.Controllers
 
             return Ok(response);
         }
+
+
+        //[HttpPost("calc_price_time_destance")]
+        //public async Task<ActionResult<ApiToReturnDtoResponse>> CalcPriceAndTimeAndDestance(calculatePriceAnddectaceDto CalcDto )
+        //{
+        //    var result = new LocationService().CalculateDestanceAndTimeAndPrice(CalcDto.PickUpLat, CalcDto.PickUpLon, CalcDto.DroppOffLat, CalcDto.DroppOffLon);
+
+        //    if(CalcDto.Category == "Ride")
+        //    {
+        //        return (new ApiToReturnDtoResponse
+        //        {
+        //            Data = new DataResponse
+        //            {
+        //                Mas = "The Price and Time Calculated by dectance and Category [Ride]",
+        //                StatusCode = StatusCodes.Status200OK,
+        //                Body = new List<object>
+        //                {
+
+        //                }
+        //            }
+        //        });
+        //    }
+        //    else if(CalcDto.Category == "Comfort")
+        //    {
+
+        //    }
+        //    else if(CalcDto.Category == "Scoter")
+        //    {
+
+        //    }
+        //}
         
 
     }

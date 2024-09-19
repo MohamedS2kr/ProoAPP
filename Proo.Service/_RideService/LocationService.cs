@@ -23,6 +23,25 @@ namespace Proo.Service._RideService
             return EarthRadiusKm * c;
         }
 
+        public double CalculatedTime(double distance, double averageSpeed = 50) // السرعة بالكيلومترات في الساعة
+        {
+            return distance / averageSpeed * 60; // الوقت بالدقائق
+        }
+
+        public double CalculatePrice(double distance, double baseFare = 5, double costPerKm = 2) /// pendding 
+        {
+            return baseFare + (distance * costPerKm);
+        }
+
+        public (double distance, double estimatedTime, double price) CalculateDestanceAndTimeAndPrice(double startLat, double startLon, double endLat, double endLon)
+        {
+            double distance = HaversineDistance(startLat, endLat, startLon, endLon);
+            double estimatedTime = CalculatedTime(distance);
+            double price = CalculatePrice(distance);
+
+            return (distance, estimatedTime, price);
+        }
+
         private double DegreesToRadians(double degrees)
         {
             return degrees * (Math.PI / 180);

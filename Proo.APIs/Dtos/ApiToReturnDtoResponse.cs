@@ -8,7 +8,7 @@
         {
             public string Mas { get; set; }
             public int StatusCode { get; set; }
-            public List<object> Body { get; set; } = new List<object>();
+            public object Body { get; set; } 
         }
 
     }
