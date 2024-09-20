@@ -1,4 +1,6 @@
-﻿namespace Proo.APIs.Dtos
+﻿using System.Text.Json.Serialization;
+
+namespace Proo.APIs.Dtos
 {
     public class VerifyOtpDto
     {

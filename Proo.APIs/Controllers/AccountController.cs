@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using Proo.APIs.Dtos;
 using Proo.APIs.Dtos.Identity;
 using Proo.APIs.Errors;
@@ -11,6 +12,7 @@ using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Document;
+using StackExchange.Redis;
 using System.Drawing;
 using System.Security.Claims;
 using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
@@ -24,6 +26,7 @@ namespace Proo.APIs.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private const string Passenger = "passenger";
         private const string Driver = "Driver";
 
@@ -33,12 +36,14 @@ namespace Proo.APIs.Controllers
             , SignInManager<ApplicationUser> signInManager
             , ITokenService tokenService
             , IUnitOfWork unitOfWork
+            ,RoleManager<IdentityRole> roleManager
            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
+            _roleManager = roleManager;
         }
 
 
@@ -64,8 +69,9 @@ namespace Proo.APIs.Controllers
                 {
                     Data = new DataResponse
                     {
-                        Mas = "ReSend new Otp succ ,verifiy the otp.",
+                        Mas = "ReSend new Otp succ , check your phone sms ,and verifiy the otp.",
                         StatusCode = StatusCodes.Status200OK,
+                        Body = user.OtpCode
                        
                     }
 
@@ -100,7 +106,8 @@ namespace Proo.APIs.Controllers
             if (!result.Succeeded) 
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-            var response = new ApiToReturnDtoResponse
+
+            return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
@@ -111,12 +118,9 @@ namespace Proo.APIs.Controllers
                         Token = await _tokenService.CreateTokenAsync(user, _userManager)
                     }
 
-
                 }
-             
-            };
 
-            return Ok(response);
+            });
         }
 
 
@@ -125,55 +129,75 @@ namespace Proo.APIs.Controllers
         [HttpPost("Register_for_user")] // POST : baseurl/api/Account/Register_for_user
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser(RegisterForUserDto model )
         {
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            if (model.Role.ToLower() == Passenger.ToLower())
+            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+
+            if (GetUserByPhone is null) return BadRequest(new ApiResponse(400,"The Number Not Found And Invaild Token Claims"));
+
+            GetUserByPhone.FullName = model.FullName;
+            GetUserByPhone.Gender = model.Gender;
+
+
+            var result = await _userManager.UpdateAsync(GetUserByPhone);
+            if (!result.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+            if (!await _roleManager.RoleExistsAsync(model.Role))
+                return BadRequest(new ApiResponse(400, "The Role is Invalid"));
+
+            if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
+                return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
+
+            if(!(Passenger.ToLower() == model.Role.ToLower())) 
+                    return BadRequest(new ApiResponse(400, "The Role Must Be Passenger Only"));
+
+            var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+            if (!addRole.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
+
+
+            var userDto = new UserDto();
+
+            userDto.FullName = GetUserByPhone.FullName;
+            userDto.Gender = GetUserByPhone.Gender;
+            userDto.PhoneNumber = GetUserByPhone.PhoneNumber;
+            userDto.Role = _userManager.GetRolesAsync(GetUserByPhone).Result;
+            userDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
+
+
+            if (GetUserByPhone.RefreshTokens.Any(t => t.IsActive))
             {
-                var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+                var ActiveRefreshToken = GetUserByPhone.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                userDto.RefreshToken = ActiveRefreshToken.Token;
+                userDto.RefreshTokenExpiredation = ActiveRefreshToken.ExpirsesOn;
+            }
+            else
+            {
+                var refreshToken = _tokenService.GenerateRefreshtoken();
+                userDto.RefreshToken = refreshToken.Token;
+                userDto.RefreshTokenExpiredation = refreshToken.ExpirsesOn;
+                GetUserByPhone.RefreshTokens.Add(refreshToken);
+                var IsSucces = await _userManager.UpdateAsync(GetUserByPhone);
+                if (!IsSucces.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = IsSucces.Errors.Select(E => E.Description) });
+            }
 
-                var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            SetRefreshTokenInCookies(userDto.RefreshToken, userDto.RefreshTokenExpiredation);
 
-                if (GetUserByPhone is null) return BadRequest(new ApiResponse(400,"The Number Not Found And Invaild Token Claims"));
-
-                GetUserByPhone.FullName = model.FullName;
-                GetUserByPhone.Gender = model.Gender;
-
-
-                var result = await _userManager.UpdateAsync(GetUserByPhone);
-                if (!result.Succeeded)
-                    return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
-
-                var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
-
-
-                if (getRole.Count() == 0 || getRole[0].ToLower() != model.Role.ToLower())
-                {
-                    var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
-                    if (!addRole.Succeeded)
-                        return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-                }
-
-                var response = new ApiToReturnDtoResponse
+            var response = new ApiToReturnDtoResponse
                 {
                     Data = new DataResponse
                     {
                         Mas = "The Passenger register succ",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new UserDto
-                        {
-                            FullName = GetUserByPhone.FullName,
-                            Gender = GetUserByPhone.Gender,
-                            PhoneNumber = GetUserByPhone.PhoneNumber,
-                            Role = _userManager.GetRolesAsync(GetUserByPhone).Result,
-                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager)
-                        }
-
+                        Body = userDto
                     }
 
                 };
 
                 return Ok(response); 
-            }
-            return BadRequest(new ApiResponse(400 , "The Role Must Be Passenger Only"));
+          
         }
 
 
@@ -181,8 +205,7 @@ namespace Proo.APIs.Controllers
         [HttpPost("Register_for_driver")] // POST : baseurl/api/Account/Register_for_driver
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterFordriver([FromForm] DriverDto model)
         {
-            if (model.Role.ToLower() == Driver.ToLower())
-            {
+            
                 var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
                 var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
@@ -200,12 +223,18 @@ namespace Proo.APIs.Controllers
 
                 var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
 
-                if (getRole.Count() == 0 || getRole[0].ToLower() != model.Role.ToLower())
-                {
-                    var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
-                    if (!addRole.Succeeded)
-                        return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-                }
+                if (!await _roleManager.RoleExistsAsync(model.Role))
+                    return BadRequest(new ApiResponse(400, "The Role is Invalid"));
+
+                if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
+                    return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
+
+                if (!(Driver.ToLower() == model.Role.ToLower()))
+                    return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
+
+                var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+                if (!addRole.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
                 var driver = new Driver
                 {
@@ -241,44 +270,62 @@ namespace Proo.APIs.Controllers
 
                 if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
-                var response = new ApiToReturnDtoResponse
-                {
-                    Data = new DataResponse
-                    {
-                        Mas = "The driver register succ",
-                        StatusCode = StatusCodes.Status200OK,
-                        Body = new DriverToReturnDto
-                        {
-                            FullName = GetUserByPhone.FullName,
-                            Gender = GetUserByPhone.Gender,
-                            PhoneNumber = GetUserByPhone.PhoneNumber,
-                            DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                            Role = _userManager.GetRolesAsync(GetUserByPhone).Result,
-                            Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager),
-                            LicenseIdFront = driver.LicenseIdFront,
-                            LicenseIdBack = driver.LicenseIdBack,
-                            ExpiringDate = driver.ExpiringDate,
-                            IsAvailable = driver.IsAvailable,
-                            VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront,
-                            VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack,
-                            VehicleExpiringDate = vehicle.ExpiringDate,
-                            ColourHexa = vehicle.Colour,
-                            Colour = model.Colour,
-                            AirConditional = vehicle.AirConditional,
-                            category = vehicle.category,
-                            NumberOfPalet = vehicle.NumberOfPalet,
-                            NumberOfPassenger = vehicle.NumberOfPassenger,
-                            Type = vehicle.Type,
-                            YeareOfManufacuter = vehicle.YeareOfManufacuter
-                        }
+            var driverToReturnDto = new DriverToReturnDto();
 
-                    }
+            driverToReturnDto.FullName = GetUserByPhone.FullName;
+            driverToReturnDto.Gender = GetUserByPhone.Gender;
+            driverToReturnDto.PhoneNumber = GetUserByPhone.PhoneNumber;
+            driverToReturnDto.DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth;
+            driverToReturnDto.Role = _userManager.GetRolesAsync(GetUserByPhone).Result;
+            driverToReturnDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
+            driverToReturnDto.LicenseIdFront = driver.LicenseIdFront;
+            driverToReturnDto.LicenseIdBack = driver.LicenseIdBack;
+            driverToReturnDto.ExpiringDate = driver.ExpiringDate;
+            driverToReturnDto.IsAvailable = driver.IsAvailable;
+            driverToReturnDto.VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront;
+            driverToReturnDto.VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack;
+            driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDate;
+            driverToReturnDto.ColourHexa = vehicle.Colour;
+            driverToReturnDto.Colour = model.Colour;
+            driverToReturnDto.AirConditional = vehicle.AirConditional;
+            driverToReturnDto.category = vehicle.category;
+            driverToReturnDto.NumberOfPalet = vehicle.NumberOfPalet;
+            driverToReturnDto.NumberOfPassenger = vehicle.NumberOfPassenger;
+            driverToReturnDto.Type = vehicle.Type;
+            driverToReturnDto.YeareOfManufacuter = vehicle.YeareOfManufacuter;
 
-                };
 
-                return Ok(response); 
+            if (GetUserByPhone.RefreshTokens.Any(t => t.IsActive))
+            {
+                var ActiveRefreshToken = GetUserByPhone.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                driverToReturnDto.RefreshToken = ActiveRefreshToken.Token;
+                driverToReturnDto.RefreshTokenExpiredation = ActiveRefreshToken.ExpirsesOn;
             }
-            return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
+            else
+            {
+                var refreshToken = _tokenService.GenerateRefreshtoken();
+                driverToReturnDto.RefreshToken = refreshToken.Token;
+                driverToReturnDto.RefreshTokenExpiredation = refreshToken.ExpirsesOn;
+                GetUserByPhone.RefreshTokens.Add(refreshToken);
+                var IsSucces = await _userManager.UpdateAsync(GetUserByPhone);
+                if (!IsSucces.Succeeded)
+                    return Ok(new ApiValidationResponse() { Errors = IsSucces.Errors.Select(E => E.Description) });
+            }
+
+            SetRefreshTokenInCookies(driverToReturnDto.RefreshToken, driverToReturnDto.RefreshTokenExpiredation);
+
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The driver register succ",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = driverToReturnDto
+                }
+
+            }); 
+            
         }
 
 
@@ -353,7 +400,7 @@ namespace Proo.APIs.Controllers
         ///
         ///}
 
-        [HttpPost("Login|register")]
+        [HttpPost("Login-register")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)
         {
             var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
@@ -375,7 +422,7 @@ namespace Proo.APIs.Controllers
                 // Generate OTP ------ pindding
 
                 user.OtpCode = "123456";
-                user.OtpExpiryTime = DateTime.Now.AddMinutes(1); // Expiry after 2 minutes
+                user.OtpExpiryTime = DateTime.Now.AddMinutes(2); // Expiry after 2 minutes
 
                 var updateUser = await _userManager.UpdateAsync(user);
 
@@ -401,19 +448,38 @@ namespace Proo.APIs.Controllers
             // cheack mac Address is valid or not 
             if (model.MacAddress.ToUpper() == existingUserByPhone.MacAddress?.ToUpper())
             {
+                var loginToreturnDto = new LoginToreturnDto();
+
+                loginToreturnDto.Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager);
+                loginToreturnDto.Otp = "123456";
+
+                if (existingUserByPhone.RefreshTokens.Any(t => t.IsActive))
+                {
+                    var ActiveRefreshToken = existingUserByPhone.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                    loginToreturnDto.RefreshToken = ActiveRefreshToken.Token;
+                    loginToreturnDto.RefreshTokenExpiredation = ActiveRefreshToken.ExpirsesOn;
+                }
+                else
+                {
+                    var refreshToken = _tokenService.GenerateRefreshtoken();
+                    loginToreturnDto.RefreshToken = refreshToken.Token;
+                    loginToreturnDto.RefreshTokenExpiredation = refreshToken.ExpirsesOn;
+                    existingUserByPhone.RefreshTokens.Add(refreshToken);
+                    var IsSucces = await _userManager.UpdateAsync(existingUserByPhone);
+                    if (!IsSucces.Succeeded)
+                        return Ok(new ApiValidationResponse() { Errors = IsSucces.Errors.Select(E => E.Description) });
+                }
+
+                if (!string.IsNullOrEmpty(loginToreturnDto.RefreshToken))
+                    SetRefreshTokenInCookies(loginToreturnDto.RefreshToken, loginToreturnDto.RefreshTokenExpiredation);
+
                 return Ok(new ApiToReturnDtoResponse
                 {
                     Data = new DataResponse
                     {
                         Mas = "Logined succ.",
                         StatusCode = StatusCodes.Status200OK,
-                        Body = new LoginToreturnDto
-                        {
-                            Otp = existingUserByPhone.OtpCode,
-                            Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager)
-                        }
-
-
+                        Body = loginToreturnDto
                     }
                 });
 
@@ -444,6 +510,82 @@ namespace Proo.APIs.Controllers
 
         }
 
+        [HttpGet("refreshToken")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RefreshToken()
+        {
+            var token = Request.Cookies["refreshToken"];
+
+            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+
+            if (user is null) return BadRequest(new ApiResponse(400, "Invalid Token"));
+
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+
+            if (!refreshToken.IsActive) return BadRequest(new ApiResponse(400, "InActive Token"));
+
+            refreshToken.RevokedOn = DateTime.Now;
+
+            var newrefreshToekn = _tokenService.GenerateRefreshtoken();
+            user.RefreshTokens.Add(newrefreshToekn);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+            var userDto = new UserDto();
+
+            userDto.Token = await _tokenService.CreateTokenAsync(user, _userManager);
+            userDto.FullName = user.FullName;
+            userDto.Gender = user.Gender;
+            userDto.PhoneNumber = user.PhoneNumber;
+            userDto.Role = await _userManager.GetRolesAsync(user);
+            userDto.RefreshToken = newrefreshToekn.Token;
+            userDto.RefreshTokenExpiredation = newrefreshToekn.ExpirsesOn;
+
+            SetRefreshTokenInCookies(userDto.RefreshToken, userDto.RefreshTokenExpiredation);
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "refresh token succ.",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = userDto
+                }
+            });
+        }
+
+        [HttpPost("revokedToken")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RevokedToken(RevokedTokenDto modelDto)
+        {
+            var token = modelDto.Token ?? Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrEmpty(token)) return BadRequest(new ApiResponse(400, "token is required"));
+
+            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+
+            if (user is null) return BadRequest(new ApiResponse(400, "Invalid Token"));
+
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+
+            if (!refreshToken.IsActive) return BadRequest(new ApiResponse(400, "InActive Token"));
+
+            refreshToken.RevokedOn = DateTime.Now;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "Revoked Token succ.",
+                    StatusCode = StatusCodes.Status200OK,
+
+                }
+            });
+        }
+
 
         [Authorize]
         [HttpPost("logout")]
@@ -463,6 +605,19 @@ namespace Proo.APIs.Controllers
         }
 
 
-    
+
+        private void SetRefreshTokenInCookies(string refreshToken, DateTime Expires)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = Expires.ToLocalTime(),
+            };
+
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+        }
+
+
+
     }
 }

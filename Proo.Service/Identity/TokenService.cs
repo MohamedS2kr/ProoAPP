@@ -10,6 +10,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
 
 namespace Proo.Service.Identity
 {
@@ -47,11 +49,29 @@ namespace Proo.Service.Identity
             var Token = new JwtSecurityToken(
                issuer: _configuration["JWT:ValidIssuer"],
                audience: _configuration["JWT:ValidAudience"],
-               expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"])),
+               expires: DateTime.Now.AddHours(double.Parse(_configuration["JWT:DurationInDays"])),
                claims: AuthClaims,
                signingCredentials: new SigningCredentials(AuthKey, SecurityAlgorithms.HmacSha256Signature)
                );
             return new JwtSecurityTokenHandler().WriteToken(Token);
         }
+
+        public RefreshToken GenerateRefreshtoken()
+        {
+            var rondomNumber = new byte[32];
+
+            using var generator = new RNGCryptoServiceProvider();
+
+            generator.GetBytes(rondomNumber);
+
+            return new RefreshToken()
+            {
+                Token = Convert.ToBase64String(rondomNumber),
+                CreatedOn = DateTime.Now,
+                ExpirsesOn = DateTime.Now.AddDays(25),
+            };
+        }
+
+        
     }
 }

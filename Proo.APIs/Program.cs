@@ -82,7 +82,8 @@ namespace Proo.APIs
                                     ValidAudience = builder.Configuration["JWT:ValidAudience"],
                                     ValidateLifetime = true,
                                     ValidateIssuerSigningKey = true,
-                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
+                                    ClockSkew = TimeSpan.Zero
                                 };
                             });
            

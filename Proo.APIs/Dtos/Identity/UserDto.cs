@@ -1,4 +1,5 @@
 ﻿using Proo.Core.Entities;
+using System.Text.Json.Serialization;
 
 namespace Proo.APIs.Dtos.Identity
 {
@@ -8,7 +9,11 @@ namespace Proo.APIs.Dtos.Identity
         
         public string PhoneNumber { get; set; }
         public Gender Gender { get; set; }
-        public string Token { get; set; }
         public IEnumerable<string> Role { get; set; } = new List<string>();
+        public string Token { get; set; }
+
+        [JsonIgnore]
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiredation { get; set; }
     }
 }

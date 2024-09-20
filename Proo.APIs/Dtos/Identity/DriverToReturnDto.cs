@@ -1,5 +1,6 @@
 ﻿using Proo.Core.Entities;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Proo.APIs.Dtos.Identity
 {
@@ -49,5 +50,9 @@ namespace Proo.APIs.Dtos.Identity
       
         public DateTime VehicleExpiringDate { get; set; }
         public string Token { get; set; }
+
+        [JsonIgnore]
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiredation { get; set; }
     }
 }
