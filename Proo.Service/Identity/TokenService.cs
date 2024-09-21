@@ -49,7 +49,7 @@ namespace Proo.Service.Identity
             var Token = new JwtSecurityToken(
                issuer: _configuration["JWT:ValidIssuer"],
                audience: _configuration["JWT:ValidAudience"],
-               expires: DateTime.Now.AddHours(double.Parse(_configuration["JWT:DurationInDays"])),
+               expires: DateTime.Now.AddHours(double.Parse(_configuration["JWT:DurationInDay"])),
                claims: AuthClaims,
                signingCredentials: new SigningCredentials(AuthKey, SecurityAlgorithms.HmacSha256Signature)
                );
