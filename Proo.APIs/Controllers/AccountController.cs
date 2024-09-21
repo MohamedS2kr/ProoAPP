@@ -98,7 +98,7 @@ namespace Proo.APIs.Controllers
                 return BadRequest(new ApiResponse(400, "expired OTP."));
 
             user.IsPhoneNumberConfirmed = true;
-
+            user.IsOtpValid = false;
             //user.OtpCode = null;
             user.OtpExpiryTime = null;
 
@@ -413,6 +413,7 @@ namespace Proo.APIs.Controllers
                     PhoneNumber = model.PhoneNumber,
                     UserName = model.PhoneNumber,
                     IsPhoneNumberConfirmed = false,
+                    IsOtpValid = false,
                     MacAddress = model.MacAddress
                 };
                 var result = await _userManager.CreateAsync(user);
@@ -422,6 +423,7 @@ namespace Proo.APIs.Controllers
                 // Generate OTP ------ pindding
 
                 user.OtpCode = "123456";
+                user.IsOtpValid = true;
                 user.OtpExpiryTime = DateTime.Now.AddMinutes(2); // Expiry after 2 minutes
 
                 var updateUser = await _userManager.UpdateAsync(user);
@@ -437,13 +439,36 @@ namespace Proo.APIs.Controllers
                     {
                         Mas = "Registered succ , Verification code sent to your phone.",
                         StatusCode = StatusCodes.Status200OK,
-                        
+
                     }
                 });
             }
 
             // login 
-            if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
+
+            if (existingUserByPhone.IsOtpValid /*&& existingUserByPhone.OtpExpiryTime < DateTime.Now */) // expired
+            {
+                existingUserByPhone.OtpExpiryTime = DateTime.Now.AddMinutes(2); // Expiry after 2 minutes
+
+                var updateUser = await _userManager.UpdateAsync(existingUserByPhone);
+
+                if (!updateUser.Succeeded) return Ok(new ApiValidationResponse() { Errors = updateUser.Errors.Select(E => E.Description) });
+
+                // Send OTP via SMS service [pendding]
+
+
+                return Ok(new ApiToReturnDtoResponse
+                {
+                    Data = new DataResponse
+                    {
+                        Mas = "Verification code sent to your phone.",
+                        StatusCode = StatusCodes.Status200OK,
+
+                    }
+                });
+            }
+
+            //if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
 
             // cheack mac Address is valid or not 
             if (model.MacAddress.ToUpper() == existingUserByPhone.MacAddress?.ToUpper())
@@ -451,7 +476,7 @@ namespace Proo.APIs.Controllers
                 var loginToreturnDto = new LoginToreturnDto();
 
                 loginToreturnDto.Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager);
-                loginToreturnDto.Otp = "123456";
+                loginToreturnDto.Otp = existingUserByPhone.OtpCode;
 
                 if (existingUserByPhone.RefreshTokens.Any(t => t.IsActive))
                 {
@@ -487,7 +512,7 @@ namespace Proo.APIs.Controllers
             // Generate OTP
 
             existingUserByPhone.OtpCode = "123456";
-
+            existingUserByPhone.IsOtpValid = true;
             existingUserByPhone.OtpExpiryTime = DateTime.Now.AddMinutes(1); // Expiry after 2 minutes
             existingUserByPhone.IsPhoneNumberConfirmed = false;
             existingUserByPhone.MacAddress = model.MacAddress;
@@ -504,11 +529,14 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Verification code sent to your phone..",
                     StatusCode = StatusCodes.Status200OK,
-                   
+
                 }
             });
 
         }
+
+
+
 
         [HttpGet("refreshToken")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> RefreshToken()
