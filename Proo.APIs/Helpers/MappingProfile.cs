@@ -18,7 +18,7 @@ namespace Proo.APIs.Helpers
                 .ForMember(r => r.DestinationLocation.Latitude, O => O.MapFrom(s => s.DropOffLat))
                 .ForMember(r => r.DestinationLocation.Longitude, O => O.MapFrom(s => s.DropOffLng))
                 .ForMember(r => r.DestinationLocation.Address, O => O.MapFrom(s => s.DropOffAddress)).ReverseMap();
-
+            
             CreateMap<RdieToReturnDto, Ride>()
                 .ForMember(r => r.PickupLocation.Latitude, O => O.MapFrom(s => s.PickupLat))
                 .ForMember(r => r.PickupLocation.Longitude, O => O.MapFrom(s => s.PickupLng))

@@ -36,8 +36,8 @@ namespace Proo.Service._RideService
         public (double distance, double estimatedTime, double price) CalculateDestanceAndTimeAndPrice(double startLat, double startLon, double endLat, double endLon)
         {
             double distance = HaversineDistance(startLat, endLat, startLon, endLon);
-            double estimatedTime = CalculatedTime(distance);
-            double price = CalculatePrice(distance);
+            double estimatedTime = Math.Round(CalculatedTime(distance), 2);
+            double price = Math.Round(CalculatePrice(distance),2);
 
             return (distance, estimatedTime, price);
         }
