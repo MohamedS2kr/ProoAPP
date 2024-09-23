@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
@@ -11,9 +12,10 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240922042641_AddTableRideRequsetInDatabase01")]
+    partial class AddTableRideRequsetInDatabase01
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,10 +465,6 @@ namespace Proo.Infrastructer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -486,8 +484,8 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<decimal>("EstimatedPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<double>("EstimatedTime")
-                        .HasColumnType("float");
+                    b.Property<int>("EstimatedTime")
+                        .HasColumnType("int");
 
                     b.Property<string>("PassengerId")
                         .IsRequired()
@@ -503,9 +501,8 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<double>("PickupLongitude")
                         .HasColumnType("float");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

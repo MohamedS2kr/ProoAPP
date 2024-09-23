@@ -12,6 +12,7 @@ using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
 using Proo.APIs.Errors;
 using Proo.Infrastructer.Document;
 using Proo.APIs.Dtos.Passenger;
+using AutoMapper;
 
 namespace Proo.APIs.Controllers
 {
@@ -21,12 +22,14 @@ namespace Proo.APIs.Controllers
         private const string passenger = "passenger";
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
         public PassengersController(UserManager<ApplicationUser> userManager
-            , SignInManager<ApplicationUser> signInManager)
+            , SignInManager<ApplicationUser> signInManager,IMapper mapper)
         {
 
             _userManager = userManager;
+            _mapper = mapper;
         }
 
 
@@ -39,22 +42,25 @@ namespace Proo.APIs.Controllers
             var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
             if (GetUserByPhone is null) return BadRequest(400);
-
+            var result = _mapper.Map<ProfileDto>(GetUserByPhone);
+            
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "The Passenger Data",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new ProfileDto
-                    {
-                        ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                        FullName = GetUserByPhone.FullName,
-                        Email = GetUserByPhone.Email,
-                        DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                        Gender = GetUserByPhone.Gender,
-                        PhoneNumber = GetUserByPhone.PhoneNumber,
-                    }
+                    //Body = new ProfileDto
+                    //{
+                    //    ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
+                    //    FullName = GetUserByPhone.FullName,
+                    //    Email = GetUserByPhone.Email,
+                    //    DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                    //    Gender = GetUserByPhone.Gender,
+                    //    PhoneNumber = GetUserByPhone.PhoneNumber,
+
+                    //}
+                    Body = result
 
                 }
             };
@@ -84,22 +90,24 @@ namespace Proo.APIs.Controllers
             if (!result.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-
+            var mappedResult = _mapper.Map<ProfileDto>(GetUserByPhone);
+            
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Update Passenger Data Succ",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = new ProfileDto
-                    {
-                        ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                        FullName = GetUserByPhone.FullName,
-                        Email = GetUserByPhone.Email,
-                        DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                        Gender = GetUserByPhone.Gender,
-                        PhoneNumber = GetUserByPhone.PhoneNumber,
-                    }
+                    //Body = new ProfileDto
+                    //{
+                    //    ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
+                    //    FullName = GetUserByPhone.FullName,
+                    //    Email = GetUserByPhone.Email,
+                    //    DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
+                    //    Gender = GetUserByPhone.Gender,
+                    //    PhoneNumber = GetUserByPhone.PhoneNumber,
+                    //}
+                    Body = mappedResult
 
                 }
             };
@@ -130,10 +138,7 @@ namespace Proo.APIs.Controllers
         //        {
         //            Mas = "The Passenger Data",
         //            StatusCode = StatusCodes.Status200OK,
-        //            Body = new List<object>
-        //            {
-                        
-        //            }
+        //            Body = 
         //        }
         //    };
 

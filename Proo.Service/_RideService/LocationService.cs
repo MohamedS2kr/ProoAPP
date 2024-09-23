@@ -33,13 +33,19 @@ namespace Proo.Service._RideService
             return baseFare + (distance * costPerKm);
         }
 
-        public (double distance, double estimatedTime, double price) CalculateDestanceAndTimeAndPrice(double startLat, double startLon, double endLat, double endLon)
+        public (double distance, double estimatedTime, double price) CalculateDestanceAndTimeAndPrice(double startLat, double startLon, double endLat, double endLon , string category)
         {
             double distance = HaversineDistance(startLat, endLat, startLon, endLon);
             double estimatedTime = Math.Round(CalculatedTime(distance), 2);
             double price = Math.Round(CalculatePrice(distance),2);
-
-            return (distance, estimatedTime, price);
+            if (category == "Ride")
+                return (distance, estimatedTime, price);
+            else if (category == "Comfort")
+                return (distance, estimatedTime, price * 10);
+            else if (category == "Scoter")
+                return (distance, estimatedTime, price / 0.50);
+            else
+                return (distance, estimatedTime, price);
         }
 
         private double DegreesToRadians(double degrees)
