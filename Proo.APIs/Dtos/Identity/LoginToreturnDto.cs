@@ -5,6 +5,7 @@ namespace Proo.APIs.Dtos.Identity
     public class LoginToreturnDto
     {
         public string Token { get; set; }
+        public IEnumerable<string> Roles { get; set; } = new List<string>();
         public string Otp { get; set; }
 
         [JsonIgnore]

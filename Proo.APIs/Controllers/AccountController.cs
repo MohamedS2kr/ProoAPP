@@ -477,6 +477,7 @@ namespace Proo.APIs.Controllers
 
                 loginToreturnDto.Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager);
                 loginToreturnDto.Otp = existingUserByPhone.OtpCode;
+                loginToreturnDto.Roles = _userManager.GetRolesAsync(existingUserByPhone).Result;
 
                 if (existingUserByPhone.RefreshTokens.Any(t => t.IsActive))
                 {
