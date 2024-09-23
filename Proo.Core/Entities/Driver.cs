@@ -9,23 +9,38 @@ namespace Proo.Core.Entities
     public class Driver : BaseEntity
     {
         public string Id { get; set; }
-        public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
         public string LicenseIdFront { get; set; }
         public string LicenseIdBack { get; set; }
         public DateTime ExpiringDate { get; set; } = DateTime.Now;
-        //public string VehicleDetails { get; set; }
+        public decimal LastLat { get; set; }
+        public decimal LastLng { get; set; }
+        public DateTime LastActiveTime { get; set; }
         public bool IsAvailable { get; set; }
+        public DriverStatusWork StatusWork { get; set; } = DriverStatusWork.Pending; // Defualt
+        public DriverStatus Status { get; set; } 
+
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+        public  ICollection<PassengerRating> PassengerRatings { get; private set; }
+        public  ICollection<DriverRating> DriverRatings { get; private set; }
         public ICollection<Ride> Rides { get; set; }
-        public DriverStatus Status { get; set; } = DriverStatus.Pending; // Defualt
+
 
     }
 
-    public enum DriverStatus
+    public enum DriverStatusWork
     {
         Pending,
         Approved,
         Rejected
+    }
+
+    public enum DriverStatus
+    {
+
+        Avaiable,
+        InRide,
+        Offline
     }
 
 }

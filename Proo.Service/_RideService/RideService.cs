@@ -24,17 +24,15 @@ namespace Proo.Service._RideService
         {
             var spec = new DriverWithApplicationUserSpecifiaction();
             var AllDrivers = await _unitOfWork.Repositoy<Driver>().GetAllWithSpecAsync(spec);
-            return AllDrivers
-        .Where(d =>
-        {
+            return AllDrivers.Where(d =>
+            {
             
-            var lastRide = d.Rides.OrderByDescending(r => r.Id).FirstOrDefault();
-            if (lastRide == null) return false; 
+                var lastRide = d.Rides.OrderByDescending(r => r.Id).FirstOrDefault();
+                if (lastRide == null) return false; 
 
-            // Calculate distance using Haversine formula
-            return new LocationService().HaversineDistance(pickuplat, lastRide.DestinationLocation.Latitude, pickuplong , lastRide.DestinationLocation.Longitude) <= radiusKm;
-        })
-        .ToList();
+                // Calculate distance using Haversine formula
+                return new LocationService().HaversineDistance(pickuplat, lastRide.DestinationLocation.Latitude, pickuplong , lastRide.DestinationLocation.Longitude) <= radiusKm;
+            }).ToList();
         }
     }
 }

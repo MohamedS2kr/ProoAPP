@@ -153,7 +153,6 @@ namespace Proo.APIs
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 
-            app.UseStaticFiles();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -162,6 +161,7 @@ namespace Proo.APIs
             //{
             //    endpoints.MapHub<RideHub>("/rideHub");
             //});
+            app.UseStaticFiles();
 
             app.MapControllers(); 
             #endregion

@@ -17,9 +17,9 @@ namespace Proo.Core.Entities
         public int Eta { get; set; }
 
         public string DriverId { get; set; }
-        public virtual Driver Driver { get; set; }
+        public Driver Driver { get; set; }
 
-        public int RideId { get; set; }
-        public virtual Ride Ride { get; set; }
+        public int RideRequestsId { get; set; }
+        public RideRequests Ride { get; set; }
     }
 }
