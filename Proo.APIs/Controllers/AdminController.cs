@@ -21,13 +21,13 @@ namespace Proo.APIs.Controllers
         [HttpGet("drivers/Pending")]
         public async Task<ActionResult<IEnumerable<Driver>>> GetPendingDrivers()
         {
-            var pendingDrivers = await _dbContext.Drivers.Where( e => e.Status == DriverStatus.Pending ).ToListAsync();
+            var pendingDrivers = await _dbContext.Drivers.Where( e => e.StatusWork == DriverStatusWork.Pending ).ToListAsync();
             return Ok(pendingDrivers);
         }
         [HttpGet("drivers/approved")]
         public async Task<ActionResult<IEnumerable<Driver>>> GetApprovedDrivers()
         {
-            var approvedDrivers = await _dbContext.Drivers.Where( e => e.Status == DriverStatus.Approved).ToListAsync();
+            var approvedDrivers = await _dbContext.Drivers.Where( e => e.StatusWork == DriverStatusWork.Approved).ToListAsync();
             
             return Ok(approvedDrivers);
         }
@@ -41,7 +41,7 @@ namespace Proo.APIs.Controllers
                 return BadRequest(new ApiResponse(400, "The Drive Is Not Exist."));
             }
 
-            driver.Status = DriverStatus.Approved;
+            driver.StatusWork = DriverStatusWork.Approved;
 
             await _dbContext.SaveChangesAsync();
             return Ok("Driver approved successfully.");
@@ -56,7 +56,7 @@ namespace Proo.APIs.Controllers
             }
 
 
-            driver.Status = DriverStatus.Rejected;
+            driver.StatusWork = DriverStatusWork.Rejected;
 
             await _dbContext.SaveChangesAsync();
 

@@ -96,88 +96,88 @@ namespace Proo.APIs.Controllers
         //}
 
 
-        [Authorize(Roles = Passenger)]
-        [HttpPost("CreateRideRequest_FindDriver")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> CreateRideRequest(RideRequestDto dto)
-        {
-            var UserPhone = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhone);
-            if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
+        //[Authorize(Roles = Passenger)]
+        //[HttpPost("CreateRideRequest_FindDriver")]
+        //public async Task<ActionResult<ApiToReturnDtoResponse>> CreateRideRequest(RideRequestDto dto)
+        //{
+        //    var UserPhone = User.FindFirstValue(ClaimTypes.MobilePhone);
+        //    var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhone);
+        //    if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
 
-            var result = new LocationService().CalculateDestanceAndTimeAndPrice(dto.PickupLatitude, dto.PickupLongitude, dto.DropoffLatitude, dto.DropoffLongitude , dto.Category);
+        //    var result = new LocationService().CalculateDestanceAndTimeAndPrice(dto.PickupLatitude, dto.PickupLongitude, dto.DropoffLatitude, dto.DropoffLongitude , dto.Category);
 
-            var RideRequest = new RideRequests()
-            {
-                PassengerId = GetUserByPhone.Id,
-                DropoffAddress = dto.DropOffAddress,
-                DropoffLatitude = dto.DropoffLatitude,
-                DropoffLongitude = dto.DropoffLongitude,
+        //    var RideRequest = new RideRequests()
+        //    {
+        //        PassengerId = GetUserByPhone.Id,
+        //        DropoffAddress = dto.DropOffAddress,
+        //        DropoffLatitude = dto.DropoffLatitude,
+        //        DropoffLongitude = dto.DropoffLongitude,
 
-                PickupAddress = dto.PickupAddress,
-                PickupLatitude = dto.PickupLatitude,
-                PickupLongitude = dto.PickupLongitude,
+        //        PickupAddress = dto.PickupAddress,
+        //        PickupLatitude = dto.PickupLatitude,
+        //        PickupLongitude = dto.PickupLongitude,
 
-                Category = dto.Category,
+        //        Category = dto.Category,
                 
-                EstimatedDistance = result.distance,
-                EstimatedTime = result.estimatedTime,
-                EstimatedPrice = result.price,
+        //        EstimatedDistance = result.distance,
+        //        EstimatedTime = result.estimatedTime,
+        //        EstimatedPrice = result.price,
                 
-                Status = Status.Pending,
-                CreatedAt = DateTime.Now,
-            };
-            _unitOfWork.Repositoy<RideRequests>().Add(RideRequest);
-            var count = await _unitOfWork.CompleteAsync();
-            if (count <= 0) return BadRequest(new ApiResponse(400));
+        //        Status = Status.Pending,
+        //        CreatedAt = DateTime.Now,
+        //    };
+        //    _unitOfWork.Repositoy<RideRequests>().Add(RideRequest);
+        //    var count = await _unitOfWork.CompleteAsync();
+        //    if (count <= 0) return BadRequest(new ApiResponse(400));
 
 
-            //find the nearby drivers 
-            var nearbyDrivers = await _rideService.GetNearbyDrivers(dto.PickupLatitude, dto.PickupLongitude, 5);
+        //    //find the nearby drivers 
+        //    var nearbyDrivers = await _rideService.GetNearbyDrivers(dto.PickupLatitude, dto.PickupLongitude, 5);
 
-            ///    // Notify Drivers using signalR
-            ///    foreach (var driver in nearbyDrivers)
-            ///    {
-            ///        var notifications = new RideNotificationDto
-            ///        {
-            ///            PickupLat = RideMapped.PickupLocation.Latitude,
-            ///            PickupLng = RideMapped.PickupLocation.Longitude,
-            ///            PickupAddress = RideMapped.PickupLocation.Address,
-            ///            DropOffLat = RideMapped.DestinationLocation.Latitude,
-            ///            DropOffLng = RideMapped.DestinationLocation.Longitude,
-            ///            DropOffAddress = RideMapped.DestinationLocation.Address,
-            ///            FarePrice = RideMapped.FarePrice,
-            ///            PassengerId = RideMapped.PassengerId,
-            ///
-            ///        };
-            ///
-            ///        // send the notification to nearby driver 
-            ///        await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
-            ///    }
+        //    ///    // Notify Drivers using signalR
+        //    ///    foreach (var driver in nearbyDrivers)
+        //    ///    {
+        //    ///        var notifications = new RideNotificationDto
+        //    ///        {
+        //    ///            PickupLat = RideMapped.PickupLocation.Latitude,
+        //    ///            PickupLng = RideMapped.PickupLocation.Longitude,
+        //    ///            PickupAddress = RideMapped.PickupLocation.Address,
+        //    ///            DropOffLat = RideMapped.DestinationLocation.Latitude,
+        //    ///            DropOffLng = RideMapped.DestinationLocation.Longitude,
+        //    ///            DropOffAddress = RideMapped.DestinationLocation.Address,
+        //    ///            FarePrice = RideMapped.FarePrice,
+        //    ///            PassengerId = RideMapped.PassengerId,
+        //    ///
+        //    ///        };
+        //    ///
+        //    ///        // send the notification to nearby driver 
+        //    ///        await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
+        //    ///    }
                 
 
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "The Request Data succ",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = new ReturnRideRequestDto
-                    {
-                        ProfilePicture = GetUserByPhone.ProfilePictureUrl,
-                        Name = GetUserByPhone.UserName,
-                        PhoneNumber = GetUserByPhone.PhoneNumber,
-                        Category = dto.Category,
-                        PickupAddress = RideRequest.PickupAddress,
-                        DropOffAddress = RideRequest.DropoffAddress,
-                        Price = RideRequest.EstimatedPrice,
-                        Time = RideRequest.EstimatedTime,
-                        Distance = RideRequest.EstimatedDistance,
-                    }
-                }
-            };
+        //    var response = new ApiToReturnDtoResponse
+        //    {
+        //        Data = new DataResponse
+        //        {
+        //            Mas = "The Request Data succ",
+        //            StatusCode = StatusCodes.Status200OK,
+        //            Body = new ReturnRideRequestDto
+        //            {
+        //                ProfilePicture = GetUserByPhone.ProfilePictureUrl,
+        //                Name = GetUserByPhone.UserName,
+        //                PhoneNumber = GetUserByPhone.PhoneNumber,
+        //                Category = dto.Category,
+        //                PickupAddress = RideRequest.PickupAddress,
+        //                DropOffAddress = RideRequest.DropoffAddress,
+        //                Price = RideRequest.EstimatedPrice,
+        //                Time = RideRequest.EstimatedTime,
+        //                Distance = RideRequest.EstimatedDistance,
+        //            }
+        //        }
+        //    };
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
 
 
 

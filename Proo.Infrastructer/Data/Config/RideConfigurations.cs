@@ -25,9 +25,9 @@ namespace Proo.Infrastructer.Data.Config
                  .HasForeignKey(r => r.DriverId)
                  .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne(r => r.RideRequests).WithOne(rr => rr.Ride)
-                .HasForeignKey<Ride>(r => r.RideRequestsId)
-                .OnDelete(DeleteBehavior.NoAction);
+            //builder.HasOne(r => r.RideRequests).WithOne(rr => rr.Ride)
+            //    .HasForeignKey<Ride>(r => r.RideRequestsId)
+            //    .OnDelete(DeleteBehavior.NoAction);
             
             builder.Property(r => r.Status)
                 .HasConversion(status => status.ToString(), StatusComparer => (RideStatus) Enum.Parse(typeof(RideStatus), StatusComparer));

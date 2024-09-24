@@ -13,6 +13,8 @@ namespace Proo.Core.Contract
         void Add(T model);
 
         void Update(T model);
+        void Delete(T model);
+        Task<T?> GetByIdAsync(string id);  
 
         Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec);
 

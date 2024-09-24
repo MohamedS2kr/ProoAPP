@@ -10,7 +10,7 @@ namespace Proo.Core.Entities
     public class Ride : BaseEntity
     {
         public int Id { get; set; }
-        public string RideRequestsId { get; set; } = string.Empty;
+        public int RideRequestsId { get; set; } 
         public  RideRequests? RideRequests { get; set; }
         public string PassengerId { get; set; } // ID of the passenger
         public Passenger? Passenger { get; set; }
@@ -20,8 +20,9 @@ namespace Proo.Core.Entities
         public Locations PickupLocation { get; set; }
         public Locations DestinationLocation { get; set; }
 
-        //public DateTime CreatedAt { get; set; }
-        //public DateTime? AssignedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? LastModifiedAt { get; set; } = DateTime.Now;
+        public DateTime? DeletedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 
         public decimal FarePrice { get; set; }

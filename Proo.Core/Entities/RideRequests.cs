@@ -21,11 +21,13 @@ namespace Proo.Core.Entities
         public double EstimatedTime { get; set; } // Estimated time in minutes
         public double EstimatedPrice { get; set; }
         public string Category { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get;  set; } = DateTime.Now;
+        public DateTime? LastModifiedAt { get; set; } = DateTime.Now;
+        public DateTime? DeletedAt { get;  set; } 
         public string PassengerId { get; set; }
-        public virtual Passenger? Customer { get; set; }
+        public  Passenger? Customer { get; set; }
         public string? DriverId { get; set; }
-        public virtual Driver? Driver { get; set; }
+        public  Driver? Driver { get; set; }
         public RideRequestStatus Status { get; set; }
         public PaymentMethod paymentMethod { get; set; }
     }

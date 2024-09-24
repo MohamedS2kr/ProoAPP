@@ -19,7 +19,7 @@ namespace Proo.Infrastructer.Data.Config
 
             builder.HasOne(b => b.Ride)
                 .WithMany()
-                .HasForeignKey(b => b.RideId);
+                .HasForeignKey(b => b.RideRequestsId);
 
             builder.Property(b => b.OfferedPrice).HasColumnType("decimal(10,2)");
         }
