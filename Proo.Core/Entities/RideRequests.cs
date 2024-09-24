@@ -28,7 +28,7 @@ namespace Proo.Core.Entities
         public  Passenger? Passenger { get; set; }
         public string? DriverId { get; set; }
         public  Driver? Driver { get; set; }
-        public RideRequestStatus Status { get; set; } = RideRequestStatus.Requested;
+        public RideRequestStatus Status { get; set; } 
         public PaymentMethod paymentMethod { get; set; }
     }
 

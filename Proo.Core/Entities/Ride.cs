@@ -33,10 +33,10 @@ namespace Proo.Core.Entities
 
     public enum RideStatus
     {
-        Requested,
-        Accepted,
-        InGoing,
-        Completed,
-        Cancelled
+        
+        InGoing =1,
+        WAITING_FOR_PAYMENT = 2, // this is when driver reached destination
+        Completed = 3,
+      
     }
 }
