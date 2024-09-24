@@ -17,6 +17,9 @@ namespace Proo.Infrastructer.Data.Config
 
             builder.Property(d => d.LicenseIdBack).IsRequired();
             builder.Property(d => d.LicenseIdFront).IsRequired();
+
+            builder.Property(d => d.LastLat).HasColumnType("decimal(18,6)");
+            builder.Property(d => d.LastLng).HasColumnType("decimal(18,6)");
         }
     }
 }
