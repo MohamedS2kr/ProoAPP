@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Proo.Infrastructer\Proo.Infrastructer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="_RideService\RideRequsetService\" />
+  </ItemGroup>
+
 </Project>

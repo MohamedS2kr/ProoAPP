@@ -21,25 +21,23 @@ namespace Proo.Core.Entities
         public double EstimatedTime { get; set; } // Estimated time in minutes
         public double EstimatedPrice { get; set; }
         public string Category { get; set; }
-        public DateTime CreatedAt { get;  set; } = DateTime.Now;
-        public DateTime? LastModifiedAt { get; set; } = DateTime.Now;
-        public DateTime? DeletedAt { get;  set; } 
+        public DateTime CreatedAt { get;  set; }
+        public DateTime? LastModifiedAt { get; set; }
+        public DateTime? DeletedAt { get;  set; }
         public string PassengerId { get; set; }
         public  Passenger? Passenger { get; set; }
         public string? DriverId { get; set; }
         public  Driver? Driver { get; set; }
-        public RideRequestStatus Status { get; set; }
+        public RideRequestStatus Status { get; set; } = RideRequestStatus.Requested;
         public PaymentMethod paymentMethod { get; set; }
     }
 
     public enum RideRequestStatus
     {
         NO_DRIVER_FOUND = 1,
-        CUSTOMER_CANCELED = 2,
-        DRIVER_ACCEPTED = 3,
+        Requested = 2 ,
+        CUSTOMER_CANCELED = 3,
         CUSTOMER_REJECTED_DRIVER = 4,
-        DRIVER_REJECTED_CUSTOMER = 5, // TODO: upon 3 driver rejections, take the trip request to trip_request_rejected
-        TRIP_STARTED = 6, // create a trip entity where status reaches this stage
-        TRIP_REQUEST_REJECTED = 7 // TODO: run a scheduler and send all unaccepted trips to this status
+        TRIP_STARTED = 5, // create a trip entity where status reaches this stage
     }
 }
