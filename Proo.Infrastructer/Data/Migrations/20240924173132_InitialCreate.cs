@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Migrations
+namespace Proo.Infrastructer.Data.Migrations
 {
-    public partial class initialCreateDb : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,12 +15,14 @@ namespace Proo.Infrastructer.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsPhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    IsOtpValid = table.Column<bool>(type: "bit", nullable: false),
                     OtpCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OtpExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ProfilePictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MacAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -121,12 +123,16 @@ namespace Proo.Infrastructer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LicenseIdFront = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LicenseIdBack = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExpiringDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastLat = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
+                    LastLng = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
+                    LastActiveTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    StatusWork = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -145,7 +151,8 @@ namespace Proo.Infrastructer.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PreferredPaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    PreferredPaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRiding = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,6 +160,29 @@ namespace Proo.Infrastructer.Migrations
                     table.ForeignKey(
                         name: "FK_Passengers_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshToken",
+                columns: table => new
+                {
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpirsesOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RevokedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshToken", x => new { x.ApplicationUserId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -233,11 +263,81 @@ namespace Proo.Infrastructer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RideRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PickupAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PickupLatitude = table.Column<double>(type: "float", nullable: false),
+                    PickupLongitude = table.Column<double>(type: "float", nullable: false),
+                    DropoffAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DropoffLatitude = table.Column<double>(type: "float", nullable: false),
+                    DropoffLongitude = table.Column<double>(type: "float", nullable: false),
+                    EstimatedDistance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EstimatedTime = table.Column<double>(type: "float", nullable: false),
+                    EstimatedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PassengerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    paymentMethod = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RideRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RideRequests_Drivers_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Drivers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RideRequests_Passengers_PassengerId",
+                        column: x => x.PassengerId,
+                        principalTable: "Passengers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bids",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OfferedPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Eta = table.Column<int>(type: "int", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RideRequestsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bids", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bids_Drivers_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Drivers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Bids_RideRequests_RideRequestsId",
+                        column: x => x.RideRequestsId,
+                        principalTable: "RideRequests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rides",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    RideRequestsId = table.Column<int>(type: "int", nullable: false),
                     PassengerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PickupLocation_Latitude = table.Column<double>(type: "float", nullable: false),
@@ -247,10 +347,12 @@ namespace Proo.Infrastructer.Migrations
                     DestinationLocation_Longitude = table.Column<double>(type: "float", nullable: false),
                     DestinationLocation_Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     FarePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    paymentMethod = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -265,33 +367,10 @@ namespace Proo.Infrastructer.Migrations
                         column: x => x.PassengerId,
                         principalTable: "Passengers",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Bids",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OfferedPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Eta = table.Column<int>(type: "int", nullable: false),
-                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RideId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Bids", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Bids_Drivers_DriverId",
-                        column: x => x.DriverId,
-                        principalTable: "Drivers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Bids_Rides_RideId",
-                        column: x => x.RideId,
-                        principalTable: "Rides",
+                        name: "FK_Rides_RideRequests_RideRequestsId",
+                        column: x => x.RideRequestsId,
+                        principalTable: "RideRequests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -325,27 +404,35 @@ namespace Proo.Infrastructer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RideId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Score = table.Column<int>(type: "int", nullable: false),
-                    Review = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Review = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PassengerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RideId = table.Column<int>(type: "int", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Ratings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Ratings_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        name: "FK_Ratings_Drivers_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Drivers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Ratings_Passengers_PassengerId",
+                        column: x => x.PassengerId,
+                        principalTable: "Passengers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Ratings_Rides_RideId",
                         column: x => x.RideId,
                         principalTable: "Rides",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(
@@ -386,9 +473,9 @@ namespace Proo.Infrastructer.Migrations
                 column: "DriverId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bids_RideId",
+                name: "IX_Bids_RideRequestsId",
                 table: "Bids",
-                column: "RideId");
+                column: "RideRequestsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Drivers_UserId",
@@ -406,14 +493,29 @@ namespace Proo.Infrastructer.Migrations
                 column: "RideId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Ratings_DriverId",
+                table: "Ratings",
+                column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ratings_PassengerId",
+                table: "Ratings",
+                column: "PassengerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Ratings_RideId",
                 table: "Ratings",
                 column: "RideId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ratings_UserId",
-                table: "Ratings",
-                column: "UserId");
+                name: "IX_RideRequests_DriverId",
+                table: "RideRequests",
+                column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RideRequests_PassengerId",
+                table: "RideRequests",
+                column: "PassengerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rides_DriverId",
@@ -424,6 +526,11 @@ namespace Proo.Infrastructer.Migrations
                 name: "IX_Rides_PassengerId",
                 table: "Rides",
                 column: "PassengerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Rides_RideRequestsId",
+                table: "Rides",
+                column: "RideRequestsId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
@@ -465,6 +572,9 @@ namespace Proo.Infrastructer.Migrations
                 name: "Ratings");
 
             migrationBuilder.DropTable(
+                name: "RefreshToken");
+
+            migrationBuilder.DropTable(
                 name: "Vehicles");
 
             migrationBuilder.DropTable(
@@ -472,6 +582,9 @@ namespace Proo.Infrastructer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Rides");
+
+            migrationBuilder.DropTable(
+                name: "RideRequests");
 
             migrationBuilder.DropTable(
                 name: "Drivers");

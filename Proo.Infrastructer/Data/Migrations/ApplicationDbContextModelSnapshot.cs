@@ -3,19 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Migrations
+namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240922042004_AddTableRideRequsetInDatabase")]
-    partial class AddTableRideRequsetInDatabase
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,6 +185,9 @@ namespace Proo.Infrastructer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsOtpValid")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsPhoneNumberConfirmed")
                         .HasColumnType("bit");
 
@@ -269,14 +270,14 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<decimal>("OfferedPrice")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<int>("RideId")
+                    b.Property<int>("RideRequestsId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
-                    b.HasIndex("RideId");
+                    b.HasIndex("RideRequestsId");
 
                     b.ToTable("Bids");
                 });
@@ -293,6 +294,15 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("LastActiveTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("LastLat")
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<decimal>("LastLng")
+                        .HasColumnType("decimal(18,6)");
+
                     b.Property<string>("LicenseIdBack")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -302,6 +312,9 @@ namespace Proo.Infrastructer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StatusWork")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -381,8 +394,19 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Review")
+                    b.Property<string>("Discriminator")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PassengerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Review")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RideId")
@@ -391,17 +415,13 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RideId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Ratings");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Rating");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -412,19 +432,13 @@ namespace Proo.Infrastructer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<double>("ActualDistance")
-                        .HasColumnType("float");
-
-                    b.Property<int>("ActualTime")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("AssignedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DriverId")
@@ -433,6 +447,9 @@ namespace Proo.Infrastructer.Migrations
 
                     b.Property<decimal>("FarePrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PassengerId")
                         .IsRequired()
@@ -445,14 +462,16 @@ namespace Proo.Infrastructer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("paymentMethod")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
 
                     b.HasIndex("PassengerId");
 
-                    b.HasIndex("RideRequestsId")
-                        .IsUnique();
+                    b.HasIndex("RideRequestsId");
 
                     b.ToTable("Rides");
                 });
@@ -464,6 +483,19 @@ namespace Proo.Infrastructer.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DriverId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DropoffAddress")
                         .IsRequired()
@@ -481,8 +513,11 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<decimal>("EstimatedPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("EstimatedTime")
-                        .HasColumnType("int");
+                    b.Property<double>("EstimatedTime")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PassengerId")
                         .IsRequired()
@@ -498,10 +533,16 @@ namespace Proo.Infrastructer.Migrations
                     b.Property<double>("PickupLongitude")
                         .HasColumnType("float");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("paymentMethod")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
 
                     b.HasIndex("PassengerId");
 
@@ -565,6 +606,28 @@ namespace Proo.Infrastructer.Migrations
                     b.HasIndex("DriverId");
 
                     b.ToTable("Vehicles");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
+                {
+                    b.HasBaseType("Proo.Core.Entities.Rating");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasDiscriminator().HasValue("DriverRating");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
+                {
+                    b.HasBaseType("Proo.Core.Entities.Rating");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasDiscriminator().HasValue("PassengerRating");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -663,9 +726,9 @@ namespace Proo.Infrastructer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Proo.Core.Entities.Ride", "Ride")
+                    b.HasOne("Proo.Core.Entities.RideRequests", "Ride")
                         .WithMany()
-                        .HasForeignKey("RideId")
+                        .HasForeignKey("RideRequestsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -715,15 +778,7 @@ namespace Proo.Infrastructer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Proo.Core.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Ride");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -741,9 +796,9 @@ namespace Proo.Infrastructer.Migrations
                         .IsRequired();
 
                     b.HasOne("Proo.Core.Entities.RideRequests", "RideRequests")
-                        .WithOne("Ride")
-                        .HasForeignKey("Proo.Core.Entities.Ride", "RideRequestsId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .WithMany()
+                        .HasForeignKey("RideRequestsId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.OwnsOne("Proo.Core.Entities.Locations", "DestinationLocation", b1 =>
@@ -807,11 +862,17 @@ namespace Proo.Infrastructer.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.RideRequests", b =>
                 {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId");
+
                     b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
-                        .WithMany("RideRequests")
+                        .WithMany()
                         .HasForeignKey("PassengerId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Driver");
 
                     b.Navigation("Passenger");
                 });
@@ -827,22 +888,60 @@ namespace Proo.Infrastructer.Migrations
                     b.Navigation("Driver");
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany("DriverRatings")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
+                        .WithMany("DriverRatings")
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany("PassengerRatings")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
+                        .WithMany("PassengerRatings")
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
+                });
+
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
                 {
+                    b.Navigation("DriverRatings");
+
+                    b.Navigation("PassengerRatings");
+
                     b.Navigation("Rides");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
-                    b.Navigation("RideRequests");
+                    b.Navigation("DriverRatings");
+
+                    b.Navigation("PassengerRatings");
 
                     b.Navigation("Rides");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.RideRequests", b =>
-                {
-                    b.Navigation("Ride")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

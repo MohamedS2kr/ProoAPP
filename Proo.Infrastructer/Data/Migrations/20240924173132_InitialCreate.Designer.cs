@@ -9,11 +9,11 @@ using Proo.Infrastructer.Data.Context;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Migrations
+namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240924161414_updatedatabaseV2")]
-    partial class updatedatabaseV2
+    [Migration("20240924173132_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
