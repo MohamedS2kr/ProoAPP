@@ -37,65 +37,80 @@ namespace Proo.APIs
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen();
+            
             builder.Services.AddSignalR();
-    //        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    //        builder.Services.AddEndpointsApiExplorer();
-    //        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    //  .AddJwtBearer(options =>
-    //  {
-    //      options.TokenValidationParameters = new TokenValidationParameters
-    //      {
-    //          ValidateIssuer = true,
-    //          ValidateAudience = true,
-    //          ValidateLifetime = true,
-    //          ValidateIssuerSigningKey = true,
-    //          ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-    //          ValidAudience = builder.Configuration["JWT:ValidAudience"],
-    //          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
-    //      };
-    //  });
 
-    //        // Add Swagger service
-    //        builder.Services.AddSwaggerGen(options =>
-    //        {
-    //            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    //            {
-    //                Title = "Proo API",
-    //                Version = "v1",
-    //                Description = "API documentation for Proo application"
-    //            });
-    //            // Add JWT Authentication to Swagger
-    //            options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    //            {
-    //                Name = "Authorization",
-    //                Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-    //                Scheme = "Bearer",
-    //                BearerFormat = "JWT",
-    //                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-    //                Description = "Please enter JWT token with Bearer prefix: Bearer {token}"
-    //            });
 
-    //            // Set up security requirement so the endpoints use the JWT authentication
-    //            options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    //        {
-    //            Reference = new Microsoft.OpenApi.Models.OpenApiReference
-    //            {
-    //                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-    //                Id = "Bearer"
-    //            }
-    //        },
-    //        new string[] {}
-    //    }
-    //});
-    //        });
+
+            // Add JWT Authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+                };
+            });
+
+            // Add Swagger service
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Proo API",
+                    Version = "v1",
+                    Description = "API documentation for Proo application"
+                });
+
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Please enter JWT token with Bearer prefix: Bearer {token}"
+                });
+
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+            });
+
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"),
+         sqlOptions =>
+         {
+             sqlOptions.EnableRetryOnFailure(
+                 maxRetryCount: 5,
+                 maxRetryDelay: TimeSpan.FromSeconds(30),
+                 errorNumbersToAdd: null);
+             sqlOptions.CommandTimeout(180); // Set the command timeout here
+         });
+
             });
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
@@ -118,24 +133,6 @@ namespace Proo.APIs
             });
 
 
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-                            {
-                                options.TokenValidationParameters = new TokenValidationParameters()
-                                {
-                                    ValidateIssuer = true,
-                                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                                    ValidateAudience = true,
-                                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                                    ValidateLifetime = true,
-                                    ValidateIssuerSigningKey = true,
-                                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
-                                    ClockSkew = TimeSpan.Zero
-                                };
-                            });
            
             // generation response For validation errors [Factory]
             builder.Services.Configure<ApiBehaviorOptions>(Options =>
@@ -207,7 +204,7 @@ namespace Proo.APIs
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1"));
             //app.UseEndpoints(endpoints =>
             //{
             //    endpoints.MapHub<RideHub>("/rideHub");
