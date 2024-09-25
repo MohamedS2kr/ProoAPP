@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Proo.APIs.Errors;
 using Proo.APIs.Helpers;
 using Proo.APIs.Hubs;
@@ -42,75 +43,31 @@ namespace Proo.APIs
 
 
 
-            // Add JWT Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
+            }).AddJwtBearer(options =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
                     ValidateAudience = true,
+                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
-            // Add Swagger service
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-                {
-                    Title = "Proo API",
-                    Version = "v1",
-                    Description = "API documentation for Proo application"
-                });
 
-                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "Please enter JWT token with Bearer prefix: Bearer {token}"
-                });
-
-                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-            });
-
-
+            // Swagger configuration with JWT Bearer authorization
+            builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"),
-         sqlOptions =>
-         {
-             sqlOptions.EnableRetryOnFailure(
-                 maxRetryCount: 5,
-                 maxRetryDelay: TimeSpan.FromSeconds(30),
-                 errorNumbersToAdd: null);
-             sqlOptions.CommandTimeout(180); // Set the command timeout here
-         });
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
@@ -189,13 +146,13 @@ namespace Proo.APIs
 
             #region Configure Kistrel Middleware
             // Configure the HTTP request pipeline.
-            // if (app.Environment.IsDevelopment())
-            // {
+            //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+            //{
                 app.UseSwagger();
-                app.UseSwaggerUI();
-            // }
+            app.UseSwaggerUI();
+            //}
 
-           
+
 
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
@@ -203,7 +160,7 @@ namespace Proo.APIs
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1"));
+           // app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1"));
             //app.UseEndpoints(endpoints =>
             //{
             //    endpoints.MapHub<RideHub>("/rideHub");
