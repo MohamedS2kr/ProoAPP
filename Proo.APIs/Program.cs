@@ -166,8 +166,9 @@ namespace Proo.APIs
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
             builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
+            builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
             builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
-
+            
             #endregion
 
             var app = builder.Build();

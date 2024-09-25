@@ -118,11 +118,11 @@ namespace Proo.APIs.Controllers
         //        PickupLongitude = dto.PickupLongitude,
 
         //        Category = dto.Category,
-                
+
         //        EstimatedDistance = result.distance,
         //        EstimatedTime = result.estimatedTime,
         //        EstimatedPrice = result.price,
-                
+
         //        Status = Status.Pending,
         //        CreatedAt = DateTime.Now,
         //    };
@@ -153,7 +153,7 @@ namespace Proo.APIs.Controllers
         //    ///        // send the notification to nearby driver 
         //    ///        await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
         //    ///    }
-                
+
 
         //    var response = new ApiToReturnDtoResponse
         //    {
@@ -179,7 +179,7 @@ namespace Proo.APIs.Controllers
         //    return Ok(response);
         //}
 
-
+        
 
 
         [HttpPost("calc_price_time_destance")]
