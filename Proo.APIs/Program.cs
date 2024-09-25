@@ -156,7 +156,8 @@ namespace Proo.APIs
             //}
 
 
-
+            app.UseCors("AllowAll");
+            app.UseRouting();
             app.UseMiddleware<ExeptionMiddleware>();
             app.UseHttpsRedirection();
 
