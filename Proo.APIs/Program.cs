@@ -38,11 +38,17 @@ namespace Proo.APIs
             // Add services to the container.
 
             builder.Services.AddControllers();
-            
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
             builder.Services.AddSignalR();
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+            });
 
-
-
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+           
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,10 +71,7 @@ namespace Proo.APIs
 
             // Swagger configuration with JWT Bearer authorization
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
-            });
+            
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
             {
@@ -80,8 +83,7 @@ namespace Proo.APIs
             //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
             //});
        
-            builder.Services.AddIdentity < ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            
 
             builder.Services.AddCors(options =>
             {
@@ -109,10 +111,10 @@ namespace Proo.APIs
                 };
             });
 
-            builder.Services.Configure<FormOptions>(options =>
-            {
-                options.MultipartBodyLengthLimit = 104857600; // 100 MB
-            });
+            //builder.Services.Configure<FormOptions>(options =>
+            //{
+            //    options.MultipartBodyLengthLimit = 104857600; // 100 MB
+            //});
 
 
             builder.Services.AddScoped<ITokenService, TokenServices>();
@@ -150,7 +152,7 @@ namespace Proo.APIs
             //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             //{
                 app.UseSwagger();
-            app.UseSwaggerUI();
+                app.UseSwaggerUI();
             //}
 
 
