@@ -95,6 +95,112 @@ namespace Proo.APIs.Controllers
         //    return Ok(response);
         //}
 
+        [Authorize(Roles = Passenger)]
+        [HttpPost("request")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RideRequest(RideRequestDto request)
+        {
+            // 1- check passenger is exist 
+            var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
+
+            var passenger = await _passengerRepo.getByUserId(user.Id);
+            if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
+
+
+            // 2- check passenger has ongoing trip request 
+            var rideRequest = _unitOfWork.rideRequestRepository.GetActiveTripRequestForCustomer(passenger.Id);
+            if (rideRequest is not null) return BadRequest(new ApiResponse(400, "Customer has already a requested trip."));
+
+            // 3- check passenger has ongoing trips
+
+            var unfinishedTrip = await _unitOfWork.RideRepository.GetActiveTripForCustomer(passenger.Id);
+            if (unfinishedTrip is not null) return BadRequest(new ApiResponse(400, "Customer has already an ongoing trip."));
+
+            //4- store ride in ride table in database 
+            var rideRequestModel = new RideRequests
+            {
+                PickupAddress = request.PickupAddress,
+                PickupLatitude = request.PickupLatitude,
+                PickupLongitude = request.PickupLongitude,
+                DropoffAddress = request.DropOffAddress,
+                DropoffLatitude = request.DropoffLatitude,
+                DropoffLongitude = request.DropoffLongitude,
+                Category = request.Category,
+                CreatedAt = DateTime.Now,
+                PassengerId = passenger.Id,
+                Status = RideRequestStatus.Requested,
+                EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
+                //paymentMethod  TODO
+            };
+
+            _unitOfWork.Repositoy<RideRequests>().Add(rideRequestModel);
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0) return BadRequest(new ApiResponse(400));
+
+            // 5- find the nearby drivers   TODO
+            var nearbyDrivers = await _rideService.GetNearbyDrivers(request.PickupLatitude, request.PickupLongitude, 5);
+
+            // 6- Notify Drivers using signalR
+            foreach (var driver in nearbyDrivers)
+            {
+                var notifications = new RideNotificationDto
+                {
+                    PickupLat = rideRequestModel.PickupLatitude,
+                    PickupLng = rideRequestModel.PickupLongitude,
+                    PickupAddress = rideRequestModel.PickupAddress,
+                    DropOffLat = rideRequestModel.DropoffLatitude,
+                    DropOffLng = rideRequestModel.DropoffLongitude,
+                    DropOffAddress = rideRequestModel.DropoffAddress,
+                    FarePrice = rideRequestModel.EstimatedPrice,
+                    PassengerId = rideRequestModel.PassengerId,
+                };
+
+                // send the notification to nearby driver 
+                await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
+            }
+
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Request Data succ and Notifi the drivers",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = rideRequestModel
+                }
+            };
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> SubmitBid(BidDto bidDto)
+        {
+            // Step 1: check valid trip request exists
+            var rideRequest = await _unitOfWork.Repositoy<RideRequests>().GetByIdAsync(bidDto.RideRequestsId);
+            if (rideRequest is null) return BadRequest(new ApiResponse(400, "The Ride Reqeust is not found."));
+
+            // trip request is invalid/expired if trip request is older than 1 minute TODO
+            var onminutesAgo = DateTime.Now.AddMinutes(-1);
+            if (rideRequest.LastModifiedAt < onminutesAgo) return BadRequest(new ApiResponse(400, "Ride Reuest is expired."));
+
+            // Step 2: check driver exists
+            var driver = await _unitOfWork.Repositoy<Driver>().GetDriverOrPassengerByIdAsync(bidDto.DriverId);
+            if (driver is null) return BadRequest(new ApiResponse(400, "Driver is not found"));
+
+            // Step 3: check driver has ongoing trip requests
+            var ongoingRideRequest = await _unitOfWork.rideRequestRepository.GetActiveTripRequestForDriver(bidDto.DriverId);
+            if (ongoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
+
+            // Step 4: check driver has ongoing trips
+            //var Ride = _unitOfWork.RideRepository.get
+
+            // step 5: Get cat info by driver 
+            var vehcile =
+            // Step 6: create Bid entity
+
+
+        }
+
 
         //[Authorize(Roles = Passenger)]
         //[HttpPost("CreateRideRequest_FindDriver")]
@@ -118,11 +224,11 @@ namespace Proo.APIs.Controllers
         //        PickupLongitude = dto.PickupLongitude,
 
         //        Category = dto.Category,
-                
+
         //        EstimatedDistance = result.distance,
         //        EstimatedTime = result.estimatedTime,
         //        EstimatedPrice = result.price,
-                
+
         //        Status = Status.Pending,
         //        CreatedAt = DateTime.Now,
         //    };
@@ -153,7 +259,7 @@ namespace Proo.APIs.Controllers
         //    ///        // send the notification to nearby driver 
         //    ///        await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
         //    ///    }
-                
+
 
         //    var response = new ApiToReturnDtoResponse
         //    {
