@@ -11,6 +11,6 @@
         public double DropoffLongitude { get; set; }
 
         public string Category { get; set; }
-        public decimal FarePrice { get; set; }
+        public double FarePrice { get; set; }
     }
 }

@@ -9,6 +9,8 @@ namespace Proo.Core.Entities
     public class Passenger : BaseEntity
     {
         public string Id { get; set; }
+
+        public string UserId { get; set; }
         public ApplicationUser User { get; set; }
         public string PreferredPaymentMethod { get; set; }
         public ICollection<Ride> Rides { get; set; } 

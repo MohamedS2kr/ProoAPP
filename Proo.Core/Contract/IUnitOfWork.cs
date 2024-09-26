@@ -1,4 +1,5 @@
-﻿using Proo.Core.Entities;
+﻿using Proo.Core.Contract.RideService_Contract;
+using Proo.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,9 @@ namespace Proo.Core.Contract
 
         Task<int> CompleteAsync();
 
-        
+        public IRideRequestRepository RideRequestRepository { get;  }
+        public IRideRepository RideRepository { get;  }
+
+
     }
 }

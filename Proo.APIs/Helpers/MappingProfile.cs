@@ -12,6 +12,7 @@ namespace Proo.APIs.Helpers
         public MappingProfile()
         {
             CreateMap<DriverDto , Driver>().ReverseMap();
+            CreateMap<BidDto, Bid>();
 
             //CreateMap<RideRequestDto, Ride>()
             //    .ForMember(r => r.PickupLocation.Latitude, O => O.MapFrom(s => s.PickupLat))

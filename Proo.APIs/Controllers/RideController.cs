@@ -10,8 +10,11 @@ using Proo.APIs.Dtos.Rides;
 using Proo.APIs.Errors;
 using Proo.APIs.Hubs;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Driver_Contract;
+using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
+using Proo.Core.Specifications.DriverSpecifiactions;
 using Proo.Infrastructer.Data.Context;
 using Proo.Service._RideService;
 using System.Security.Claims;
@@ -27,19 +30,24 @@ namespace Proo.APIs.Controllers
         private readonly IRideService _rideService;
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPassengerRepository _passengerRepo;
+        private readonly IDriverRepository _driverRepo;
         private const string Passenger = "passenger";
         private const string Driver = "Driver";
         public RideController(IUnitOfWork unitOfWork
             , IMapper mapper
             , IRideService rideService,
             IHubContext<RideHub> hubContext,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager
+            , IPassengerRepository passengerRepo)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _rideService = rideService;
             _hubContext = hubContext;
             _userManager = userManager;
+            _passengerRepo = passengerRepo;
+
         }
 
 
@@ -103,17 +111,17 @@ namespace Proo.APIs.Controllers
             var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
 
-            var passenger = await _passengerRepo.getByUserId(user.Id);
+            var passenger = await _passengerRepo.GetByUserId(user.Id);
             if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
 
 
             // 2- check passenger has ongoing trip request 
-            var rideRequest = _unitOfWork.rideRequestRepository.GetActiveTripRequestForCustomer(passenger.Id);
+            var rideRequest = _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
             if (rideRequest is not null) return BadRequest(new ApiResponse(400, "Customer has already a requested trip."));
 
             // 3- check passenger has ongoing trips
 
-            var unfinishedTrip = await _unitOfWork.RideRepository.GetActiveTripForCustomer(passenger.Id);
+            var unfinishedTrip = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
             if (unfinishedTrip is not null) return BadRequest(new ApiResponse(400, "Customer has already an ongoing trip."));
 
             //4- store ride in ride table in database 
@@ -172,8 +180,8 @@ namespace Proo.APIs.Controllers
             return Ok(response);
         }
 
-        [HttpPost]
-        public async Task<ActionResult> SubmitBid(BidDto bidDto)
+        [HttpPost("SubmitBid")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> SubmitBid(BidDto bidDto)
         {
             // Step 1: check valid trip request exists
             var rideRequest = await _unitOfWork.Repositoy<RideRequests>().GetByIdAsync(bidDto.RideRequestsId);
@@ -188,16 +196,49 @@ namespace Proo.APIs.Controllers
             if (driver is null) return BadRequest(new ApiResponse(400, "Driver is not found"));
 
             // Step 3: check driver has ongoing trip requests
-            var ongoingRideRequest = await _unitOfWork.rideRequestRepository.GetActiveTripRequestForDriver(bidDto.DriverId);
+            var ongoingRideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForDriver(bidDto.DriverId);
             if (ongoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
 
             // Step 4: check driver has ongoing trips
-            //var Ride = _unitOfWork.RideRepository.get
+            var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(bidDto.DriverId);
+            if (rides is not null) return BadRequest(new ApiResponse(400, "Driver has ongoing Trip."));
 
-            // step 5: Get cat info by driver 
-            var vehcile =
+
+            // step 5: Get car info by driver 
+            var spec = new DriverWithVehicleSpecifications(bidDto.DriverId);
+            var vehcile = await _unitOfWork.Repositoy<Vehicle>().GetByIdWithSpecAsync(spec);
+
             // Step 6: create Bid entity
+            var bid = _mapper.Map<Bid>(bidDto);
+            bid.CreatedAt = DateTime.Now;
 
+            _unitOfWork.Repositoy<Bid>().Add(bid);
+            var addBid = await _unitOfWork.CompleteAsync();
+            if (addBid <= 0) return BadRequest(new ApiResponse(400, "The error when save changes in Database"));
+
+            // step 7: Notify the passenger 
+            var passengerId = rideRequest.PassengerId;
+            await _hubContext.Clients.User(passengerId).SendAsync("ReceiveBid", new
+            {
+                DriverId = bid.DriverId,
+                DriverName = driver.User.FullName,
+                DriverProfilePicture = driver.User.ProfilePictureUrl,
+                ProposedPrice = bid.OfferedPrice,
+                EstimatedArrivalTime = bid.Eta,
+                VehicleType = vehcile.Type,
+                VehicleCategory = vehcile.category
+
+            });
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Bid succ and Notifi the Passenger",
+                    StatusCode = StatusCodes.Status200OK,
+                    
+                }
+            });  // TODO
 
         }
 

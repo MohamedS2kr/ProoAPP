@@ -8,7 +8,7 @@
         public double DropOffLat { get; set; }
         public double DropOffLng { get; set; }
         public string DropOffAddress { get; set; }
-        public decimal FarePrice { get; set; }
+        public double FarePrice { get; set; }
         public string PassengerId { get; set; }
     }
 }

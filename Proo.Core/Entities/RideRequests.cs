@@ -37,7 +37,8 @@ namespace Proo.Core.Entities
         NO_DRIVER_FOUND = 1,
         Requested = 2 ,
         CUSTOMER_CANCELED = 3,
-        CUSTOMER_REJECTED_DRIVER = 4,
-        TRIP_STARTED = 5, // create a trip entity where status reaches this stage
+        CUSTOMER_ACCEPTED = 4,
+        CUSTOMER_REJECTED_DRIVER = 5,
+        TRIP_STARTED = 6, // create a trip entity where status reaches this stage
     }
 }

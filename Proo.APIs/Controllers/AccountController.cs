@@ -13,6 +13,7 @@ using Proo.Core.Entities;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Document;
 using StackExchange.Redis;
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Security.Claims;
 using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
@@ -138,6 +139,13 @@ namespace Proo.APIs.Controllers
             GetUserByPhone.FullName = model.FullName;
             GetUserByPhone.Gender = model.Gender;
 
+            var passenger = new Passenger
+            {
+                UserId = GetUserByPhone.Id
+            };
+
+            _unitOfWork.Repositoy<Passenger>().Add(passenger);
+            
 
             var result = await _userManager.UpdateAsync(GetUserByPhone);
             if (!result.Succeeded)
@@ -156,6 +164,8 @@ namespace Proo.APIs.Controllers
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
+            var addPassenger = await _unitOfWork.CompleteAsync();
+            if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
             var userDto = new UserDto();
 

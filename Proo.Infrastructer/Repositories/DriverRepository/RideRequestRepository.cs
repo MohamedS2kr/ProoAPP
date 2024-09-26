@@ -21,7 +21,7 @@ namespace Proo.Infrastructer.Repositories.DriverRepository
             _loggerFactory = loggerFactory;
         }
 
-        public async Task<RideRequests?> GetActiveTripRequestForCustomer(string PassengerId)
+        public async Task<RideRequests?> GetActiveTripRequestForPassenger(string PassengerId)
         {
             // Conditions for active trip_request request: -
             // 1. driver is found, but trip_request not started yet!
@@ -40,7 +40,7 @@ namespace Proo.Infrastructer.Repositories.DriverRepository
             catch (Exception ex)
             {
                 var logger = _loggerFactory.CreateLogger<RideRequestRepository>();
-                logger.LogError($"{nameof(GetActiveTripRequestForCustomer)} threw an exception: {ex}");
+                logger.LogError($"{nameof(GetActiveTripRequestForPassenger)} threw an exception: {ex}");
                 throw;
             }
         }

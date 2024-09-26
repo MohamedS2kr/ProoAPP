@@ -9,7 +9,7 @@ namespace Proo.Core.Contract.RideService_Contract
 {
     public interface IRideRequestRepository : IGenaricRepositoy<RideRequests>
     {
-        public Task<RideRequests?> GetActiveTripRequestForCustomer(string PassengerId);
+        public Task<RideRequests?> GetActiveTripRequestForPassenger(string PassengerId);
         public Task<RideRequests?> GetActiveTripRequestForDriver(string driverId);
     }
 }

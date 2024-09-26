@@ -69,8 +69,8 @@ namespace Proo.APIs
             });
 
 
-            // Swagger configuration with JWT Bearer authorization
-            builder.Services.AddSwaggerGen();
+            //// Swagger configuration with JWT Bearer authorization
+            //builder.Services.AddSwaggerGen();
             
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
