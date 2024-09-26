@@ -13,6 +13,10 @@ using Proo.APIs.Errors;
 using Proo.Infrastructer.Document;
 using Proo.APIs.Dtos.Passenger;
 using AutoMapper;
+using Proo.Core.Contract;
+using Proo.Infrastructer.Repositories.DriverRepository;
+using Proo.Core.Contract.RideService_Contract;
+using Proo.Infrastructer.Data;
 
 namespace Proo.APIs.Controllers
 {
@@ -23,13 +27,20 @@ namespace Proo.APIs.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRideRequestRepository _rideRequestRepo;
 
         public PassengersController(UserManager<ApplicationUser> userManager
-            , SignInManager<ApplicationUser> signInManager,IMapper mapper)
+                                    ,SignInManager<ApplicationUser> signInManager
+                                    ,IMapper mapper
+                                    ,IUnitOfWork unitOfWork,
+                                     IRideRequestRepository rideRequestRepo)
         {
 
             _userManager = userManager;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            _rideRequestRepo = rideRequestRepo;
         }
 
 
@@ -115,8 +126,80 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
-        
-        
+
+
+
+        [Authorize(Roles = passenger)]
+        [HttpPost("Cancel_Trip_Requset")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelTripRequest()
+        {
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var passenger = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            
+            if (passenger is null)
+                return NotFound(new ApiResponse(404, "The Passenger Not Found"));
+
+
+            
+            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForCustomer(passenger.Id);
+            
+            if (requestedTrip is null)
+                return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
+            
+            if(requestedTrip.Status == RideRequestStatus.TRIP_STARTED) 
+                return NotFound(new ApiResponse(404, "Cannot cancel a trip that has already started."));
+
+            requestedTrip.Status = RideRequestStatus.CUSTOMER_CANCELED;
+            requestedTrip.LastModifiedAt = DateTime.Now;
+
+            _unitOfWork.Repositoy<RideRequests>().Update(requestedTrip);
+
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0) return BadRequest(new ApiResponse(400));
+            
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "Cancel TripRequest Successed",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body=""
+                }
+            };
+
+            return Ok(response);
+
+        }
+        [Authorize(Roles = passenger)]
+        [HttpPost("Reject_Offer_By_Passenger")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RejectOfferByPassenger()
+        {
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var passenger = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            
+            if (passenger is null)
+                return NotFound(new ApiResponse(404, "The Passenger Not Found"));
+            
+            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForCustomer(passenger.Id);
+            
+            if (requestedTrip is null)
+                return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
+            
+            
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "Cancel TripRequest Successed",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body=""
+                }
+            };
+
+            return Ok(response);
+
+        }
+
         //[Authorize(Roles = passenger)]
         //[HttpPost("FindDriver")]
         //public async Task<ActionResult<ApplicationUser>> FindDriver(FindDriverDto model)
