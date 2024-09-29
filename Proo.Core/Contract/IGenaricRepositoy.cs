@@ -15,10 +15,9 @@ namespace Proo.Core.Contract
         void Update(T model);
         void Delete(T model);
         Task<IReadOnlyList<T>> GetAll();
-        Task<T?> GetByIdAsync(string id);
+        
         Task<T?> GetByIdAsync(int id);
 
-        Task<T?> GetByIdAsync(int id);
         Task<T?> GetDriverOrPassengerByIdAsync(string Id);
         Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec);
 

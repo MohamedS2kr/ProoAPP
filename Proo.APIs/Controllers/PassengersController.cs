@@ -141,7 +141,7 @@ namespace Proo.APIs.Controllers
 
 
             
-            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForCustomer(passenger.Id);
+            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForPassenger(passenger.Id);
             
             if (requestedTrip is null)
                 return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
@@ -180,7 +180,7 @@ namespace Proo.APIs.Controllers
             if (passenger is null)
                 return NotFound(new ApiResponse(404, "The Passenger Not Found"));
             
-            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForCustomer(passenger.Id);
+            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForPassenger(passenger.Id);
             
             if (requestedTrip is null)
                 return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));

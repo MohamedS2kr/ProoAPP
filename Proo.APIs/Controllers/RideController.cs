@@ -138,7 +138,7 @@ namespace Proo.APIs.Controllers
                 CreatedAt = DateTime.Now,
                 PassengerId = passenger.Id,
                 Status = RideRequestStatus.Requested,
-                EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
+               // EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
                 //paymentMethod  TODO
             };
 
@@ -160,7 +160,7 @@ namespace Proo.APIs.Controllers
                     DropOffLat = rideRequestModel.DropoffLatitude,
                     DropOffLng = rideRequestModel.DropoffLongitude,
                     DropOffAddress = rideRequestModel.DropoffAddress,
-                    FarePrice = rideRequestModel.EstimatedPrice,
+                   // FarePrice = rideRequestModel.EstimatedPrice,
                     PassengerId = rideRequestModel.PassengerId,
                 };
 
@@ -227,8 +227,8 @@ namespace Proo.APIs.Controllers
                 DriverProfilePicture = driver.User.ProfilePictureUrl,
                 ProposedPrice = bid.OfferedPrice,
                 EstimatedArrivalTime = bid.Eta,
-                VehicleType = vehcile.Type,
-                VehicleCategory = vehcile.category
+                //VehicleType = vehcile.Type,
+                //VehicleCategory = vehcile.category
 
             });
 
