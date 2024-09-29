@@ -16,10 +16,19 @@ namespace Proo.Core.Entities
 
         public int Eta { get; set; }
 
+        public BidStatus BidStatus { get; set; }
+
         public string DriverId { get; set; }
         public Driver Driver { get; set; }
 
         public int RideRequestsId { get; set; }
         public RideRequests? Ride { get; set; }
+    }
+
+    public enum BidStatus
+    {
+        Pendding ,
+        Accepted,
+        Rejected
     }
 }

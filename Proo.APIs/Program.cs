@@ -79,34 +79,9 @@ namespace Proo.APIs
                     Version = "v1"
                 });
 
-                // Define the Security scheme for JWT authentication
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT"
-                });
-
-                // Require the authorization header in all API requests
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
-            });
-
+            //// Swagger configuration with JWT Bearer authorization
+            //builder.Services.AddSwaggerGen();
+            
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
             {

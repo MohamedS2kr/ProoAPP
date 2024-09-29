@@ -1,4 +1,5 @@
 ﻿using Proo.Core.Contract;
+using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Repositories;
@@ -17,10 +18,16 @@ namespace Proo.Infrastructer.Data
         private readonly Hashtable _Repository;
         private readonly ApplicationDbContext _context;
 
-        public UnitOfwork(ApplicationDbContext context)
+        public IRideRequestRepository RideRequestRepository { get ; }
+
+        public IRideRepository RideRepository { get;  }
+
+        public UnitOfwork(ApplicationDbContext context , IRideRequestRepository rideRequestRepository , IRideRepository rideRepository)
         {
             _context = context;
             _Repository = new Hashtable();
+            RideRequestRepository = rideRequestRepository;
+            RideRepository = rideRepository;    
         }
 
         public IGenaricRepositoy<T> Repositoy<T>() where T : BaseEntity
