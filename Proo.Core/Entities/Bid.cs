@@ -20,6 +20,6 @@ namespace Proo.Core.Entities
         public Driver Driver { get; set; }
 
         public int RideRequestsId { get; set; }
-        public RideRequests Ride { get; set; }
+        public RideRequests? Ride { get; set; }
     }
 }

@@ -22,6 +22,8 @@ using Proo.Infrastructer.Repositories;
 using Proo.Infrastructer.Repositories.DriverRepository;
 using Proo.Service._RideService;
 using Proo.Service.Identity;
+using Proo.Service.VehicleModelService;
+using Proo.Service.VehicleTypeService;
 using StackExchange.Redis;
 using System.Text;
 
@@ -68,10 +70,43 @@ namespace Proo.APIs
                 };
             });
 
-
             // Swagger configuration with JWT Bearer authorization
-            builder.Services.AddSwaggerGen();
-            
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Proo API",
+                    Version = "v1"
+                });
+
+                // Define the Security scheme for JWT authentication
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
+                });
+
+                // Require the authorization header in all API requests
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
+            });
+
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
             {
@@ -124,7 +159,8 @@ namespace Proo.APIs
             builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
             builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
             builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
-            
+            builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+            builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
             #endregion
 
             var app = builder.Build();
@@ -152,7 +188,10 @@ namespace Proo.APIs
             //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             //{
                 app.UseSwagger();
-                app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1");
+            });
             //}
 
 

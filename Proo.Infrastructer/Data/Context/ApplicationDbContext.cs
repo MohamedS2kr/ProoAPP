@@ -37,6 +37,9 @@ namespace Proo.Infrastructer.Data.Context
         public DbSet<Ride> Rides { get; set; }
         public DbSet<RideRequests> RideRequests { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<VehicleModel> VehicleModels { get; set; }
+        public DbSet<VehicleType> VehicleTypes { get; set; }
+        public DbSet<CategoryOfVehicle> CategoryOfVehicles { get; set; }
 
     }
 }

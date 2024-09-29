@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
@@ -11,9 +12,10 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240927075819_addCategoryOfVehicleAndUpdateNamingInDriverModel")]
+    partial class addCategoryOfVehicleAndUpdateNamingInDriverModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,6 +311,10 @@ namespace Proo.Infrastructer.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DrivingLicenseExpiringDate")
                         .HasColumnType("datetime2");
 
@@ -589,6 +595,9 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<bool>("AirConditional")
                         .HasColumnType("bit");
 
+                    b.Property<int>("CategoryOfVehicleId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Colour")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -617,66 +626,21 @@ namespace Proo.Infrastructer.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("VehicleModelId")
-                        .HasColumnType("int");
+                    b.Property<string>("VehicleModel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("YeareOfManufacuter")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("VehicleModelId")
-                        .IsUnique();
-
-                    b.ToTable("Vehicles");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("ModelName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("VehicleTypeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VehicleTypeId");
-
-                    b.ToTable("VehicleModels");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("CategoryOfVehicleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TypeName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
                     b.HasIndex("CategoryOfVehicleId");
 
-                    b.ToTable("VehicleTypes");
+                    b.HasIndex("DriverId");
+
+                    b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
@@ -950,43 +914,21 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
                 {
-                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                    b.HasOne("Proo.Core.Entities.CategoryOfVehicle", "CategoryOfVehicle")
                         .WithMany("Vehicles")
-                        .HasForeignKey("DriverId")
+                        .HasForeignKey("CategoryOfVehicleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Proo.Core.Entities.VehicleModel", "vehicleModel")
-                        .WithOne("Vehicle")
-                        .HasForeignKey("Proo.Core.Entities.Vehicle", "VehicleModelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("vehicleModel");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleModel", b =>
-                {
-                    b.HasOne("Proo.Core.Entities.VehicleType", "VehicleType")
-                        .WithMany("vehicleModels")
-                        .HasForeignKey("VehicleTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("VehicleType");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleType", b =>
-                {
-                    b.HasOne("Proo.Core.Entities.CategoryOfVehicle", "CategoryOfVehicle")
-                        .WithMany("VehicleTypes")
-                        .HasForeignKey("CategoryOfVehicleId")
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("CategoryOfVehicle");
+
+                    b.Navigation("Driver");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
@@ -1029,7 +971,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.CategoryOfVehicle", b =>
                 {
-                    b.Navigation("VehicleTypes");
+                    b.Navigation("Vehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
@@ -1039,8 +981,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("PassengerRatings");
 
                     b.Navigation("Rides");
-
-                    b.Navigation("Vehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
@@ -1050,16 +990,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("PassengerRatings");
 
                     b.Navigation("Rides");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleModel", b =>
-                {
-                    b.Navigation("Vehicle");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.VehicleType", b =>
-                {
-                    b.Navigation("vehicleModels");
                 });
 #pragma warning restore 612, 618
         }

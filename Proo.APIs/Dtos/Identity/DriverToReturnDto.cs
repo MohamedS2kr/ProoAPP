@@ -9,7 +9,6 @@ namespace Proo.APIs.Dtos.Identity
      
         public string FullName { get; set; }
 
- 
         public DateTime DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
 
@@ -17,20 +16,20 @@ namespace Proo.APIs.Dtos.Identity
 
         public Gender Gender { get; set; }
 
-
-        public string? LicenseIdFront { get; set; }
+       
+        public string? DrivingLicenseIdFront { get; set; }
 
     
-        public string? LicenseIdBack { get; set; }
+        public string? DrivingLicenseIdBack { get; set; }
 
      
-        public DateTime ExpiringDate { get; set; }
+        public DateTime ExpiringDateOfDrivingLicense { get; set; }
 
         public bool IsAvailable { get; set; }
 
-        public string Type { get; set; }
-        
-        public string category { get; set; }
+        public string VehicleModel { get; set; }
+        public string VehicleType { get; set; }
+        public string VehicleCategory { get; set; }
 
       
         public DateTime YeareOfManufacuter { get; set; }
@@ -39,7 +38,7 @@ namespace Proo.APIs.Dtos.Identity
       
         public int NumberOfPassenger { get; set; }
      
-        public int NumberOfPalet { get; set; }
+        public int NumberOfPlate { get; set; }
     
         public string ColourHexa { get; set; }
         public string Colour { get; set; }

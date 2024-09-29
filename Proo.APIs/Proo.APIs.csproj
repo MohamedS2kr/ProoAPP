@@ -25,6 +25,7 @@
   <ItemGroup>
     <Folder Include="Dtos\AdminDto\" />
     <Folder Include="wwwroot\files\LicenseId\" />
+    <Folder Include="wwwroot\files\NationalId\" />
     <Folder Include="wwwroot\files\ProfilePicture\" />
     <Folder Include="wwwroot\files\VehicleLicenseId\" />
   </ItemGroup>

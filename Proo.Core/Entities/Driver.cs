@@ -9,9 +9,12 @@ namespace Proo.Core.Entities
     public class Driver : BaseEntity
     {
         public string Id { get; set; }
-        public string LicenseIdFront { get; set; }
-        public string LicenseIdBack { get; set; }
-        public DateTime ExpiringDate { get; set; } = DateTime.Now;
+
+        public string NationalIdFront { get; set; }
+        public string NationalIdBack { get; set; }
+        public string DrivingLicenseIdFront { get; set; }
+        public string DrivingLicenseIdBack { get; set; }
+        public DateTime DrivingLicenseExpiringDate { get; set; } = DateTime.Now;
         public decimal LastLat { get; set; }
         public decimal LastLng { get; set; }
         public DateTime LastActiveTime { get; set; }
@@ -20,10 +23,11 @@ namespace Proo.Core.Entities
         public DriverStatus Status { get; set; } 
 
         public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
-        public  ICollection<PassengerRating> PassengerRatings { get; private set; }
-        public  ICollection<DriverRating> DriverRatings { get; private set; }
-        public ICollection<Ride> Rides { get; set; }
+        public ApplicationUser? User { get; set; }
+        public ICollection<Vehicle>? Vehicles { get; set; }
+        public  ICollection<PassengerRating>? PassengerRatings { get; private set; }
+        public  ICollection<DriverRating>? DriverRatings { get; private set; }
+        public ICollection<Ride>? Rides { get; set; }
 
 
     }

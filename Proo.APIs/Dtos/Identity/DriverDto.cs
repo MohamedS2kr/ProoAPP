@@ -17,6 +17,12 @@ namespace Proo.APIs.Dtos.Identity
         [Required]
         public Gender Gender { get; set; }
 
+
+        [Required]
+        public IFormFile NationalIdFront { get; set; }
+        [Required]
+        public IFormFile NationalIdBack { get; set; }
+
         [Required]
         public IFormFile LicenseIdFront { get; set; } 
 
@@ -28,10 +34,11 @@ namespace Proo.APIs.Dtos.Identity
        
         public bool IsAvailable { get; set; }
 
+        // Foreign keys for vehicle relations (Dropdowns for selection in UI)
+       
+
         [Required]
-        public string Type { get; set; }
-        [Required]
-        public string category { get; set; }
+        public int VehicleModelId { get; set; } 
 
         [Required]
         public DateTime YeareOfManufacuter { get; set; }

@@ -93,11 +93,11 @@ namespace Proo.APIs.Controllers
             if (driver is null) return BadRequest(new ApiResponse(400));
 
 
-            driver.LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId");
-            driver.LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId");
+            driver.DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId");
+            driver.DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId");
 
             driver.IsAvailable = model.IsAvailable;
-            driver.ExpiringDate = model.ExpiringDate;
+            driver.DrivingLicenseExpiringDate = model.ExpiringDate;
 
 
             var result = await _userManager.UpdateAsync(GetUserByPhone);
@@ -125,8 +125,8 @@ namespace Proo.APIs.Controllers
                             Gender = GetUserByPhone.Gender,
                             PhoneNumber = GetUserByPhone.PhoneNumber,
                         },
-                        driver.LicenseIdFront,
-                       driver.LicenseIdBack,
+                        driver.DrivingLicenseIdFront,
+                       driver.DrivingLicenseIdBack,
                     }
                 }
             };

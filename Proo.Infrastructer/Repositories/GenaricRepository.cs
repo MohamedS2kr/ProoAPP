@@ -30,8 +30,12 @@ namespace Proo.Infrastructer.Repositories
             return await ApplySpecification(spec).AsNoTracking().ToListAsync();
         }
 
+        public async Task<IReadOnlyList<T>> GetAll()
+          => await _context.Set<T>().ToListAsync();
         public async Task<T?> GetByIdAsync(string id)
             => await _context.Set<T>().FindAsync(id);
+        public async Task<T?> GetByIdAsync(int id)
+           => await _context.Set<T>().FindAsync(id);
 
         public async Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec)
         {

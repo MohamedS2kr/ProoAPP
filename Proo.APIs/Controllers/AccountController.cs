@@ -239,10 +239,14 @@ namespace Proo.APIs.Controllers
                 var driver = new Driver
                 {
                     UserId = GetUserByPhone.Id,
-                    LicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
-                    LicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                    ExpiringDate = model.ExpiringDate,
+                    DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
+                    DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
+                    NationalIdFront= DocumentSettings.UploadFile(model.NationalIdFront,"NationalId"),
+                    NationalIdBack= DocumentSettings.UploadFile(model.NationalIdBack, "NationalId"),
+                    DrivingLicenseExpiringDate = model.ExpiringDate,
                     IsAvailable = model.IsAvailable,
+                    
+                    
                 };
 
                 _unitOfWork.Repositoy<Driver>().Add(driver);
@@ -255,12 +259,11 @@ namespace Proo.APIs.Controllers
                     DriverId = driver.Id,
                     VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
                     VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
-                    ExpiringDate = model.VehicleExpiringDate,
+                    ExpiringDateOfVehicleLicence = model.VehicleExpiringDate,
                     AirConditional = model.AirConditional,
-                    category = model.category,
-                    NumberOfPalet = model.NumberOfPalet,
+                    VehicleModelId = model.VehicleModelId,
+                    NumberOfPlate = model.NumberOfPalet,
                     NumberOfPassenger = model.NumberOfPassenger,
-                    Type = model.Type,
                     YeareOfManufacuter = model.YeareOfManufacuter,
                     Colour = DocumentSettings.ColorToHex(color)
                 };
@@ -278,20 +281,21 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth;
             driverToReturnDto.Role = _userManager.GetRolesAsync(GetUserByPhone).Result;
             driverToReturnDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
-            driverToReturnDto.LicenseIdFront = driver.LicenseIdFront;
-            driverToReturnDto.LicenseIdBack = driver.LicenseIdBack;
-            driverToReturnDto.ExpiringDate = driver.ExpiringDate;
+            driverToReturnDto.DrivingLicenseIdFront = driver.DrivingLicenseIdFront;
+            driverToReturnDto.DrivingLicenseIdBack = driver.DrivingLicenseIdBack;
+            driverToReturnDto.ExpiringDateOfDrivingLicense = driver.DrivingLicenseExpiringDate;
             driverToReturnDto.IsAvailable = driver.IsAvailable;
             driverToReturnDto.VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront;
             driverToReturnDto.VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack;
-            driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDate;
+            driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDateOfVehicleLicence;
             driverToReturnDto.ColourHexa = vehicle.Colour;
             driverToReturnDto.Colour = model.Colour;
             driverToReturnDto.AirConditional = vehicle.AirConditional;
-            driverToReturnDto.category = vehicle.category;
-            driverToReturnDto.NumberOfPalet = vehicle.NumberOfPalet;
+           driverToReturnDto.VehicleModel = vehicle.vehicleModel.ModelName;
+            driverToReturnDto.VehicleType = vehicle.vehicleModel.VehicleType.TypeName;
+            driverToReturnDto.NumberOfPlate = vehicle.NumberOfPlate;
             driverToReturnDto.NumberOfPassenger = vehicle.NumberOfPassenger;
-            driverToReturnDto.Type = vehicle.Type;
+            driverToReturnDto.VehicleCategory = vehicle.vehicleModel.VehicleType.CategoryOfVehicle.Name;
             driverToReturnDto.YeareOfManufacuter = vehicle.YeareOfManufacuter;
 
 

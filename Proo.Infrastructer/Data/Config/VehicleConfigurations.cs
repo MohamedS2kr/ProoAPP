@@ -15,13 +15,23 @@ namespace Proo.Infrastructer.Data.Config
         {
             builder.HasKey(v => v.Id);
 
-            builder.Property(v => v.Type).IsRequired().HasMaxLength(100);
+          
             builder.Property(v => v.Colour).IsRequired().HasMaxLength(100);
-            builder.Property(v => v.category).IsRequired().HasMaxLength(100);
             builder.Property(v => v.VehicleLicenseIdBack).IsRequired().HasMaxLength(100);
             builder.Property(v => v.VehicleLicenseIdFront).IsRequired().HasMaxLength(100);
 
 
+            // Relationships
+            builder.HasOne(v => v.Driver)
+                .WithMany(d => d.Vehicles)
+                .HasForeignKey(v => v.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One-to-One Relationship
+            builder.HasOne(v => v.vehicleModel)
+                   .WithOne(vm => vm.Vehicle)
+                   .HasForeignKey<Vehicle>(v => v.VehicleModelId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
