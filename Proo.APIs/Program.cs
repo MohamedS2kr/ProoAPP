@@ -20,6 +20,7 @@ using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
 using Proo.Infrastructer.Repositories;
 using Proo.Infrastructer.Repositories.DriverRepository;
+using Proo.Infrastructer.Repositories.Ride_Repository;
 using Proo.Service._RideService;
 using Proo.Service.Identity;
 using Proo.Service.VehicleModelService;
@@ -136,7 +137,9 @@ namespace Proo.APIs
                 builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
                 builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
                 builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
-                builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
+                builder.Services.AddScoped(typeof(IRideRepository), typeof(RideRepository));
+
+            builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
                 builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
                 #endregion
 
