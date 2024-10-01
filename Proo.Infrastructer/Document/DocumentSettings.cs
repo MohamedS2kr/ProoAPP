@@ -43,9 +43,11 @@ namespace Proo.Infrastructer.Document
 
 
         // convert color to hexa 
-        public static string ColorToHex(Color color)
+        public static string GetColorName(Color color)
         {
-            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+            if (color.IsKnownColor)
+                return color.Name;
+            return $"Unknown Color ({color.R}, {color.G}, {color.B})"; // Returns RGB value if color name isn't known
         }
     }
 }
