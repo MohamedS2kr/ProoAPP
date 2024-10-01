@@ -42,8 +42,34 @@ namespace Proo.APIs
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme
+                    , securityScheme: new OpenApiSecurityScheme
+                    {
+                        Name = "Authorization",
+                        Description = "Enter the Bearer Authorization : `Bearer Generated-JWT-Token`",
+                        In = ParameterLocation.Header ,
+                        Type = SecuritySchemeType.ApiKey ,
+                        Scheme = "Bearer"
+                    });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = JwtBearerDefaults.AuthenticationScheme
+                        }
+                    }, new string[]{}
+                    }
+                });
+            });
+
             builder.Services.AddSignalR();
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
@@ -71,130 +97,109 @@ namespace Proo.APIs
                 };
             });
 
-            // Swagger configuration with JWT Bearer authorization
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Proo API",
-                    Version = "v1"
 
-                });
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
+            {
+                var Connection = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(Connection);
+            });
+            //builder.Services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+            //});
+
+
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
 
-                //// Swagger configuration with JWT Bearer authorization
-                //builder.Services.AddSwaggerGen();
 
 
-                builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
+            // generation response For validation errors [Factory]
+            builder.Services.Configure<ApiBehaviorOptions>(Options =>
+            {
+                Options.InvalidModelStateResponseFactory = (ActionContext) =>
                 {
-                    var Connection = builder.Configuration.GetConnectionString("Redis");
-                    return ConnectionMultiplexer.Connect(Connection);
-                });
-                //builder.Services.AddStackExchangeRedisCache(options =>
-                //{
-                //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
-                //});
-
-
-
-                builder.Services.AddCors(options =>
-                {
-                    options.AddPolicy("AllowAll",
-                        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-                });
-
-
-
-                // generation response For validation errors [Factory]
-                builder.Services.Configure<ApiBehaviorOptions>(Options =>
-                {
-                    Options.InvalidModelStateResponseFactory = (ActionContext) =>
+                    var errors = ActionContext.ModelState.Where(p => p.Value.Errors.Count() > 0)
+                                                         .SelectMany(p => p.Value.Errors)
+                                                         .Select(E => E.ErrorMessage)
+                                                         .ToList();
+                    var response = new ApiValidationResponse()
                     {
-                        var errors = ActionContext.ModelState.Where(p => p.Value.Errors.Count() > 0)
-                                                             .SelectMany(p => p.Value.Errors)
-                                                             .Select(E => E.ErrorMessage)
-                                                             .ToList();
-                        var response = new ApiValidationResponse()
-                        {
-                            Errors = errors
-                        };
-
-                        return new BadRequestObjectResult(response);
+                        Errors = errors
                     };
-                });
 
-                //builder.Services.Configure<FormOptions>(options =>
-                //{
-                //    options.MultipartBodyLengthLimit = 104857600; // 100 MB
-                //});
+                    return new BadRequestObjectResult(response);
+                };
+            });
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 104857600; // 100 MB
+            });
 
 
-                builder.Services.AddScoped<ITokenService, TokenServices>();
-                builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
-                builder.Services.AddAutoMapper(typeof(MappingProfile));
-                builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
-                builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
-                builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
-                builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
-                builder.Services.AddScoped(typeof(IRideRepository), typeof(RideRepository));
-
+            builder.Services.AddScoped<ITokenService, TokenServices>();
+            builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
+            builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
+            builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
+            builder.Services.AddScoped(typeof(IRideRepository), typeof(RideRepository));
+            builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
             builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
-                builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
-                #endregion
+            builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
+            #endregion
 
-                var app = builder.Build();
-                // update database 
-                using var scope = app.Services.CreateScope();
-                var service = scope.ServiceProvider;
-                var _context = service.GetRequiredService<ApplicationDbContext>();
-                var loggerfactory = service.GetRequiredService<ILoggerFactory>();
-                var _roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
-                try
-                {
+            var app = builder.Build();
+            // update database 
+            using var scope = app.Services.CreateScope();
+            var service = scope.ServiceProvider;
+            var _context = service.GetRequiredService<ApplicationDbContext>();
+            var loggerfactory = service.GetRequiredService<ILoggerFactory>();
+            var _roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
+            try
+            {
                 await _context.Database.MigrateAsync();
                 await ApplicationIdentityDataSeed.SeedRoleForUserAsync(_roleManager);
 
             }
-                catch (Exception ex)
-                {
-                    var logger = loggerfactory.CreateLogger<Program>();
-                    logger.LogError(ex, "The Error Will logged Occured Apply Database");
+            catch (Exception ex)
+            {
+                var logger = loggerfactory.CreateLogger<Program>();
+                logger.LogError(ex, "The Error Will logged Occured Apply Database");
 
-                }
+            }
 
-                #region Configure Kistrel Middleware
-                // Configure the HTTP request pipeline.
-                //if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
-                //{
+            #region Configure Kistrel Middleware
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+            {
                 app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1");
-                });
-                //}
-
-
-                app.UseCors("AllowAll");
-                app.UseRouting();
-                app.UseMiddleware<ExeptionMiddleware>();
-                app.UseHttpsRedirection();
-
-
-                app.UseAuthentication();
-                app.UseAuthorization();
-                // app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Proo API v1"));
-                //app.UseEndpoints(endpoints =>
-                //{
-                //    endpoints.MapHub<RideHub>("/rideHub");
-                //});
-                app.UseStaticFiles();
-
-                app.MapControllers();
-                #endregion
-
-                app.Run();
+                app.UseSwaggerUI();
             }
-            }
+
+
+            app.UseCors("AllowAll");
+            //app.UseRouting();
+            app.UseMiddleware<ExeptionMiddleware>();
+            app.UseHttpsRedirection();
+
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseStaticFiles();
+
+            app.MapControllers();
+            #endregion
+
+            app.Run();
+        }
     }
+}
 

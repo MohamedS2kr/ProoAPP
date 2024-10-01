@@ -13,7 +13,7 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Passenger> builder)
         {
-            
+            builder.Property(p => p.Id).ValueGeneratedOnAdd();
         }
     }
 }
