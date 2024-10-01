@@ -145,7 +145,8 @@ namespace Proo.APIs.Controllers
             };
 
             _unitOfWork.Repositoy<Passenger>().Add(passenger);
-            
+            var addPassenger = await _unitOfWork.CompleteAsync();
+            if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
             var result = await _userManager.UpdateAsync(GetUserByPhone);
             if (!result.Succeeded)
@@ -164,8 +165,7 @@ namespace Proo.APIs.Controllers
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
-            var addPassenger = await _unitOfWork.CompleteAsync();
-            if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
+          
 
             var userDto = new UserDto();
 
