@@ -275,7 +275,7 @@ namespace Proo.APIs.Controllers
                     NumberOfPlate = model.NumberOfPalet,
                     NumberOfPassenger = model.NumberOfPassenger,
                     YeareOfManufacuter = model.YeareOfManufacuter,
-                    Colour = DocumentSettings.ColorToHex(color)
+                    Colour = DocumentSettings.GetColorName(color)
                 };
 
                 _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
@@ -298,10 +298,10 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront;
             driverToReturnDto.VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack;
             driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDateOfVehicleLicence;
-            driverToReturnDto.ColourHexa = vehicle.Colour;
-            driverToReturnDto.Colour = model.Colour;
+            driverToReturnDto.ColourHexa = model.Colour;
+            driverToReturnDto.Colour = vehicle.Colour;
             driverToReturnDto.AirConditional = vehicle.AirConditional;
-           driverToReturnDto.VehicleModel = vehicle.vehicleModel.ModelName;
+            driverToReturnDto.VehicleModel = vehicle.vehicleModel.ModelName;
             driverToReturnDto.VehicleType = vehicle.vehicleModel.VehicleType.TypeName;
             driverToReturnDto.NumberOfPlate = vehicle.NumberOfPlate;
             driverToReturnDto.NumberOfPassenger = vehicle.NumberOfPassenger;

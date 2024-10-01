@@ -12,7 +12,7 @@ namespace Proo.Core.Entities
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-        public string PreferredPaymentMethod { get; set; }
+        public string? PreferredPaymentMethod { get; set; }
         public ICollection<Ride> Rides { get; set; } 
         //public ICollection<RideRequests> RideRequests { get; set; }
         public ICollection<PassengerRating> PassengerRatings { get; private set; }
