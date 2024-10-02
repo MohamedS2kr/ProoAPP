@@ -23,6 +23,7 @@ using Proo.Infrastructer.Repositories.DriverRepository;
 using Proo.Infrastructer.Repositories.Ride_Repository;
 using Proo.Service._RideService;
 using Proo.Service.Identity;
+using Proo.Service.LocationService;
 using Proo.Service.VehicleModelService;
 using Proo.Service.VehicleTypeService;
 using StackExchange.Redis;
@@ -75,6 +76,12 @@ namespace Proo.APIs
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
+            builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
+            {
+                var Connection = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(Connection);
+            });
+
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -96,18 +103,6 @@ namespace Proo.APIs
                     ClockSkew = TimeSpan.Zero
                 };
             });
-
-
-
-            builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
-            {
-                var Connection = builder.Configuration.GetConnectionString("Redis");
-                return ConnectionMultiplexer.Connect(Connection);
-            });
-            //builder.Services.AddStackExchangeRedisCache(options =>
-            //{
-            //    options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
-            //});
 
 
 
@@ -153,6 +148,9 @@ namespace Proo.APIs
             builder.Services.AddScoped(typeof(IRideService), typeof(RideService));
             builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
+            builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
+
+
             #endregion
 
             var app = builder.Build();

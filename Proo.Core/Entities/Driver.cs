@@ -15,10 +15,7 @@ namespace Proo.Core.Entities
         public string DrivingLicenseIdFront { get; set; }
         public string DrivingLicenseIdBack { get; set; }
         public DateTime DrivingLicenseExpiringDate { get; set; } = DateTime.Now;
-        public decimal LastLat { get; set; }
-        public decimal LastLng { get; set; }
         public DateTime LastActiveTime { get; set; }
-        public bool IsAvailable { get; set; }
         public DriverStatusWork StatusWork { get; set; } = DriverStatusWork.Pending; // Defualt
         public DriverStatus Status { get; set; } 
 

@@ -11,10 +11,12 @@ using Proo.APIs.Errors;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Entities;
+using Proo.Core.Entities.Driver_Location;
 using Proo.Core.Specifications.DriverSpecifiactions;
 using Proo.Infrastructer.Document;
 using Proo.Infrastructer.Repositories;
 using Proo.Infrastructer.Repositories.DriverRepository;
+using Proo.Service.LocationService;
 using StackExchange.Redis;
 using System.Security.Claims;
 using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
@@ -26,17 +28,17 @@ namespace Proo.APIs.Controllers
         private const string driver = "driver";
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IMapper _mapper;
+        private readonly IUpdateDriverLocationService _updateLocation;
         private readonly IDriverRepository _driverRepo;
 
         public DriversController(IUnitOfWork unitOfWork 
             , UserManager<ApplicationUser> userManager
-            , IMapper mapper
+            , IUpdateDriverLocationService updateLocation
             , IDriverRepository driverRepo)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
-            _mapper = mapper;
+            _updateLocation = updateLocation;
             _driverRepo = driverRepo;
         }
 
@@ -96,7 +98,7 @@ namespace Proo.APIs.Controllers
             driver.DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId");
             driver.DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId");
 
-            driver.IsAvailable = model.IsAvailable;
+            driver.Status = DriverStatus.Avaiable;
             driver.DrivingLicenseExpiringDate = model.ExpiringDate;
 
 
@@ -134,23 +136,39 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
-        //[Authorize(Roles = driver)]
-        //[HttpPost("UpdateDriverLocation")]
-        //public async Task<ActionResult<bool>> UpdateDriverLocation (DriverLocationDto model)
-        //{
-        //    var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-        //    var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
-        //    if (GetUserByPhone is null) return NotFound(new ApiResponse(404,"The Driver Not Found");
+        [Authorize(Roles = driver)]
+        [HttpPost("update-location")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateDriverLocation(DriverLocations driverLocations)
+        {
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var user = await  _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (user is null) return BadRequest(new ApiResponse(401));  // this validation is not important 
 
-        //    var locationHistory = new LocationHistory
-        //    {
-                
-        //    };
+            var driver = await _driverRepo.getByUserId(user.Id);
 
+            if (driver is null) return BadRequest(new ApiResponse(400, "The driver not found"));
+
+            if (driverLocations is null || driverLocations.DriverId != driver.Id)
+                return BadRequest(new ApiResponse(400, "Invalid request data."));
+
+            if (driverLocations.Latitude < -90 || driverLocations.Latitude > 90 || driverLocations.Longitude < -180 || driverLocations.Longitude > 180)
+                return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
             
-        //}
+            // call Update driver location service 
+            await _updateLocation.UpdateDriverLocationAsync(driverLocations.DriverId, driverLocations.Latitude, driverLocations.Longitude);
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "Driver location updated successfully.",
+                    StatusCode = StatusCodes.Status200OK ,
+                    Body = driverLocations 
+                }
+            });
+        }
 
     }
 }
