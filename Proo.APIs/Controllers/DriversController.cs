@@ -157,7 +157,7 @@ namespace Proo.APIs.Controllers
                 return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
             
             // call Update driver location service 
-            await _updateLocation.UpdateDriverLocationAsync(driverLocations.DriverId, driverLocations.Latitude, driverLocations.Longitude);
+            await _updateLocation.UpdateDriverLocationAsync(driverLocations.DriverId, driverLocations.Latitude, driverLocations.Longitude , DriverStatus.Avaiable);
 
             return Ok(new ApiToReturnDtoResponse
             {
