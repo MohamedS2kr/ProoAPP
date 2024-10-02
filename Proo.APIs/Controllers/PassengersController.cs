@@ -17,6 +17,12 @@ using Proo.Core.Contract;
 using Proo.Infrastructer.Repositories.DriverRepository;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Infrastructer.Data;
+using Proo.Core.Contract.Passenger_Contract;
+using Proo.APIs.Dtos.Rides;
+using Proo.Core.Specifications.BidSpecifications;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.SignalR;
+using Proo.APIs.Hubs;
 
 namespace Proo.APIs.Controllers
 {
@@ -29,18 +35,24 @@ namespace Proo.APIs.Controllers
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRideRequestRepository _rideRequestRepo;
+        private readonly IPassengerRepository _passengerRepos;
+        private readonly IHubContext<RideHub> _hubContext;
 
         public PassengersController(UserManager<ApplicationUser> userManager
                                     ,SignInManager<ApplicationUser> signInManager
                                     ,IMapper mapper
                                     ,IUnitOfWork unitOfWork,
-                                     IRideRequestRepository rideRequestRepo)
+                                     IRideRequestRepository rideRequestRepo,
+                                     IPassengerRepository passengerRepos,
+                                     IHubContext<RideHub> hubContext)
         {
 
             _userManager = userManager;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _rideRequestRepo = rideRequestRepo;
+            _passengerRepos = passengerRepos;
+            _hubContext = hubContext;
         }
 
 
@@ -61,16 +73,6 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "The Passenger Data",
                     StatusCode = StatusCodes.Status200OK,
-                    //Body = new ProfileDto
-                    //{
-                    //    ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                    //    FullName = GetUserByPhone.FullName,
-                    //    Email = GetUserByPhone.Email,
-                    //    DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                    //    Gender = GetUserByPhone.Gender,
-                    //    PhoneNumber = GetUserByPhone.PhoneNumber,
-
-                    //}
                     Body = result
 
                 }
@@ -109,15 +111,6 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Update Passenger Data Succ",
                     StatusCode = StatusCodes.Status200OK,
-                    //Body = new ProfileDto
-                    //{
-                    //    ProfilePictureUrl = GetUserByPhone.ProfilePictureUrl,
-                    //    FullName = GetUserByPhone.FullName,
-                    //    Email = GetUserByPhone.Email,
-                    //    DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth,
-                    //    Gender = GetUserByPhone.Gender,
-                    //    PhoneNumber = GetUserByPhone.PhoneNumber,
-                    //}
                     Body = mappedResult
 
                 }
@@ -130,19 +123,16 @@ namespace Proo.APIs.Controllers
 
 
         [Authorize(Roles = passenger)]
-        [HttpPost("Cancel_Trip_Requset")]
+        [HttpPost("Cancel_Trip_Request")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> CancelTripRequest()
         {
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var passenger = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-            
+            var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            var passenger =await _passengerRepos.GetByUserId(user.Id);
             if (passenger is null)
                 return NotFound(new ApiResponse(404, "The Passenger Not Found"));
-
-
             
             var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForPassenger(passenger.Id);
-            
             if (requestedTrip is null)
                 return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
             
@@ -161,9 +151,9 @@ namespace Proo.APIs.Controllers
             {
                 Data = new DataResponse
                 {
-                    Mas = "Cancel TripRequest Successed",
+                    Mas = "Cancel TripRequest Succussed",
                     StatusCode = StatusCodes.Status200OK,
-                    Body=""
+                    
                 }
             };
 
@@ -172,60 +162,59 @@ namespace Proo.APIs.Controllers
         }
         [Authorize(Roles = passenger)]
         [HttpPost("Reject_Offer_By_Passenger")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> RejectOfferByPassenger()
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RejectOfferByPassenger(RejectBidRequestDto rejectBidDto)
         {
+            //1. Get User and Check is Exist or not 
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var passenger = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-            
+            var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            var passenger = await _passengerRepos.GetByUserId(user.Id);
             if (passenger is null)
                 return NotFound(new ApiResponse(404, "The Passenger Not Found"));
-            
+
+            //2. Check passenger has ongoing Ride Request 
             var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForPassenger(passenger.Id);
-            
             if (requestedTrip is null)
                 return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
+
+            //3. Get Bid
+            var spec = new BidWithRideRequestSpecifications(rejectBidDto.BidId);
+            var bid = await _unitOfWork.Repositoy<Bid>().GetByIdWithSpecAsync(spec);
+            if (bid is null)
+                return BadRequest(new ApiResponse(400, "The Select Bid Is Not Found "));
+
+            // trip request is invalid/expired if trip request is older than 1 minute TODO
+            var onminutesAgo = DateTime.Now.AddMinutes(-1);
+            if (bid.Ride.LastModifiedAt < onminutesAgo) return BadRequest(new ApiResponse(400, "Ride Reuest is expired."));
+
+            //Check BidStatus
+            if (bid.BidStatus == BidStatus.Rejected)
+                return BadRequest(new ApiResponse(400, "This Bid Is Rejected"));
             
+            // Update
+            bid.BidStatus = BidStatus.Rejected;
+
+            _unitOfWork.Repositoy<Bid>().Update(bid);
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0) return BadRequest(new ApiResponse(400, "The error when save change in database"));
+
+            //Notification This Driver 
+            // step 7: Notify the passenger 
+            var DriverId = bid.DriverId;
             
-            var response = new ApiToReturnDtoResponse
+            await _hubContext.Clients.User(DriverId).SendAsync("RejectedBid", new
+            {    
+                Message = "This Offer Rejected",
+            });
+
+            return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
-                    Mas = "Cancel TripRequest Successed",
+                    Mas = "The Bid Rejected and Notification the Driver",
                     StatusCode = StatusCodes.Status200OK,
-                    Body=""
                 }
-            };
-
-            return Ok(response);
+            });
 
         }
-
-        //[Authorize(Roles = passenger)]
-        //[HttpPost("FindDriver")]
-        //public async Task<ActionResult<ApplicationUser>> FindDriver(FindDriverDto model)
-        //{
-        //    var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-
-        //    var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-
-        //    if (GetUserByPhone is null) return BadRequest(400);
-
-
-        //    //احسب المسافة بين النقطتين واحسب الاجره و اخزن ده و ابداء اعرضه علي السواقين
-        //    // محتاج كمان ارجع المسافة و الوقت والسعر المنطقي للرحله و كمان اسم المشتخدم 
-        //    // passenger واخزن ده في الداتا بيز و ابداء في جزء بقي اني انا سواق و بدور علي 
-
-        //    var response = new ApiToReturnDtoResponse
-        //    {
-        //        Data = new DataResponse
-        //        {
-        //            Mas = "The Passenger Data",
-        //            StatusCode = StatusCodes.Status200OK,
-        //            Body = 
-        //        }
-        //    };
-
-        //    return Ok(response);
-        //}
     }
 }

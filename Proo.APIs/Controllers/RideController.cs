@@ -97,9 +97,6 @@ namespace Proo.APIs.Controllers
 
 
 
-
-
-
         [HttpPost("calc_price_time_destance")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> CalcPriceAndTimeAndDestance(calculatePriceAnddectaceDto CalcDto)
         {
