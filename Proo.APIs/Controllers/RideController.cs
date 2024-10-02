@@ -31,7 +31,6 @@ namespace Proo.APIs.Controllers
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDriverRepository _driverRepository;
-        private const string Passenger = "passenger";
         private const string Driver = "Driver";
         public RideController(IUnitOfWork unitOfWork
             , IMapper mapper,
@@ -47,7 +46,7 @@ namespace Proo.APIs.Controllers
 
         }
 
-        [Authorize]
+        [Authorize(Roles = Driver)]
         [HttpPut("{tripRequestId}/start-trip")]
         public async Task<ActionResult> StartTrip(int tripRequestId)
         {
@@ -94,6 +93,27 @@ namespace Proo.APIs.Controllers
             return Ok();
 
         }
+
+        [Authorize(Roles = Driver)]
+        [HttpPut("{rideId}/end-ride")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> EndTrip(int rideId)
+        {
+            // step 1: get user --> driver 
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (user is null) return BadRequest(new ApiResponse(401));
+
+            // step 2 : get driver 
+            var driver = await _driverRepository.getByUserId(user.Id);
+            if (driver is null) return BadRequest(new ApiResponse(400, "The Driver not found"));
+
+            // check driver has ongoing trips 
+            var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(driver.Id);
+            if (rides is null) return BadRequest(new ApiResponse(400, "Not found Ongoing trips"));
+
+            if (rideId != rides.Id)
+                return BadRequest(new ApiResponse(400, "Rides dosn't match."));
+
 
 
 
