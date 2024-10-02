@@ -13,6 +13,7 @@ using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Contract.IdentityInterface;
+using Proo.Core.Contract.Nearby_driver_service_contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Data;
@@ -24,6 +25,7 @@ using Proo.Infrastructer.Repositories.Ride_Repository;
 using Proo.Service._RideService;
 using Proo.Service.Identity;
 using Proo.Service.LocationService;
+using Proo.Service.Nearby_Driver_Service;
 using Proo.Service.VehicleModelService;
 using Proo.Service.VehicleTypeService;
 using StackExchange.Redis;
@@ -149,6 +151,7 @@ namespace Proo.APIs
             builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
             builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
+            builder.Services.AddScoped(typeof(INearbyDriversService), typeof(NearbyDriversService));
 
 
             #endregion

@@ -114,8 +114,21 @@ namespace Proo.APIs.Controllers
             if (rideId != rides.Id)
                 return BadRequest(new ApiResponse(400, "Rides dosn't match."));
 
+            // check status validations TODO 
 
+            // update sattus for rides
+            rides.Status = RideStatus.Completed;
+            rides.LastModifiedAt = DateTime.Now;
 
+            _unitOfWork.Repositoy<Ride>().Update(rides);
+
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0)
+                return BadRequest(new ApiResponse(400, "That error when update entity in database."));
+
+            return Ok();
+
+        }
 
         [HttpPost("calc_price_time_destance")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> CalcPriceAndTimeAndDestance(calculatePriceAnddectaceDto CalcDto)
