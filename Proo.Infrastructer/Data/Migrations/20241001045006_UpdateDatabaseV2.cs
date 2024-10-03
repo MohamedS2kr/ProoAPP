@@ -16,19 +16,12 @@ namespace Proo.Infrastructer.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AddColumn<int>(
-                name: "BidStatus",
-                table: "Bids",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+           
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "BidStatus",
-                table: "Bids");
+           
 
             migrationBuilder.AlterColumn<string>(
                 name: "PreferredPaymentMethod",

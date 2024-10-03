@@ -161,12 +161,13 @@ namespace Proo.APIs.Controllers
 
         }
         [Authorize(Roles = passenger)]
-        [HttpPost("Reject_Offer_By_Passenger")]
+        [HttpPut("Reject_Offer_By_Passenger")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> RejectOfferByPassenger(RejectBidRequestDto rejectBidDto)
         {
             //1. Get User and Check is Exist or not 
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
             var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            
             var passenger = await _passengerRepos.GetByUserId(user.Id);
             if (passenger is null)
                 return NotFound(new ApiResponse(404, "The Passenger Not Found"));
@@ -216,5 +217,58 @@ namespace Proo.APIs.Controllers
             });
 
         }
+
+        [Authorize(Roles = passenger)]
+        [HttpPut("Cancel_Ride_By_Passenger")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByPassenger()
+        {
+
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            if (string.IsNullOrEmpty(phoneNumber))
+                return Unauthorized(new ApiResponse(401, "Phone number is missing or invalid"));
+
+            var UserByPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (UserByPhoneNumber is null)
+                return Unauthorized(new ApiResponse(401, "Unauthorized: User not found"));
+
+            var Passenger = await _passengerRepos.GetByUserId(UserByPhoneNumber.Id);
+            if (Passenger == null) return NotFound(new ApiResponse(404, "Passenger Not Found"));
+
+            var ride = await _unitOfWork.RideRepository.GetActiveTripForPassenger(Passenger.Id);
+            if (ride == null) return NotFound(new ApiResponse(404, "Not found Ongoing trips"));
+
+            if (ride.Status != RideStatus.CanceledByDriver 
+                && ride.Status != RideStatus.Completed
+                && ride.Status != RideStatus.WAITING_FOR_PAYMENT) return BadRequest(new ApiResponse(400, "Can Not Canceled Ride "));
+
+
+            ride.Status = RideStatus.CanceledByPassenger;
+            ride.LastModifiedAt = DateTime.Now;
+
+            _unitOfWork.Repositoy<Ride>().Update(ride);
+
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0)
+                return BadRequest(new ApiResponse(400, "That error when update entity in database."));
+
+            //Notification This Driver 
+            // step 7: Notify the passenger 
+            var DriverId = ride.DriverId;
+
+            await _hubContext.Clients.User(DriverId).SendAsync("CanceledRideByPassenger", new
+            {
+                Message = "This Ride Canceled",
+            });
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Ride Canceled and Notification the Driver",
+                    StatusCode = StatusCodes.Status200OK,
+                }
+            });
+        }
+
     }
 }

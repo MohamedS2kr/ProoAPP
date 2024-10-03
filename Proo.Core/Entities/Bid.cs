@@ -16,7 +16,7 @@ namespace Proo.Core.Entities
 
         public int Eta { get; set; }
 
-        public BidStatus BidStatus { get; set; }
+        public BidStatus BidStatus { get; set; } = BidStatus.Pending;
 
         public string DriverId { get; set; }
         public Driver Driver { get; set; }
@@ -27,7 +27,7 @@ namespace Proo.Core.Entities
 
     public enum BidStatus
     {
-        Pendding ,
+        Pending,
         Accepted,
         Rejected
     }

@@ -160,7 +160,7 @@ namespace Proo.APIs.Controllers
             // Step 6: create Bid entity
             var bid = _mapper.Map<Bid>(bidDto);
             bid.CreatedAt = DateTime.Now;
-            bid.BidStatus = BidStatus.Pendding;
+            bid.BidStatus = BidStatus.Pending;
 
             _unitOfWork.Repositoy<Bid>().Add(bid);
             var addBid = await _unitOfWork.CompleteAsync();
@@ -207,7 +207,7 @@ namespace Proo.APIs.Controllers
             if (bid is null) return BadRequest(new ApiResponse(400, "The Bid is not exist."));
 
             // validate bid status 
-            if (bid.BidStatus != BidStatus.Pendding)
+            if (bid.BidStatus != BidStatus.Pending)
                 return BadRequest(new ApiResponse(400, "The selected bid is not lavailable."));
 
             // trip request is invalid/expired if trip request is older than 1 minute TODO

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
@@ -11,9 +12,10 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241003034712_DetermindPrimerKey")]
+    partial class DetermindPrimerKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,7 +284,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideRequestsId");
 
-                    b.ToTable("Bids", (string)null);
+                    b.ToTable("Bids");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.CategoryOfVehicle", b =>
@@ -303,7 +305,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CategoryOfVehicles", (string)null);
+                    b.ToTable("CategoryOfVehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Driver", b =>
@@ -348,7 +350,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Drivers", (string)null);
+                    b.ToTable("Drivers");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
@@ -371,7 +373,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Passengers", (string)null);
+                    b.ToTable("Passengers");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
@@ -403,7 +405,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideId");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
@@ -442,7 +444,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideId");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.ToTable("Ratings");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("Rating");
                 });
@@ -496,7 +498,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("RideRequestsId");
 
-                    b.ToTable("Rides", (string)null);
+                    b.ToTable("Rides");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.RideRequests", b =>
@@ -569,7 +571,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("PassengerId");
 
-                    b.ToTable("RideRequests", (string)null);
+                    b.ToTable("RideRequests");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Vehicle", b =>
@@ -624,7 +626,7 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasIndex("VehicleModelId")
                         .IsUnique();
 
-                    b.ToTable("Vehicles", (string)null);
+                    b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.VehicleModel", b =>
@@ -647,7 +649,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("VehicleTypeId");
 
-                    b.ToTable("VehicleModels", (string)null);
+                    b.ToTable("VehicleModels");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.VehicleType", b =>
@@ -670,7 +672,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("CategoryOfVehicleId");
 
-                    b.ToTable("VehicleTypes", (string)null);
+                    b.ToTable("VehicleTypes");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
@@ -748,7 +750,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("Proo.Core.Entities.ApplicationUser.RefreshTokens#Proo.Core.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Proo.Core.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("nvarchar(450)");
@@ -774,7 +776,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
@@ -866,7 +868,7 @@ namespace Proo.Infrastructer.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Proo.Core.Entities.Ride.DestinationLocation#Proo.Core.Entities.Locations", "DestinationLocation", b1 =>
+                    b.OwnsOne("Proo.Core.Entities.Locations", "DestinationLocation", b1 =>
                         {
                             b1.Property<int>("RideId")
                                 .HasColumnType("int");
@@ -883,13 +885,13 @@ namespace Proo.Infrastructer.Data.Migrations
 
                             b1.HasKey("RideId");
 
-                            b1.ToTable("Rides", (string)null);
+                            b1.ToTable("Rides");
 
                             b1.WithOwner()
                                 .HasForeignKey("RideId");
                         });
 
-                    b.OwnsOne("Proo.Core.Entities.Ride.PickupLocation#Proo.Core.Entities.Locations", "PickupLocation", b1 =>
+                    b.OwnsOne("Proo.Core.Entities.Locations", "PickupLocation", b1 =>
                         {
                             b1.Property<int>("RideId")
                                 .HasColumnType("int");
@@ -906,7 +908,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                             b1.HasKey("RideId");
 
-                            b1.ToTable("Rides", (string)null);
+                            b1.ToTable("Rides");
 
                             b1.WithOwner()
                                 .HasForeignKey("RideId");

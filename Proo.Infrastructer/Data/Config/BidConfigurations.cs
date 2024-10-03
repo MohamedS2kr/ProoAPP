@@ -13,6 +13,7 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Bid> builder)
         {
+            builder.HasKey(b => b.Id);
             builder.HasOne(b => b.Driver)
                 .WithMany()
                 .HasForeignKey(b => b.DriverId);

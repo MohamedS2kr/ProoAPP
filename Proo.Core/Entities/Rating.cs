@@ -19,7 +19,6 @@ namespace Proo.Core.Entities
         public Passenger? Passenger { get; set; }
         public string DriverId { get; set; } = string.Empty;
         public Driver? Driver { get; set; }
-
         public int RideId { get; set; }
         public Ride? Ride { get; set; }
     }

@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Proo.APIs.Dtos;
 using Proo.APIs.Dtos.Driver;
 using Proo.APIs.Dtos.Identity;
 using Proo.APIs.Errors;
+using Proo.APIs.Hubs;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Entities;
@@ -30,16 +32,19 @@ namespace Proo.APIs.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUpdateDriverLocationService _updateLocation;
         private readonly IDriverRepository _driverRepo;
+        private readonly IHubContext<RideHub> _hubContext;
 
         public DriversController(IUnitOfWork unitOfWork 
             , UserManager<ApplicationUser> userManager
             , IUpdateDriverLocationService updateLocation
-            , IDriverRepository driverRepo)
+            , IDriverRepository driverRepo,
+            IHubContext<RideHub> hubContex)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _updateLocation = updateLocation;
             _driverRepo = driverRepo;
+            _hubContext = hubContex;
         }
 
 
@@ -166,6 +171,57 @@ namespace Proo.APIs.Controllers
                     Mas = "Driver location updated successfully.",
                     StatusCode = StatusCodes.Status200OK ,
                     Body = driverLocations 
+                }
+            });
+        }
+        [Authorize(Roles = driver)]
+        [HttpPut("Cancel_Ride_By_Driver")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver()
+        {
+
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            if (string.IsNullOrEmpty(phoneNumber))
+                return Unauthorized(new ApiResponse(401, "Phone number is missing or invalid"));
+
+            var UserByPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (UserByPhoneNumber is null)
+                return Unauthorized(new ApiResponse(401, "Unauthorized: User not found"));
+
+            var Driver = await _driverRepo.getByUserId(UserByPhoneNumber.Id);
+            if (Driver == null) return NotFound(new ApiResponse(404, "Driver Not Found"));
+
+            var ride = await _unitOfWork.RideRepository.GetActiveTripForDriver(Driver.Id);
+            if (ride == null) return NotFound(new ApiResponse(404, "Not found Ongoing trips"));
+
+            if (ride.Status != RideStatus.CanceledByPassenger
+                && ride.Status != RideStatus.Completed
+                && ride.Status != RideStatus.WAITING_FOR_PAYMENT) return BadRequest(new ApiResponse(400, "Can Not Canceled Ride "));
+
+
+            ride.Status = RideStatus.CanceledByDriver;
+            ride.LastModifiedAt = DateTime.Now;
+
+            _unitOfWork.Repositoy<Ride>().Update(ride);
+
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0)
+                return BadRequest(new ApiResponse(400, "That error when update entity in database."));
+
+            //Notification This Driver 
+            // step 7: Notify the passenger 
+            var PassengerId = ride.PassengerId;
+
+            await _hubContext.Clients.User(PassengerId).SendAsync("CanceledRideByDriver", new
+            {
+                Message = "This Ride Canceled",
+            });
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Ride Canceled and Notification the Passenger",
+                    StatusCode = StatusCodes.Status200OK,
                 }
             });
         }
