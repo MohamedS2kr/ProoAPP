@@ -18,6 +18,7 @@ using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Contract;
 using Microsoft.EntityFrameworkCore;
+using Proo.Core.Contract.Nearby_driver_service_contract;
 
 namespace Proo.APIs.Controllers
 {
@@ -29,14 +30,15 @@ namespace Proo.APIs.Controllers
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPassengerRepository _passengerRepo;
+        private readonly INearbyDriversService _nearbyDriversService;
         private const string Passenger = "passenger";
-        private const string Driver = "Driver";
         public RdieRequestController(IUnitOfWork unitOfWork
                 , IMapper mapper
                 , IRideService rideService,
                 IHubContext<RideHub> hubContext,
                 UserManager<ApplicationUser> userManager
                 , IPassengerRepository passengerRepo
+                , INearbyDriversService nearbyDriversService
             )
         {
             _unitOfWork = unitOfWork;
@@ -45,6 +47,7 @@ namespace Proo.APIs.Controllers
             _hubContext = hubContext;
             _userManager = userManager;
             _passengerRepo = passengerRepo;
+            _nearbyDriversService = nearbyDriversService;
         }
 
 
@@ -91,11 +94,11 @@ namespace Proo.APIs.Controllers
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
 
-            // 5- find the nearby drivers   TODO
-            var nearbyDrivers = await _rideService.GetNearbyDrivers(request.PickupLatitude, request.PickupLongitude, 5);
+            // 5- find the nearby drivers Ids  
+            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20);
 
             // 6- Notify Drivers using signalR
-            foreach (var driver in nearbyDrivers)
+            foreach (var id in nearbyDriverIds)
             {
                 var notifications = new RideNotificationDto
                 {
@@ -110,7 +113,7 @@ namespace Proo.APIs.Controllers
                 };
 
                 // send the notification to nearby driver 
-                await _hubContext.Clients.User(driver.Id).SendAsync("ReceiveRideRequest", notifications);
+                await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
             }
 
             var response = new ApiToReturnDtoResponse
@@ -243,6 +246,7 @@ namespace Proo.APIs.Controllers
 
             rideReuest.Status = RideRequestStatus.CUSTOMER_ACCEPTED;
             rideReuest.DriverId = bid.DriverId;
+            rideReuest.LastModifiedAt = DateTime.Now;
 
             _unitOfWork.Repositoy<RideRequests>().Update(rideReuest);
 
@@ -256,6 +260,7 @@ namespace Proo.APIs.Controllers
             {
                 other.BidStatus = BidStatus.Rejected;
                 bidRepo.Update(other);
+                // notify TODO
             }
 
 

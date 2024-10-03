@@ -254,9 +254,7 @@ namespace Proo.APIs.Controllers
                     NationalIdFront= DocumentSettings.UploadFile(model.NationalIdFront,"NationalId"),
                     NationalIdBack= DocumentSettings.UploadFile(model.NationalIdBack, "NationalId"),
                     DrivingLicenseExpiringDate = model.ExpiringDate,
-                    IsAvailable = model.IsAvailable,
-                    
-                    
+                  
                 };
 
                 _unitOfWork.Repositoy<Driver>().Add(driver);
@@ -294,7 +292,6 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.DrivingLicenseIdFront = driver.DrivingLicenseIdFront;
             driverToReturnDto.DrivingLicenseIdBack = driver.DrivingLicenseIdBack;
             driverToReturnDto.ExpiringDateOfDrivingLicense = driver.DrivingLicenseExpiringDate;
-            driverToReturnDto.IsAvailable = driver.IsAvailable;
             driverToReturnDto.VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront;
             driverToReturnDto.VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack;
             driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDateOfVehicleLicence;
