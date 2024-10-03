@@ -114,6 +114,27 @@ namespace Proo.APIs.Controllers
             if (rideId != rides.Id)
                 return BadRequest(new ApiResponse(400, "Rides dosn't match."));
 
+            // check status is valid ! TODO
+
+            // modify ride status into complete
+            rides.Status = RideStatus.Completed;
+            rides.LastModifiedAt = DateTime.Now;
+
+            _unitOfWork.Repositoy<Ride>().Update(rides);
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0) return BadRequest(new ApiResponse(400, "That error when save change in database"));
+
+            // notify ?
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "End trip succ."
+                }
+            });
+        }
+
 
 
 
