@@ -23,6 +23,7 @@ using Proo.Core.Specifications.BidSpecifications;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
 using Proo.APIs.Hubs;
+using Proo.Core.Specifications.PassengerSpecifiactions;
 
 namespace Proo.APIs.Controllers
 {
@@ -81,7 +82,37 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
-        
+        [Authorize(Roles = passenger)]
+        [HttpGet("Passenger_History_Ride")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> GetPassengerHistoryRide()
+        {
+            var PhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var UserByPhoneNumber =await _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == PhoneNumber);
+            
+            if (UserByPhoneNumber is null) return NotFound(new ApiResponse(404, "This User Not Found"));
+            
+            var passenger =await _passengerRepos.GetByUserId(UserByPhoneNumber.Id);
+            if (passenger is null) return NotFound(new ApiResponse(404, "This Passenger Not Found"));
+
+            var spec = new PassengerWithRideAndRatingSpecifications(passenger.Id);
+            var Ride =await _unitOfWork.Repositoy<Ride>().GetAllWithSpecAsync(spec);
+
+            if (Ride.Count == 0) return NotFound(new ApiResponse(404, "Not Found any Ride For This Passenger"));
+            
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Passenger Data",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = Ride
+
+                }
+            };
+
+            return Ok(response);
+
+        }
         [Authorize(Roles = passenger)]
         [HttpPost("Update_for_Passenger")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateSpecPassengers([FromForm] updateUserDto model)
@@ -265,6 +296,50 @@ namespace Proo.APIs.Controllers
                 Data = new DataResponse
                 {
                     Mas = "The Ride Canceled and Notification the Driver",
+                    StatusCode = StatusCodes.Status200OK,
+                }
+            });
+        }
+
+        [Authorize(Roles = passenger)]
+        [HttpPost("RatingByPassenger")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RatingRideByPassenger(RatingPassgengerDto model)
+        {
+            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            
+            var passenger = await _passengerRepos.GetByUserId(GetUserByPhone.Id);
+
+            if (passenger == null) return NotFound(new ApiResponse(404, "Passenger Not Found"));
+
+            var ride = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
+            
+            if (ride is null) return NotFound(new ApiResponse(404, "The passenger Is Not Going Ride"));
+
+            if (ride.Status != RideStatus.Completed)
+                return BadRequest(new ApiResponse(400, "ride Not Completed Yet"));
+            
+            if (0 <= model.Score && model.Score <= 5)
+                return BadRequest(new ApiResponse(400, "Score Out Of Range"));
+            
+            var passengerRating = new PassengerRating()
+            {
+                RideId = ride.Id,
+                PassengerId = passenger.Id,
+                Score = model.Score,
+                Review = model.Review,
+            };
+            _unitOfWork.Repositoy<PassengerRating>().Add(passengerRating);
+
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0)
+                return BadRequest(new ApiResponse(400, "That error when update entity in database."));
+
+            return Ok(new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Ride Rating By Passenger ",
                     StatusCode = StatusCodes.Status200OK,
                 }
             });

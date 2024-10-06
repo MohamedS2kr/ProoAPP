@@ -17,6 +17,12 @@ namespace Proo.Infrastructer
 
             if(spec.Criteria is not null)
                 query = query.Where(spec.Criteria);   // _context.set<driver>.where(d => d.id == id)
+            
+            if(spec.OrderBy is not null)
+                query = query.OrderBy(spec.OrderBy);
+            
+            if(spec.OrderByDesc is not null)
+                query = query.OrderByDescending(spec.OrderByDesc);
 
             query = spec.Includes.Aggregate(query, (currentqeury, icludeEpressin) => currentqeury.Include(icludeEpressin));
 

@@ -22,8 +22,7 @@ namespace Proo.Core.Entities
         public string UserId { get; set; }
         public ApplicationUser? User { get; set; }
         public ICollection<Vehicle>? Vehicles { get; set; }
-        public  ICollection<PassengerRating>? PassengerRatings { get; private set; }
-        public  ICollection<DriverRating>? DriverRatings { get; private set; }
+        public  ICollection<DriverRating> DriverRatings { get; private set; }
         public ICollection<Ride>? Rides { get; set; }
 
 
@@ -38,7 +37,6 @@ namespace Proo.Core.Entities
 
     public enum DriverStatus
     {
-
         Avaiable,
         InRide,
         Offline

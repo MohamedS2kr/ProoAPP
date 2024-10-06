@@ -18,6 +18,8 @@ namespace Proo.Infrastructer.Data.Config
             builder.Property(d => d.DrivingLicenseIdBack).IsRequired();
             builder.Property(d => d.DrivingLicenseIdFront).IsRequired();
 
+            builder.HasMany(p => p.Rides).WithOne(pp => pp.Driver).HasForeignKey(p => p.DriverId).OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

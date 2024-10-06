@@ -28,6 +28,7 @@ namespace Proo.Core.Entities
         public decimal FarePrice { get; set; }
         public RideStatus Status { get; set; }
         public PaymentMethod paymentMethod { get; set; }
+        
     }
 
 
