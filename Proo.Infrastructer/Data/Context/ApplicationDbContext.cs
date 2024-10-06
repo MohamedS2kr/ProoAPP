@@ -33,7 +33,8 @@ namespace Proo.Infrastructer.Data.Context
 
         public DbSet<Bid> Bids { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<Rating> Ratings { get; set; }
+        public DbSet<PassengerRating> PassengerRatings { get; set; }
+        public DbSet<DriverRating> DriverRatings { get; set; }
         public DbSet<Ride> Rides { get; set; }
         public DbSet<RideRequests> RideRequests { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }

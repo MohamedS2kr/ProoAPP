@@ -145,6 +145,7 @@ namespace Proo.APIs.Controllers
             };
 
             _unitOfWork.Repositoy<Passenger>().Add(passenger);
+            
             var addPassenger = await _unitOfWork.CompleteAsync();
             if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 

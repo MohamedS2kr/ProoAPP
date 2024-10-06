@@ -12,6 +12,8 @@ namespace Proo.Core.Specifications
     {
         public Expression<Func<T, bool>>? Criteria { get; set ; }
         public List<Expression<Func<T, object>>> Includes { get; set; } = new List<Expression<Func<T, object>>>();
+        public Expression<Func<T, object>> OrderBy { get; set ; }
+        public Expression<Func<T, object>> OrderByDesc { get; set; }
 
         public BaseSpecifications()
         {
@@ -21,6 +23,15 @@ namespace Proo.Core.Specifications
         public BaseSpecifications(Expression<Func<T , bool>> expression)
         {
             Criteria = expression;
+        }
+
+        public void AddOrderBy(Expression<Func<T , object>> expression)
+        {
+            OrderBy = expression;
+        }
+        public void AddOrderByDesc(Expression<Func<T , object>> expression)
+        {
+            OrderByDesc = expression;
         }
     }
 }

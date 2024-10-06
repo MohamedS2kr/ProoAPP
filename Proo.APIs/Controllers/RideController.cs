@@ -135,58 +135,6 @@ namespace Proo.APIs.Controllers
         {
             var result = new LocationService().CalculateDestanceAndTimeAndPrice(CalcDto.PickUpLat, CalcDto.PickUpLon, CalcDto.DroppOffLat, CalcDto.DroppOffLon,CalcDto.Category);
 
-            ///if (CalcDto.Category == "Ride")
-            ///{
-            ///    return (new ApiToReturnDtoResponse
-            ///    {
-            ///        Data = new DataResponse
-            ///        {
-            ///            Mas = "The Price and Time Calculated by Distance and Category [Ride]",
-            ///            StatusCode = StatusCodes.Status200OK,
-            ///            Body = new ReturnCalcDto()
-            ///            {
-            ///                Price = result.price,
-            ///                Distance = result.distance,
-            ///                Time = result.estimatedTime
-            ///            }
-            ///        }
-            ///    });
-            ///}
-            ///else if (CalcDto.Category == "Comfort")
-            ///{
-            ///    return (new ApiToReturnDtoResponse
-            ///    {
-            ///        Data = new DataResponse
-            ///        {
-            ///            Mas = "The Price and Time Calculated by Distance and Category [Comfort]",
-            ///            StatusCode = StatusCodes.Status200OK,
-            ///            Body = new ReturnCalcDto()
-            ///            {
-            ///                Price = result.price + 50,
-            ///                Distance = result.distance,
-            ///                Time = result.estimatedTime
-            ///            }
-            ///        }
-            ///    });
-            ///}
-            ///else if (CalcDto.Category == "Scoter")
-            ///{
-            ///    return (new ApiToReturnDtoResponse
-            ///    {
-            ///        Data = new DataResponse
-            ///        {
-            ///            Mas = "The Price and Time Calculated by Distance and Category [Scoter]",
-            ///            StatusCode = StatusCodes.Status200OK,
-            ///            Body = new ReturnCalcDto()
-            ///            {
-            ///                Price = result.price - 50,
-            ///                Distance = result.distance,
-            ///                Time = result.estimatedTime
-            ///            }
-            ///        }
-            ///    });
-            ///}
-
             return (new ApiToReturnDtoResponse
             {
                 Data = new DataResponse

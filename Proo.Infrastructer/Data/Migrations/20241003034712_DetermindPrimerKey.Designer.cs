@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
@@ -11,9 +12,10 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241003034712_DetermindPrimerKey")]
+    partial class DetermindPrimerKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,36 +353,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.ToTable("Drivers");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("DriverId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Review")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RideId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriverId");
-
-                    b.HasIndex("RideId");
-
-                    b.ToTable("DriverRatings");
-                });
-
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
                     b.Property<string>("Id")
@@ -402,36 +374,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Passengers");
-                });
-
-            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("PassengerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Review")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RideId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PassengerId");
-
-                    b.HasIndex("RideId");
-
-                    b.ToTable("PassengerRatings");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
@@ -464,6 +406,47 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasIndex("RideId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PassengerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Review")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RideId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RideId");
+
+                    b.ToTable("Ratings");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Rating");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -692,6 +675,28 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.ToTable("VehicleTypes");
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
+                {
+                    b.HasBaseType("Proo.Core.Entities.Rating");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasDiscriminator().HasValue("DriverRating");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
+                {
+                    b.HasBaseType("Proo.Core.Entities.Rating");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("PassengerId");
+
+                    b.HasDiscriminator().HasValue("PassengerRating");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -810,25 +815,6 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
-                {
-                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
-                        .WithMany("DriverRatings")
-                        .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Proo.Core.Entities.Ride", "Ride")
-                        .WithMany()
-                        .HasForeignKey("RideId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Driver");
-
-                    b.Navigation("Ride");
-                });
-
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
                     b.HasOne("Proo.Core.Entities.ApplicationUser", "User")
@@ -840,26 +826,18 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
+            modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
                 {
-                    b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
-                        .WithMany("PassengerRatings")
-                        .HasForeignKey("PassengerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Proo.Core.Entities.Ride", "Ride")
                         .WithMany()
                         .HasForeignKey("RideId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Passenger");
-
                     b.Navigation("Ride");
                 });
 
-            modelBuilder.Entity("Proo.Core.Entities.Payment", b =>
+            modelBuilder.Entity("Proo.Core.Entities.Rating", b =>
                 {
                     b.HasOne("Proo.Core.Entities.Ride", "Ride")
                         .WithMany()
@@ -1007,6 +985,44 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("CategoryOfVehicle");
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.DriverRating", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany("DriverRatings")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
+                        .WithMany("DriverRatings")
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.PassengerRating", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Driver", "Driver")
+                        .WithMany("PassengerRatings")
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proo.Core.Entities.Passenger", "Passenger")
+                        .WithMany("PassengerRatings")
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Passenger");
+                });
+
             modelBuilder.Entity("Proo.Core.Entities.CategoryOfVehicle", b =>
                 {
                     b.Navigation("VehicleTypes");
@@ -1016,6 +1032,8 @@ namespace Proo.Infrastructer.Data.Migrations
                 {
                     b.Navigation("DriverRatings");
 
+                    b.Navigation("PassengerRatings");
+
                     b.Navigation("Rides");
 
                     b.Navigation("Vehicles");
@@ -1023,6 +1041,8 @@ namespace Proo.Infrastructer.Data.Migrations
 
             modelBuilder.Entity("Proo.Core.Entities.Passenger", b =>
                 {
+                    b.Navigation("DriverRatings");
+
                     b.Navigation("PassengerRatings");
 
                     b.Navigation("Rides");

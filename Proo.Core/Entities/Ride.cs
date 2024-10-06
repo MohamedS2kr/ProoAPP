@@ -28,6 +28,7 @@ namespace Proo.Core.Entities
         public decimal FarePrice { get; set; }
         public RideStatus Status { get; set; }
         public PaymentMethod paymentMethod { get; set; }
+        
     }
 
 
@@ -37,6 +38,7 @@ namespace Proo.Core.Entities
         InGoing =1,
         WAITING_FOR_PAYMENT = 2, // this is when driver reached destination
         Completed = 3,
-      
+        CanceledByDriver= 4,
+        CanceledByPassenger=5,
     }
 }

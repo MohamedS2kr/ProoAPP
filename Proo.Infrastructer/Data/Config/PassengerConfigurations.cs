@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 
 namespace Proo.Infrastructer.Data.Config
 {
-    internal class PassengerConfigurations : IEntityTypeConfiguration<Passenger>
+    public class PassengerConfigurations : IEntityTypeConfiguration<Passenger>
     {
         public void Configure(EntityTypeBuilder<Passenger> builder)
         {
             builder.Property(p => p.Id).ValueGeneratedOnAdd();
+            builder.HasMany(p => p.Rides).WithOne(pp => pp.Passenger).HasForeignKey(p => p.PassengerId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
