@@ -10,12 +10,12 @@ namespace Proo.Core.Entities
     {
         public int Id { get; set; }
      
-        public DateTime YeareOfManufacuter { get; set; }
+        public string YeareOfManufacuter { get; set; }
         public bool AirConditional { get; set; }
         public int NumberOfPassenger { get; set; }
-        public int NumberOfPlate { get; set; }
+        public string NumberOfPlate { get; set; }
         public string Colour { get; set; }
-
+        public string VehiclePicture { get; set; }
         public string VehicleLicenseIdFront { get; set; }
         public string VehicleLicenseIdBack { get; set; }
         public DateTime ExpiringDateOfVehicleLicence { get; set; }

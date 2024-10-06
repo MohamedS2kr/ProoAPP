@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\files\NationalId\**" />
+    <Content Remove="wwwroot\files\NationalId\**" />
+    <EmbeddedResource Remove="wwwroot\files\NationalId\**" />
+    <None Remove="wwwroot\files\NationalId\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.33">
       <PrivateAssets>all</PrivateAssets>
@@ -24,7 +31,8 @@
   <ItemGroup>
     <Folder Include="Dtos\AdminDto\" />
     <Folder Include="wwwroot\files\LicenseId\" />
-    <Folder Include="wwwroot\files\NationalId\" />
+    <Folder Include="wwwroot\files\DriverNationalId\" />
+    <Folder Include="wwwroot\files\VehiclePicture\" />
     <Folder Include="wwwroot\files\ProfilePicture\" />
     <Folder Include="wwwroot\files\VehicleLicenseId\" />
   </ItemGroup>

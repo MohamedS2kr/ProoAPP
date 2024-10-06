@@ -12,6 +12,7 @@ namespace Proo.Core.Entities
 
         public string NationalIdFront { get; set; }
         public string NationalIdBack { get; set; }
+        public DateTime NationalIdExpiringDate { get; set; } = DateTime.Now;
         public string DrivingLicenseIdFront { get; set; }
         public string DrivingLicenseIdBack { get; set; }
         public DateTime DrivingLicenseExpiringDate { get; set; } = DateTime.Now;

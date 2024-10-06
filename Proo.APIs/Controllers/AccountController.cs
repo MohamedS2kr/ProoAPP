@@ -216,71 +216,72 @@ namespace Proo.APIs.Controllers
         [HttpPost("Register_for_driver")] // POST : baseurl/api/Account/Register_for_driver
         public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterFordriver([FromForm] DriverDto model)
         {
-            
-                var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-                var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-                if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
+            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
 
-                GetUserByPhone.FullName = model.FullName;
-                GetUserByPhone.Gender = model.Gender;
-                GetUserByPhone.DateOfBirth = model.DateOfBirth;
+            if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
+
+            GetUserByPhone.FullName = model.FullName;
+            GetUserByPhone.Gender = model.Gender;
+            GetUserByPhone.DateOfBirth = model.DateOfBirth;
+            GetUserByPhone.ProfilePictureUrl = DocumentSettings.UploadFile(model.ProfilePictureUrl, "ProfilePicture");
+
+            var result = await _userManager.UpdateAsync(GetUserByPhone);
+            if (!result.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+
+            var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
+
+            if (!await _roleManager.RoleExistsAsync(model.Role))
+                return BadRequest(new ApiResponse(400, "The Role is Invalid"));
+
+            if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
+                return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
+
+            if (!(Driver.ToLower() == model.Role.ToLower()))
+                return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
+
+            var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+            if (!addRole.Succeeded)
+                return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
+
+            var driver = new Driver
+            {
+                UserId = GetUserByPhone.Id,
+                DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
+                DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
+                NationalIdFront = DocumentSettings.UploadFile(model.NationalIdFront, "DriverNationalId"),
+                NationalIdBack = DocumentSettings.UploadFile(model.NationalIdBack, "DriverNationalId"),
+                DrivingLicenseExpiringDate = model.ExpiringDate,
+                NationalIdExpiringDate = model.NationalIdExpiringDate
+            };
+
+            _unitOfWork.Repositoy<Driver>().Add(driver);
 
 
-                var result = await _userManager.UpdateAsync(GetUserByPhone);
-                if (!result.Succeeded)
-                    return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+            Color color = ColorTranslator.FromHtml(model.Colour);
 
-                var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
+            var vehicle = new Vehicle
+            {
+                DriverId = driver.Id,
+                VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
+                VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
+                VehiclePicture = DocumentSettings.UploadFile(model.VehiclePicture, "VehiclePicture"),
+                ExpiringDateOfVehicleLicence = model.VehicleExpiringDate,
+                AirConditional = model.AirConditional,
+                VehicleModelId = model.VehicleModelId,
+                NumberOfPlate = model.NumberOfPalet,
+                NumberOfPassenger = model.NumberOfPassenger,
+                YeareOfManufacuter = model.YeareOfManufacuter,
+                Colour = DocumentSettings.GetColorName(color)
+            };
 
-                if (!await _roleManager.RoleExistsAsync(model.Role))
-                    return BadRequest(new ApiResponse(400, "The Role is Invalid"));
+            _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
+            var count = await _unitOfWork.CompleteAsync();
 
-                if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
-                    return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
-
-                if (!(Driver.ToLower() == model.Role.ToLower()))
-                    return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
-
-                var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
-                if (!addRole.Succeeded)
-                    return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
-
-                var driver = new Driver
-                {
-                    UserId = GetUserByPhone.Id,
-                    DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
-                    DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                    NationalIdFront= DocumentSettings.UploadFile(model.NationalIdFront,"NationalId"),
-                    NationalIdBack= DocumentSettings.UploadFile(model.NationalIdBack, "NationalId"),
-                    DrivingLicenseExpiringDate = model.ExpiringDate,
-                  
-                };
-
-                _unitOfWork.Repositoy<Driver>().Add(driver);
-
-
-                Color color = ColorTranslator.FromHtml(model.Colour);
-
-                var vehicle = new Vehicle
-                {
-                    DriverId = driver.Id,
-                    VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
-                    VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
-                    ExpiringDateOfVehicleLicence = model.VehicleExpiringDate,
-                    AirConditional = model.AirConditional,
-                    VehicleModelId = model.VehicleModelId,
-                    NumberOfPlate = model.NumberOfPalet,
-                    NumberOfPassenger = model.NumberOfPassenger,
-                    YeareOfManufacuter = model.YeareOfManufacuter,
-                    Colour = DocumentSettings.GetColorName(color)
-                };
-
-                _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
-                var count = await _unitOfWork.CompleteAsync();
-
-                if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
+            if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
             var driverToReturnDto = new DriverToReturnDto();
 
@@ -292,10 +293,14 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
             driverToReturnDto.DrivingLicenseIdFront = driver.DrivingLicenseIdFront;
             driverToReturnDto.DrivingLicenseIdBack = driver.DrivingLicenseIdBack;
+            driverToReturnDto.NationalIdFront = driver.NationalIdFront;
+            driverToReturnDto.NationalIdBack = driver.NationalIdBack;
+            driverToReturnDto.NationalIdExpiringDate = driver.NationalIdExpiringDate;
             driverToReturnDto.ExpiringDateOfDrivingLicense = driver.DrivingLicenseExpiringDate;
             driverToReturnDto.VehicleLicenseIdFront = vehicle.VehicleLicenseIdFront;
             driverToReturnDto.VehicleLicenseIdBack = vehicle.VehicleLicenseIdBack;
             driverToReturnDto.VehicleExpiringDate = vehicle.ExpiringDateOfVehicleLicence;
+            driverToReturnDto.VehiclePicture = vehicle.VehiclePicture;
             driverToReturnDto.ColourHexa = model.Colour;
             driverToReturnDto.Colour = vehicle.Colour;
             driverToReturnDto.AirConditional = vehicle.AirConditional;
@@ -336,81 +341,11 @@ namespace Proo.APIs.Controllers
                     Body = driverToReturnDto
                 }
 
-            }); 
-            
+            });
+
         }
 
 
-        ///[HttpPost("Login")]
-        ///public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)
-        ///{
-        ///    var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
-        ///
-        ///    if(existingUserByPhone is null)
-        ///    {
-        ///        // register
-        ///        var user = new ApplicationUser
-        ///        {
-        ///            PhoneNumber = model.PhoneNumber,
-        ///            UserName = model.PhoneNumber,
-        ///            IsPhoneNumberConfirmed = false
-        ///        };
-        ///        var result = await _userManager.CreateAsync(user);
-        ///
-        ///        if (!result.Succeeded) return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
-        ///
-        ///        // Generate OTP
-        ///
-        ///        user.OtpCode = "123456";
-        ///        user.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
-        ///
-        ///        var updateUser = await _userManager.UpdateAsync(user);
-        ///
-        ///        if (!updateUser.Succeeded) return Ok(new ApiValidationResponse() { Errors = updateUser.Errors.Select(E => E.Description) });
-        ///
-        ///        // Send OTP via SMS service [pendding]
-        ///
-        ///     
-        ///        return Ok(new ApiToReturnDtoResponse
-        ///        {
-        ///            Data = new DataResponse
-        ///            {
-        ///                Mas = "Registered succ , Verification code sent to your phone.",
-        ///                StatusCode = StatusCodes.Status200OK,
-        ///                Body = new List<object>()
-        ///
-        ///            }
-        ///        });
-        ///    }
-        ///
-        ///    // login 
-        ///    if (!existingUserByPhone.IsPhoneNumberConfirmed) return BadRequest(new ApiResponse(400, "Phone number not verified."));
-        ///
-        ///
-        ///    // Generate OTP
-        ///
-        ///    existingUserByPhone.OtpCode = "123456";
-        ///    existingUserByPhone.OtpExpiryTime = DateTime.UtcNow.AddDays(5); // Expiry after 5 days
-        ///
-        ///    var updated = await _userManager.UpdateAsync(existingUserByPhone);
-        ///
-        ///    if (!updated.Succeeded) return Ok(new ApiValidationResponse() { Errors = updated.Errors.Select(E => E.Description) });
-        ///
-        ///    // Send OTP via SMS service
-        ///
-        ///
-        ///    return Ok(new ApiToReturnDtoResponse
-        ///    {
-        ///        Data = new DataResponse
-        ///        {
-        ///            Mas = "Logined succ.",
-        ///            StatusCode = StatusCodes.Status200OK,
-        ///            Body = new List<object>()
-        ///
-        ///        }
-        ///    });
-        ///
-        ///}
 
         [HttpPost("Login-register")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> Login(LoginDto model)

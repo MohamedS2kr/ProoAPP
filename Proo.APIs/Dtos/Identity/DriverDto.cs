@@ -11,6 +11,9 @@ namespace Proo.APIs.Dtos.Identity
         public string FullName { get; set; }
 
         [Required]
+        public IFormFile ProfilePictureUrl { get; set; }
+
+        [Required]
         public DateTime DateOfBirth { get; set; }
 
         public string Role { get; set; }
@@ -22,6 +25,8 @@ namespace Proo.APIs.Dtos.Identity
         public IFormFile NationalIdFront { get; set; }
         [Required]
         public IFormFile NationalIdBack { get; set; }
+        [Required]
+        public DateTime NationalIdExpiringDate { get; set; } 
 
         [Required]
         public IFormFile LicenseIdFront { get; set; } 
@@ -30,9 +35,8 @@ namespace Proo.APIs.Dtos.Identity
         public IFormFile LicenseIdBack { get; set; }
 
         [Required]
-        public DateTime ExpiringDate { get; set; } = DateTime.Now;
+        public DateTime ExpiringDate { get; set; } 
        
-        public bool IsAvailable { get; set; }
 
         // Foreign keys for vehicle relations (Dropdowns for selection in UI)
        
@@ -41,15 +45,19 @@ namespace Proo.APIs.Dtos.Identity
         public int VehicleModelId { get; set; } 
 
         [Required]
-        public DateTime YeareOfManufacuter { get; set; }
+        [RegularExpression(@"^(19|20)\d{2}$")]
+        public string YeareOfManufacuter { get; set; }
         [Required]
         public bool AirConditional { get; set; }
         [Required]
         public int NumberOfPassenger { get; set; }
         [Required]
-        public int NumberOfPalet { get; set; }
+        public string NumberOfPalet { get; set; }
         [Required]
         public string Colour { get; set; }
+        [Required]
+        public IFormFile VehiclePicture { get; set; }
+
         [Required]
         public IFormFile VehicleLicenseIdFront { get; set; }
         [Required]
