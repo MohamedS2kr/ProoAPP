@@ -175,8 +175,8 @@ namespace Proo.APIs.Controllers
                 DriverProfilePicture = driver.User.ProfilePictureUrl,
                 ProposedPrice = bid.OfferedPrice,
                 EstimatedArrivalTime = bid.Eta,
-                //VehicleType = vehcile.Type,
-                //VehicleCategory = vehcile.category
+                VehicleType = vehcile.vehicleModel.VehicleType.TypeName,  // navigate null TODO
+                VehicleCategory = vehcile.vehicleModel.ModelName // navigate null TODO
 
             });
 
