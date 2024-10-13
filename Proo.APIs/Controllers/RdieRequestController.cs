@@ -65,7 +65,7 @@ namespace Proo.APIs.Controllers
 
 
             // 2- check passenger has ongoing trip request 
-            var rideRequest = _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
+            var rideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
             if (rideRequest is not null) return BadRequest(new ApiResponse(400, "Customer has already a requested trip."));
 
             // 3- check passenger has ongoing trips
@@ -94,8 +94,9 @@ namespace Proo.APIs.Controllers
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
 
-            // 5- find the nearby drivers Ids  
-            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20);
+            // 5- find the nearby drivers Ids  and check driver gender 
+            
+            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 );
 
             // 6- Notify Drivers using signalR
             foreach (var id in nearbyDriverIds)
