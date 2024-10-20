@@ -8,6 +8,6 @@ namespace Proo.Core.Contract.Nearby_driver_service_contract
 {
     public interface INearbyDriversService
     {
-        Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers);
+        Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers , string GenderType);
     }
 }

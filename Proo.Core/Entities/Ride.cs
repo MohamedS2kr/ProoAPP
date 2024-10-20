@@ -11,11 +11,11 @@ namespace Proo.Core.Entities
     {
         public int Id { get; set; }
         public int RideRequestsId { get; set; } 
-        public  RideRequests? RideRequests { get; set; }
+        public virtual RideRequests? RideRequests { get; set; }
         public string PassengerId { get; set; } // ID of the passenger
-        public Passenger? Passenger { get; set; }
+        public virtual Passenger? Passenger { get; set; }
         public string DriverId { get; set; } //  ID of the driver who accepted the request
-        public Driver? Driver { get; set; }
+        public virtual Driver? Driver { get; set; }
  
         public Locations PickupLocation { get; set; }
         public Locations DestinationLocation { get; set; }

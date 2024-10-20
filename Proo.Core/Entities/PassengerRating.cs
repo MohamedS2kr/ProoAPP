@@ -12,8 +12,8 @@ namespace Proo.Core.Entities
         public int Score { get; set; } // Rating from 1 to 5 [rang dataAnnotation]
         public string? Review { get; set; }
         public string PassengerId { get; set; }
-        public Passenger? Passenger { get; set; }
+        public virtual Passenger? Passenger { get; set; }
         public int RideId { get; set; }
-        public Ride Ride { get; set; }
+        public virtual Ride Ride { get; set; }
     }
 }

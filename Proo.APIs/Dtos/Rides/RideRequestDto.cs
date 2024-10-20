@@ -1,4 +1,6 @@
-﻿namespace Proo.APIs.Dtos.Rides
+﻿using Proo.Core.Entities;
+
+namespace Proo.APIs.Dtos.Rides
 {
     public class RideRequestDto
     {   
@@ -12,5 +14,13 @@
 
         public string Category { get; set; }
         public double FarePrice { get; set; }
+
+        public GenderType DriverGenderSelection { get; set; }
+    }
+
+    public enum GenderType
+    {
+        FemaleOnly ,
+        General
     }
 }

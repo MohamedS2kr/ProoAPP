@@ -17,7 +17,7 @@ namespace Proo.Service.LocationService
             _database = redis.GetDatabase();
         }
 
-        public async Task UpdateDriverLocationAsync(string driverId, double lat, double Long , DriverStatus driverStatus)
+        public async Task UpdateDriverLocationAsync(string driverId, double lat, double Long , DriverStatus driverStatus , Gender DriverGender)
         {
             // Store driver location using GeoAdd
             await _database.GeoAddAsync(driverLocationKey, new GeoEntry(Long, lat, driverId));
@@ -29,6 +29,7 @@ namespace Proo.Service.LocationService
             {
                 new HashEntry("status" , driverStatus.ToString()),
                 new HashEntry("lastUpdateTime" , DateTime.Now.ToString("o")),
+                new HashEntry("driverGender" , DriverGender.ToString()),
             });
 
             // Set a TTL on the driver status to indicate availability expires if no update is received

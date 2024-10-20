@@ -77,7 +77,7 @@ namespace Proo.APIs
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+                options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>

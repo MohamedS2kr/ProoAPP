@@ -91,12 +91,13 @@ namespace Proo.APIs.Controllers
             };
 
             _unitOfWork.Repositoy<RideRequests>().Add(rideRequestModel);
-            var count = await _unitOfWork.CompleteAsync();
-            if (count <= 0) return BadRequest(new ApiResponse(400));
+
 
             // 5- find the nearby drivers Ids  and check driver gender 
-            
-            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 );
+            if (request.DriverGenderSelection == GenderType.FemaleOnly && user.Gender == Gender.Male)
+                return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
+
+            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 , request.DriverGenderSelection.ToString());
 
             // 6- Notify Drivers using signalR
             foreach (var id in nearbyDriverIds)
@@ -116,7 +117,8 @@ namespace Proo.APIs.Controllers
                 // send the notification to nearby driver 
                 await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
             }
-
+            var count = await _unitOfWork.CompleteAsync();
+            if (count <= 0) return BadRequest(new ApiResponse(400));
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse

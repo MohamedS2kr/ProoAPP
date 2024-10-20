@@ -11,8 +11,8 @@ namespace Proo.Core.Entities
         public int Id { get; set; }
         public string TypeName { get; set; }  
         public int CategoryOfVehicleId { get; set; }
-        public CategoryOfVehicle? CategoryOfVehicle { get; set; }  
+        public virtual CategoryOfVehicle? CategoryOfVehicle { get; set; }  
 
-        public ICollection<VehicleModel>? vehicleModels { get; set; } 
+        public virtual ICollection<VehicleModel>? vehicleModels { get; set; } 
     }
 }

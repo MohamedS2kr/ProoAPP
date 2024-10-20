@@ -11,11 +11,11 @@ namespace Proo.Core.Entities
         public string Id { get; set; }
 
         public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        public virtual ApplicationUser User { get; set; }
         public string? PreferredPaymentMethod { get; set; }
-        public ICollection<Ride>? Rides { get; set; } 
+        public virtual ICollection<Ride>? Rides { get; set; } 
         //public ICollection<RideRequests> RideRequests { get; set; }
-        public ICollection<PassengerRating>? PassengerRatings { get; private set; }
+        public virtual ICollection<PassengerRating>? PassengerRatings { get; private set; }
         
         public bool IsRiding { get; set; }
     }

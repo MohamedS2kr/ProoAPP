@@ -25,9 +25,9 @@ namespace Proo.Core.Entities
         public DateTime? LastModifiedAt { get; set; }
         public DateTime? DeletedAt { get;  set; }
         public string PassengerId { get; set; }
-        public  Passenger? Passenger { get; set; }
+        public virtual Passenger? Passenger { get; set; }
         public string? DriverId { get; set; }
-        public  Driver? Driver { get; set; }
+        public virtual Driver? Driver { get; set; }
         public RideRequestStatus Status { get; set; } 
         public PaymentMethod paymentMethod { get; set; }
     }

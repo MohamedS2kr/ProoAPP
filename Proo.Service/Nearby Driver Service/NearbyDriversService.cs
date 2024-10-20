@@ -17,10 +17,18 @@ namespace Proo.Service.Nearby_Driver_Service
             _database = redis.GetDatabase();
         }
 
-        public async Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers)
+        public async Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers , string GenderType)
         {
             // Get driver IDs within the given radius
-            var nearbyDrivers = await _database.GeoRadiusAsync(DriverGeoKey, pickupLng, pickupLat, radiusKm * 1000, GeoUnit.Kilometers, count: maxDrivers, order : Order.Ascending);
+            //var nearbyDrivers = await _database.GeoRadiusAsync(DriverGeoKey, pickupLng, pickupLat, radiusKm * 1000, GeoUnit.Kilometers, count: maxDrivers, order : Order.Ascending);
+            var nearbyDrivers = await _database.GeoSearchAsync(
+                key: DriverGeoKey,
+                longitude: pickupLng,
+                latitude: pickupLat,
+                shape: new GeoSearchCircle(radiusKm, GeoUnit.Kilometers),
+                order: Order.Ascending, 
+                count: maxDrivers 
+                );
 
             var aviableDriverIds = new List<Guid>();
 
@@ -30,6 +38,20 @@ namespace Proo.Service.Nearby_Driver_Service
 
                 // Check if the driver is available by querying their status
                 var status = await _database.HashGetAsync($"driver:status:{driverId}", "status");
+                var driverGender = await _database.HashGetAsync($"driver:status:{driverId}", "driverGender");
+
+                if(GenderType == "0") // femaleOnly
+                {
+                    if (status.HasValue && status.ToString() == "Avaiable" && driverGender.HasValue && driverGender == "Female")
+                    {
+                        aviableDriverIds.Add(driverId);
+                    }
+
+                    // Stop if the maximum number of drivers is reached
+                    if (aviableDriverIds.Count >= maxDrivers)
+                        break;
+                }
+
                 if (status.HasValue && status.ToString() == "Avaiable")
                 {
                     aviableDriverIds.Add(driverId);

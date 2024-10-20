@@ -19,10 +19,10 @@ namespace Proo.Core.Entities
         public BidStatus BidStatus { get; set; } = BidStatus.Pending;
 
         public string DriverId { get; set; }
-        public Driver Driver { get; set; }
+        public virtual Driver Driver { get; set; }
 
         public int RideRequestsId { get; set; }
-        public RideRequests? Ride { get; set; }
+        public virtual RideRequests? Ride { get; set; }
     }
 
     public enum BidStatus

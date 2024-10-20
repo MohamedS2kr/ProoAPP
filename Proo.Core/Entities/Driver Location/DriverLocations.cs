@@ -11,6 +11,6 @@ namespace Proo.Core.Entities.Driver_Location
         public string DriverId { get; set; } = null!;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public DateTime Timestamp { get; set; }
+        //public DateTime Timestamp { get; set; }
     }
 }

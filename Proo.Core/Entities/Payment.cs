@@ -10,7 +10,7 @@ namespace Proo.Core.Entities
     {
         public int Id { get; set; }
         public int RideId { get; set; }
-        public Ride? Ride { get; set; }
+        public virtual Ride? Ride { get; set; }
         public decimal Amount { get; set; }
         public PaymentMethod Method { get; set; }
         public DateTime PaymentDate { get; set; }

@@ -23,10 +23,10 @@ namespace Proo.Core.Entities
 
         //navigation property for Driver
         public string DriverId { get; set; }
-        public Driver? Driver { get; set; }
+        public virtual Driver? Driver { get; set; }
 
         // Foreign key to model
         public int VehicleModelId { get; set; }
-        public VehicleModel? vehicleModel { get; set; }
+        public virtual VehicleModel? vehicleModel { get; set; }
     }
 }

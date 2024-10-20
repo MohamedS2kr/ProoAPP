@@ -25,7 +25,7 @@ namespace Proo.Core.Entities
         public Gender Gender { get; set; } = Gender.Male;
         public string? MacAddress { get; set; }
 
-        public List<RefreshToken> RefreshTokens { get; set; }
+        public virtual List<RefreshToken> RefreshTokens { get; set; }
 
     }
 }
