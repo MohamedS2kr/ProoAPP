@@ -98,7 +98,7 @@ namespace Proo.APIs.Controllers
                 return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
 
             var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 , request.DriverGenderSelection.ToString());
-
+            List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
             // 6- Notify Drivers using signalR
             foreach (var id in nearbyDriverIds)
             {
@@ -113,7 +113,7 @@ namespace Proo.APIs.Controllers
                     FarePrice = rideRequestModel.EstimatedPrice,
                     PassengerId = rideRequestModel.PassengerId,
                 };
-
+                rideNotificationDtos.Add(notifications);
                 // send the notification to nearby driver 
                 await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
             }
@@ -125,7 +125,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "The Request Data succ and Notifi the drivers",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = rideRequestModel
+                    Body = rideNotificationDtos
                 }
             };
 
