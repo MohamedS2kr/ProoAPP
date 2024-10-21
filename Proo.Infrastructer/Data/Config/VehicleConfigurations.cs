@@ -13,7 +13,7 @@ namespace Proo.Infrastructer.Data.Config
     {
         public void Configure(EntityTypeBuilder<Vehicle> builder)
         {
-            builder.HasKey(v => v.Id);
+            //builder.HasKey(v => v.Id);
 
           
             builder.Property(v => v.Colour).IsRequired().HasMaxLength(100);

@@ -44,6 +44,20 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryOfVehicles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryOfVehicles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -123,13 +137,13 @@ namespace Proo.Infrastructer.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LicenseIdFront = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LicenseIdBack = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExpiringDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLat = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
-                    LastLng = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
+                    NationalIdFront = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NationalIdBack = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NationalIdExpiringDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DrivingLicenseIdFront = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DrivingLicenseIdBack = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DrivingLicenseExpiringDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastActiveTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     StatusWork = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
@@ -151,7 +165,7 @@ namespace Proo.Infrastructer.Data.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PreferredPaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PreferredPaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsRiding = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -184,6 +198,26 @@ namespace Proo.Infrastructer.Data.Migrations
                         name: "FK_RefreshToken_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VehicleTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TypeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CategoryOfVehicleId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VehicleTypes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VehicleTypes_CategoryOfVehicles_CategoryOfVehicleId",
+                        column: x => x.CategoryOfVehicleId,
+                        principalTable: "CategoryOfVehicles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -234,35 +268,6 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Vehicles",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    YeareOfManufacuter = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AirConditional = table.Column<bool>(type: "bit", nullable: false),
-                    NumberOfPassenger = table.Column<int>(type: "int", nullable: false),
-                    NumberOfPalet = table.Column<int>(type: "int", nullable: false),
-                    Colour = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    VehicleLicenseIdFront = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    VehicleLicenseIdBack = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ExpiringDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Vehicles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Vehicles_Drivers_DriverId",
-                        column: x => x.DriverId,
-                        principalTable: "Drivers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RideRequests",
                 columns: table => new
                 {
@@ -303,6 +308,26 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "VehicleModels",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ModelName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    VehicleTypeId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VehicleModels", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_VehicleModels_VehicleTypes_VehicleTypeId",
+                        column: x => x.VehicleTypeId,
+                        principalTable: "VehicleTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bids",
                 columns: table => new
                 {
@@ -311,6 +336,7 @@ namespace Proo.Infrastructer.Data.Migrations
                     OfferedPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Eta = table.Column<int>(type: "int", nullable: false),
+                    BidStatus = table.Column<int>(type: "int", nullable: false),
                     DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RideRequestsId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -376,6 +402,96 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Vehicles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    YeareOfManufacuter = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AirConditional = table.Column<bool>(type: "bit", nullable: false),
+                    NumberOfPassenger = table.Column<int>(type: "int", nullable: false),
+                    NumberOfPlate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Colour = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    VehiclePicture = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VehicleLicenseIdFront = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    VehicleLicenseIdBack = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ExpiringDateOfVehicleLicence = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    VehicleModelId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vehicles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Vehicles_Drivers_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Drivers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Vehicles_VehicleModels_VehicleModelId",
+                        column: x => x.VehicleModelId,
+                        principalTable: "VehicleModels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DriverRatings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Review = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RideId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DriverRatings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DriverRatings_Drivers_DriverId",
+                        column: x => x.DriverId,
+                        principalTable: "Drivers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DriverRatings_Rides_RideId",
+                        column: x => x.RideId,
+                        principalTable: "Rides",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PassengerRatings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Review = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PassengerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RideId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PassengerRatings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PassengerRatings_Passengers_PassengerId",
+                        column: x => x.PassengerId,
+                        principalTable: "Passengers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PassengerRatings_Rides_RideId",
+                        column: x => x.RideId,
+                        principalTable: "Rides",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -396,43 +512,6 @@ namespace Proo.Infrastructer.Data.Migrations
                         principalTable: "Rides",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ratings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Score = table.Column<int>(type: "int", nullable: false),
-                    Review = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PassengerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    DriverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RideId = table.Column<int>(type: "int", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ratings", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ratings_Drivers_DriverId",
-                        column: x => x.DriverId,
-                        principalTable: "Drivers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Ratings_Passengers_PassengerId",
-                        column: x => x.PassengerId,
-                        principalTable: "Passengers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
-                    table.ForeignKey(
-                        name: "FK_Ratings_Rides_RideId",
-                        column: x => x.RideId,
-                        principalTable: "Rides",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(
@@ -478,9 +557,29 @@ namespace Proo.Infrastructer.Data.Migrations
                 column: "RideRequestsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DriverRatings_DriverId",
+                table: "DriverRatings",
+                column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DriverRatings_RideId",
+                table: "DriverRatings",
+                column: "RideId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Drivers_UserId",
                 table: "Drivers",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PassengerRatings_PassengerId",
+                table: "PassengerRatings",
+                column: "PassengerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PassengerRatings_RideId",
+                table: "PassengerRatings",
+                column: "RideId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Passengers_UserId",
@@ -490,21 +589,6 @@ namespace Proo.Infrastructer.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_RideId",
                 table: "Payments",
-                column: "RideId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_DriverId",
-                table: "Ratings",
-                column: "DriverId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_PassengerId",
-                table: "Ratings",
-                column: "PassengerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ratings_RideId",
-                table: "Ratings",
                 column: "RideId");
 
             migrationBuilder.CreateIndex(
@@ -540,9 +624,25 @@ namespace Proo.Infrastructer.Data.Migrations
                 filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_VehicleModels_VehicleTypeId",
+                table: "VehicleModels",
+                column: "VehicleTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_DriverId",
                 table: "Vehicles",
                 column: "DriverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Vehicles_VehicleModelId",
+                table: "Vehicles",
+                column: "VehicleModelId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VehicleTypes_CategoryOfVehicleId",
+                table: "VehicleTypes",
+                column: "CategoryOfVehicleId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -566,10 +666,13 @@ namespace Proo.Infrastructer.Data.Migrations
                 name: "Bids");
 
             migrationBuilder.DropTable(
-                name: "Payments");
+                name: "DriverRatings");
 
             migrationBuilder.DropTable(
-                name: "Ratings");
+                name: "PassengerRatings");
+
+            migrationBuilder.DropTable(
+                name: "Payments");
 
             migrationBuilder.DropTable(
                 name: "RefreshToken");
@@ -584,13 +687,22 @@ namespace Proo.Infrastructer.Data.Migrations
                 name: "Rides");
 
             migrationBuilder.DropTable(
+                name: "VehicleModels");
+
+            migrationBuilder.DropTable(
                 name: "RideRequests");
+
+            migrationBuilder.DropTable(
+                name: "VehicleTypes");
 
             migrationBuilder.DropTable(
                 name: "Drivers");
 
             migrationBuilder.DropTable(
                 name: "Passengers");
+
+            migrationBuilder.DropTable(
+                name: "CategoryOfVehicles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

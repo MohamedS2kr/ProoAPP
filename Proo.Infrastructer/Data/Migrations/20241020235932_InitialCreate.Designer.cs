@@ -12,14 +12,14 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241006170227_FinalRowUpjdateInRating")]
-    partial class FinalRowUpjdateInRating
+    [Migration("20241020235932_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.33")
+                .HasAnnotation("ProductVersion", "6.0.35")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -332,6 +332,9 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("NationalIdExpiringDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("NationalIdFront")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -619,8 +622,9 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<int>("NumberOfPassenger")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumberOfPlate")
-                        .HasColumnType("int");
+                    b.Property<string>("NumberOfPlate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VehicleLicenseIdBack")
                         .IsRequired()
@@ -635,8 +639,13 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Property<int>("VehicleModelId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("YeareOfManufacuter")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("VehiclePicture")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("YeareOfManufacuter")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

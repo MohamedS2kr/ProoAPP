@@ -174,12 +174,12 @@ namespace Proo.APIs.Controllers
             await _hubContext.Clients.User(passengerId).SendAsync("ReceiveBid", new
             {
                 DriverId = bid.DriverId,
-                DriverName = driver.User.FullName,
-                DriverProfilePicture = driver.User.ProfilePictureUrl,
+                DriverName = driver.User?.FullName ?? "",
+                DriverProfilePicture = driver.User?.ProfilePictureUrl ?? "",
                 ProposedPrice = bid.OfferedPrice,
                 EstimatedArrivalTime = bid.Eta,
-                VehicleType = vehcile.vehicleModel.VehicleType.TypeName,  // navigate null TODO
-                VehicleCategory = vehcile.vehicleModel.ModelName // navigate null TODO
+                VehicleType = vehcile.vehicleModel?.VehicleType?.TypeName ?? "",  // navigate null TODO
+                VehicleCategory = vehcile.vehicleModel?.ModelName ?? "" // navigate null TODO
 
             });
 
@@ -217,25 +217,25 @@ namespace Proo.APIs.Controllers
             var onminutesAgo = DateTime.Now.AddMinutes(-1);
             if (bid.Ride.LastModifiedAt < onminutesAgo) return BadRequest(new ApiResponse(400, "Ride Reuest is expired."));
 
-            //// step 2 : Ensure that the driver exists
-            //var driver = await _unitOfWork.Repositoy<Driver>().GetDriverOrPassengerByIdAsync(DriverId);
-            //if (driver is null) return BadRequest(new ApiResponse(400, "The Driver is not exist."));
+            // step 2 : Ensure that the driver exists
+            var driver = await _unitOfWork.Repositoy<Driver>().GetDriverOrPassengerByIdAsync(bid.DriverId);
+            if (driver is null) return BadRequest(new ApiResponse(400, "The Driver is not exist."));
 
-            //// Step 3: check driver has ongoing trip requests
-            //var driveronGoingRideReuest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForDriver(DriverId);
-            //if (driveronGoingRideReuest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
+            // Step 3: check driver has ongoing trip requests
+            var driveronGoingRideReuest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForDriver(bid.DriverId);
+            if (driveronGoingRideReuest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
 
-            //// Step 4: check driver has ongoing trips
-            //var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(DriverId);
-            //if (rides is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing trips"));
+            // Step 4: check driver has ongoing trips
+            var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(bid.DriverId);
+            if (rides is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing trips"));
 
             // check passenger has ongoing ride request 
-            var passengerOnGoingRideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
-            if (passengerOnGoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing Ride request."));
+            //var passengerOnGoingRideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
+            //if (passengerOnGoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing Ride request."));
 
-            // check passenger has ongoing trips 
-            var rides = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
-            if (rides is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing trips."));
+            //// check passenger has ongoing trips 
+            //var rides = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
+            //if (rides is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing trips."));
 
             // step 5: Validate that the ride request is still open
             var rideReuest = bid.Ride;
@@ -270,9 +270,9 @@ namespace Proo.APIs.Controllers
 
             //step 8 : Update Driver Status to Unavailable
             var driverRepo = _unitOfWork.Repositoy<Driver>();
-            var driver = await driverRepo.GetDriverOrPassengerByIdAsync(bid.DriverId);
-            if (driver is null)
-                return BadRequest(new ApiResponse(400, "Driver is not exist."));
+            //var driver = await driverRepo.GetDriverOrPassengerByIdAsync(bid.DriverId);
+            //if (driver is null)
+            //    return BadRequest(new ApiResponse(400, "Driver is not exist."));
 
             driver.Status = DriverStatus.InRide;
             driverRepo.Update(driver);

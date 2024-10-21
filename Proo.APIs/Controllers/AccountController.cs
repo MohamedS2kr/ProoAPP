@@ -304,11 +304,11 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.ColourHexa = model.Colour;
             driverToReturnDto.Colour = vehicle.Colour;
             driverToReturnDto.AirConditional = vehicle.AirConditional;
-            driverToReturnDto.VehicleModel = vehicle.vehicleModel.ModelName;
-            driverToReturnDto.VehicleType = vehicle.vehicleModel.VehicleType.TypeName;
+            driverToReturnDto.VehicleModel = vehicle.vehicleModel?.ModelName ?? "";
+            driverToReturnDto.VehicleType = vehicle.vehicleModel?.VehicleType?.TypeName ?? "";
             driverToReturnDto.NumberOfPlate = vehicle.NumberOfPlate;
             driverToReturnDto.NumberOfPassenger = vehicle.NumberOfPassenger;
-            driverToReturnDto.VehicleCategory = vehicle.vehicleModel.VehicleType.CategoryOfVehicle.Name;
+            driverToReturnDto.VehicleCategory = vehicle.vehicleModel?.VehicleType?.CategoryOfVehicle?.Name ?? "";
             driverToReturnDto.YeareOfManufacuter = vehicle.YeareOfManufacuter;
 
 
