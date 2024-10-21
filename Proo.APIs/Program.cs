@@ -17,6 +17,7 @@ using Proo.Core.Contract.Nearby_driver_service_contract;
 using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
+using Proo.Core.Entities.Driver_Location;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
@@ -31,7 +32,10 @@ using Proo.Service.Nearby_Driver_Service;
 using Proo.Service.VehicleModelService;
 using Proo.Service.VehicleTypeService;
 using StackExchange.Redis;
+using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
+
 
 
 namespace Proo.APIs
@@ -202,8 +206,67 @@ namespace Proo.APIs
             app.MapControllers();
             #endregion
 
+
+            #region WebSocket
+            //app.UseWebSockets();
+
+
+            //// ????? Endpoint ?? WebSocket
+            //app.Use(async (context, next) =>
+            //{
+            //    if (context.Request.Path == "/ws")
+            //    {
+            //        if (context.WebSockets.IsWebSocketRequest)
+            //        {
+            //            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            //            await Echo(context, webSocket); // ?? ?????? ???????
+            //        }
+            //        else
+            //        {
+            //            context.Response.StatusCode = 400; // Bad Request
+            //        }
+            //    }
+            //    else
+            //    {
+            //        await next(); // ????? ?? ??????? ??????
+            //    }
+            //}); 
+            #endregion
+
             app.Run();
         }
+
+        #region WebSocket
+        //private async Task Echo(HttpContext context, WebSocket webSocket)
+        //{
+        //    var buffer = new byte[1024 * 4];
+        //    WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+        //    while (!result.CloseStatus.HasValue)
+        //    {
+        //        var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+        //        Console.WriteLine($"Received: {receivedMessage}");
+
+        //        // ????? ??????? ??? ???? ?????? ????????
+        //        var location = JsonSerializer.Deserialize<DriverLocations>(receivedMessage);
+
+        //        // ????? ?????? ?? Redis ?? ????? ????????
+        //        await _redis.GeoAddAsync("drivers:locations", location.Longitude, location.Latitude, "driverId");
+
+        //        // ?? ??? ??????
+        //        await webSocket.SendAsync(
+        //            new ArraySegment<byte>(Encoding.UTF8.GetBytes($"Location Updated: {location.Latitude}, {location.Longitude}")),
+        //            result.MessageType,
+        //            result.EndOfMessage,
+        //            CancellationToken.None);
+
+        //        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+        //    }
+
+        //    await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+        //} 
+        #endregion
+
     }
 }
 
