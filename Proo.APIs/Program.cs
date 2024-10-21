@@ -117,7 +117,9 @@ namespace Proo.APIs
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
-                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                    .WithExposedHeaders("Content-Disposition")
+                    .SetPreflightMaxAge(TimeSpan.FromMinutes(10)));
             });
 
 
