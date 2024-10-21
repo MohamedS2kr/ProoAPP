@@ -202,7 +202,7 @@ namespace Proo.APIs
             app.UseAuthorization();
 
             app.UseStaticFiles();
-
+            app.MapHub<ChatHub>("/Chat");
             app.MapControllers();
             #endregion
 
