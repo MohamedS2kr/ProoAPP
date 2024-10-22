@@ -7,7 +7,7 @@ namespace Proo.APIs.Hubs
     {
         public async Task SendRideRequest(RideNotificationDto notification)
         {
-            await Clients.Group("NearbyDrivers").SendAsync("ReceiveRideRequest", notification);
+            await Clients.Group("NearbyDrivers").SendAsync("receiveriderequest", notification);
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Proo.APIs.Controllers
                 };
                 rideNotificationDtos.Add(notifications);
                 // send the notification to nearby driver 
-                await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
+                await _hubContext.Clients.User(id.ToString()).SendAsync("receiveriderequest", notifications);
             }
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
