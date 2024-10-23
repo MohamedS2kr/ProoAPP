@@ -204,8 +204,8 @@ namespace Proo.APIs
             app.UseAuthorization();
 
             app.UseStaticFiles();
-            app.MapHub<ChatHub>("/Chat");
-            app.MapHub<RideHub>("/RideRequest");
+            app.MapHub<ChatHub>("/ChatHub");
+            app.MapHub<RideHub>("/RideRequestHub");
             app.MapControllers();
             
             #endregion

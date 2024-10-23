@@ -132,6 +132,36 @@ namespace Proo.APIs.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = Passenger)]
+        [HttpPost("NearbyDriver")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> NearbyDriver(FindDriversForUserDto request)
+        {
+            // 1- check passenger is exist 
+            var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
+
+            var passenger = await _passengerRepo.GetByUserId(user.Id);
+            if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
+
+            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
+            
+            if (nearbyDriverIds is not null) 
+                return NotFound(new ApiResponse(400, "Sorry Not Find Any NearbyDriver Now "));
+            
+            // Get all Dirver RealTime
+            var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
+                {
+                    Mas = "The Request Data succ and Notifi the drivers",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = nearbyDriverIds
+                }
+            };
+
+            return Ok(response);
+        }
+
         [HttpPost("SubmitBid")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> SubmitBid(BidDto bidDto)
         {
