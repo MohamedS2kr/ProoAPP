@@ -11,13 +11,13 @@ using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
 using System.Security.Claims;
 using AutoMapper;
 using Proo.APIs.Hubs;
-using Proo.Core.Contract.Nearby_driver_service_contract;
 using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Contract;
 using Microsoft.EntityFrameworkCore;
 using Proo.Service._RideService;
 using Proo.Core.Specifications.BidSpecifications;
+using Proo.Service.Nearby_Driver_Service;
 
 namespace Proo.APIs.Controllers
 {
@@ -25,12 +25,10 @@ namespace Proo.APIs.Controllers
     public class FastRideController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly IRideService _rideService;
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPassengerRepository _passengerRepo;
-        private readonly INearbyDriversService _nearbyDriversService;
+        private readonly INearbyDriverService _nearbyDriversService;
         private const string Passenger = "passenger";
         private const string driver = "driver";
         public FastRideController(IUnitOfWork unitOfWork
@@ -39,12 +37,10 @@ namespace Proo.APIs.Controllers
                 IHubContext<RideHub> hubContext,
                 UserManager<ApplicationUser> userManager
                 , IPassengerRepository passengerRepo
-                , INearbyDriversService nearbyDriversService
+                , INearbyDriverService nearbyDriversService
             )
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _rideService = rideService;
             _hubContext = hubContext;
             _userManager = userManager;
             _passengerRepo = passengerRepo;
@@ -161,99 +157,99 @@ namespace Proo.APIs.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = driver)]
-        [HttpPost("accept-bid")]
-        public async Task<ActionResult> AcceptBid([FromBody] AcceptBidRequestDto acceptBidDto)
-        {
-            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+        //[Authorize(Roles = driver)]
+        //[HttpPost("accept-bid")]
+        //public async Task<ActionResult> AcceptBid([FromBody] AcceptBidRequestDto acceptBidDto)
+        //{
+        //    var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+        //    var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
 
-            var passenger = await _passengerRepo.GetByUserId(user.Id);
-            if (passenger is null) return BadRequest(new ApiResponse(400, "Passenger is not exist"));
-            // step 1 : Get the bid and validate it
-            var spec = new BidWithRideRequestSpecifications(acceptBidDto.BidId);
-            var bid = await _unitOfWork.Repositoy<Bid>().GetByIdWithSpecAsync(spec);
-            if (bid is null) return BadRequest(new ApiResponse(400, "The Bid is not exist."));
+        //    var passenger = await _passengerRepo.GetByUserId(user.Id);
+        //    if (passenger is null) return BadRequest(new ApiResponse(400, "Passenger is not exist"));
+        //    // step 1 : Get the bid and validate it
+        //    var spec = new BidWithRideRequestSpecifications(acceptBidDto.BidId);
+        //    var bid = await _unitOfWork.Repositoy<Bid>().GetByIdWithSpecAsync(spec);
+        //    if (bid is null) return BadRequest(new ApiResponse(400, "The Bid is not exist."));
 
-            // validate bid status 
-            if (bid.BidStatus != BidStatus.Pending)
-                return BadRequest(new ApiResponse(400, "The selected bid is not lavailable."));
+        //    // validate bid status 
+        //    if (bid.BidStatus != BidStatus.Pending)
+        //        return BadRequest(new ApiResponse(400, "The selected bid is not lavailable."));
 
-            // trip request is invalid/expired if trip request is older than 1 minute TODO
-            var onminutesAgo = DateTime.Now.AddMinutes(-1);
-            if (bid.Ride.LastModifiedAt < onminutesAgo) return BadRequest(new ApiResponse(400, "Ride Reuest is expired."));
+        //    // trip request is invalid/expired if trip request is older than 1 minute TODO
+        //    var onminutesAgo = DateTime.Now.AddMinutes(-1);
+        //    if (bid.Ride.LastModifiedAt < onminutesAgo) return BadRequest(new ApiResponse(400, "Ride Reuest is expired."));
 
-            // step 2 : Ensure that the driver exists
-            var driver = await _unitOfWork.Repositoy<Driver>().GetDriverOrPassengerByIdAsync(bid.DriverId);
-            if (driver is null) return BadRequest(new ApiResponse(400, "The Driver is not exist."));
+        //    // step 2 : Ensure that the driver exists
+        //    var driver = await _unitOfWork.Repositoy<Driver>().GetDriverOrPassengerByIdAsync(bid.DriverId);
+        //    if (driver is null) return BadRequest(new ApiResponse(400, "The Driver is not exist."));
 
-            // Step 3: check driver has ongoing trip requests
-            var driveronGoingRideReuest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForDriver(bid.DriverId);
-            if (driveronGoingRideReuest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
+        //    // Step 3: check driver has ongoing trip requests
+        //    var driveronGoingRideReuest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForDriver(bid.DriverId);
+        //    if (driveronGoingRideReuest is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing Ride request."));
 
-            // Step 4: check driver has ongoing trips
-            var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(bid.DriverId);
-            if (rides is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing trips"));
+        //    // Step 4: check driver has ongoing trips
+        //    var rides = await _unitOfWork.RideRepository.GetActiveTripForDriver(bid.DriverId);
+        //    if (rides is not null) return BadRequest(new ApiResponse(400, "Driver has an ongoing trips"));
 
-            // check passenger has ongoing ride request 
-            //var passengerOnGoingRideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
-            //if (passengerOnGoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing Ride request."));
+        //    // check passenger has ongoing ride request 
+        //    //var passengerOnGoingRideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
+        //    //if (passengerOnGoingRideRequest is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing Ride request."));
 
-            //// check passenger has ongoing trips 
-            //var rides = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
-            //if (rides is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing trips."));
+        //    //// check passenger has ongoing trips 
+        //    //var rides = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
+        //    //if (rides is not null) return BadRequest(new ApiResponse(400, "Passenger has an ongoing trips."));
 
-            // step 5: Validate that the ride request is still open
-            var rideReuest = bid.Ride;
-            if (rideReuest is null || rideReuest.Status != RideRequestStatus.Requested)
-                return BadRequest(new ApiResponse(400, "Ride request is not available."));
-
-
-            // step 6 : Update Ride Request and Bid Status
-            bid.BidStatus = BidStatus.Accepted;
-            // bid --> Accepted at 
-
-            rideReuest.Status = RideRequestStatus.CUSTOMER_ACCEPTED;
-            rideReuest.DriverId = bid.DriverId;
-            rideReuest.LastModifiedAt = DateTime.Now;
-
-            _unitOfWork.Repositoy<RideRequests>().Update(rideReuest);
+        //    // step 5: Validate that the ride request is still open
+        //    var rideReuest = bid.Ride;
+        //    if (rideReuest is null || rideReuest.Status != RideRequestStatus.Requested)
+        //        return BadRequest(new ApiResponse(400, "Ride request is not available."));
 
 
-            //step 7 : Update other bids to rejected
-            var bidRepo = _unitOfWork.Repositoy<Bid>();
-            var BidsSpec = new BidWithOtherBidsForDriverSpecifications(rideReuest.Id, bid.Id);
-            var otherBids = await bidRepo.GetAllWithSpecAsync(BidsSpec);
+        //    // step 6 : Update Ride Request and Bid Status
+        //    bid.BidStatus = BidStatus.Accepted;
+        //    // bid --> Accepted at 
 
-            foreach (var other in otherBids)
-            {
-                other.BidStatus = BidStatus.Rejected;
-                bidRepo.Update(other);
-                // notify TODO
-            }
+        //    rideReuest.Status = RideRequestStatus.CUSTOMER_ACCEPTED;
+        //    rideReuest.DriverId = bid.DriverId;
+        //    rideReuest.LastModifiedAt = DateTime.Now;
+
+        //    _unitOfWork.Repositoy<RideRequests>().Update(rideReuest);
 
 
+        //    //step 7 : Update other bids to rejected
+        //    var bidRepo = _unitOfWork.Repositoy<Bid>();
+        //    var BidsSpec = new BidWithOtherBidsForDriverSpecifications(rideReuest.Id, bid.Id);
+        //    var otherBids = await bidRepo.GetAllWithSpecAsync(BidsSpec);
 
-            //step 8 : Update Driver Status to Unavailable
-            var driverRepo = _unitOfWork.Repositoy<Driver>();
-            //var driver = await driverRepo.GetDriverOrPassengerByIdAsync(bid.DriverId);
-            //if (driver is null)
-            //    return BadRequest(new ApiResponse(400, "Driver is not exist."));
+        //    foreach (var other in otherBids)
+        //    {
+        //        other.BidStatus = BidStatus.Rejected;
+        //        bidRepo.Update(other);
+        //        // notify TODO
+        //    }
 
-            driver.Status = DriverStatus.InRide;
-            driverRepo.Update(driver);
 
-            // Save changes
-            var count = await _unitOfWork.CompleteAsync();
-            if (count <= 0) return BadRequest(new ApiResponse(400, "The error when save change in database"));
 
-            return Ok(new
-            {
-                Message = "Bid accepted successfully.",
-                BidId = bid.Id,
-                RideRequestId = rideReuest.Id,
-                DriverId = bid.DriverId
-            });
-        }
+        //    //step 8 : Update Driver Status to Unavailable
+        //    var driverRepo = _unitOfWork.Repositoy<Driver>();
+        //    //var driver = await driverRepo.GetDriverOrPassengerByIdAsync(bid.DriverId);
+        //    //if (driver is null)
+        //    //    return BadRequest(new ApiResponse(400, "Driver is not exist."));
+
+        //    driver.Status = DriverStatus.InRide;
+        //    driverRepo.Update(driver);
+
+        //    // Save changes
+        //    var count = await _unitOfWork.CompleteAsync();
+        //    if (count <= 0) return BadRequest(new ApiResponse(400, "The error when save change in database"));
+
+        //    return Ok(new
+        //    {
+        //        Message = "Bid accepted successfully.",
+        //        BidId = bid.Id,
+        //        RideRequestId = rideReuest.Id,
+        //        DriverId = bid.DriverId
+        //    });
+        //}
     }
 }
