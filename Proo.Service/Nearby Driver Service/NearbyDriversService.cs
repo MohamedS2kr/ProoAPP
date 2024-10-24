@@ -1,5 +1,4 @@
-﻿using Proo.Core.Contract.Nearby_driver_service_contract;
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Proo.Service.Nearby_Driver_Service
 {
-    public class NearbyDriversService : INearbyDriversService
+    public class NearbyDriversService : INearbyDriverService
     {
         private readonly IDatabase _database;
         private const string DriverGeoKey = "driver:locations";
@@ -64,5 +63,27 @@ namespace Proo.Service.Nearby_Driver_Service
 
             return aviableDriverIds;
         }
+
+        public async Task<IEnumerable<GeoEntry>> GetAllNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers)
+        {
+            var result = await _database.GeoSearchAsync(
+               key: DriverGeoKey,
+               longitude: pickupLng,
+               latitude: pickupLat,
+               shape: new GeoSearchCircle(radiusKm, GeoUnit.Kilometers),
+               order: Order.Ascending,
+               count: maxDrivers
+               );
+
+            List<GeoEntry> geoEntries = new List<GeoEntry>();
+
+            foreach (var entry in geoEntries)
+            {
+                geoEntries.Add(entry);
+            }
+
+            return geoEntries;
+        }
+
     }
 }

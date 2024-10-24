@@ -34,19 +34,19 @@ namespace Proo.APIs.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUpdateDriverLocationService _updateLocation;
         private readonly IDriverRepository _driverRepo;
-        private readonly IHubContext<RideHub> _hubContext;
+        private readonly IHubContext<LocationHub> _hubContext;
 
         public DriversController(IUnitOfWork unitOfWork 
             , UserManager<ApplicationUser> userManager
             , IUpdateDriverLocationService updateLocation
-            , IDriverRepository driverRepo,
-            IHubContext<RideHub> hubContex)
+            , IDriverRepository driverRepo
+            , IHubContext<LocationHub> hubContext)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _updateLocation = updateLocation;
             _driverRepo = driverRepo;
-            _hubContext = hubContex;
+            _hubContext = hubContext;
         }
 
 
@@ -155,14 +155,16 @@ namespace Proo.APIs.Controllers
 
             if (driver is null) return BadRequest(new ApiResponse(400, "The driver not found"));
 
-            if (driverLocations is null || driverLocations.DriverId != driver.Id)
+            if (driverLocations is null /*|| driverLocations.DriverId != driver.Id*/)
                 return BadRequest(new ApiResponse(400, "Invalid request data."));
 
             if (driverLocations.Latitude < -90 || driverLocations.Latitude > 90 || driverLocations.Longitude < -180 || driverLocations.Longitude > 180)
                 return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
             
             // call Update driver location service 
-            await _updateLocation.UpdateDriverLocationAsync(driverLocations.DriverId, driverLocations.Latitude, driverLocations.Longitude , driver.Status , user.Gender);
+            await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude , driver.Status , user.Gender);
+
+            await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", driver.Id, driverLocations.Latitude, driverLocations.Longitude);
 
             return Ok(new ApiToReturnDtoResponse
             {
@@ -174,6 +176,9 @@ namespace Proo.APIs.Controllers
                 }
             });
         }
+
+
+
         [Authorize(Roles = driver)]
         [HttpPut("Cancel_Ride_By_Driver")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver()
@@ -225,6 +230,8 @@ namespace Proo.APIs.Controllers
                 }
             });
         }
+
+
         [Authorize(Roles = driver)]
         [HttpPost("RatingByDriver")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> RatingRideByDriver(RatingDriverDto model)

@@ -13,7 +13,6 @@ using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
 using Proo.Core.Contract.IdentityInterface;
-using Proo.Core.Contract.Nearby_driver_service_contract;
 using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
@@ -160,7 +159,7 @@ namespace Proo.APIs
             builder.Services.AddScoped<IVehicleTypeService, VehicleTypeService>();
             builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
             builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
-            builder.Services.AddScoped(typeof(INearbyDriversService), typeof(NearbyDriversService));
+            builder.Services.AddScoped(typeof(INearbyDriverService), typeof(NearbyDriversService));
 
 
             #endregion
@@ -206,6 +205,7 @@ namespace Proo.APIs
             app.UseStaticFiles();
             app.MapHub<ChatHub>("/ChatHub");
             app.MapHub<RideHub>("/RideRequestHub");
+            app.MapHub<LocationHub>("/locationhub");
             app.MapControllers();
             
             #endregion
