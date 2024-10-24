@@ -18,7 +18,11 @@ using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Contract;
 using Microsoft.EntityFrameworkCore;
-using Proo.Core.Contract.Nearby_driver_service_contract;
+using Proo.APIs.Dtos.Passenger;
+using Castle.Core.Internal;
+using Proo.Service.Nearby_Driver_Service;
+using StackExchange.Redis;
+using Proo.APIs.Dtos.Driver;
 
 namespace Proo.APIs.Controllers
 {
@@ -30,7 +34,8 @@ namespace Proo.APIs.Controllers
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPassengerRepository _passengerRepo;
-        private readonly INearbyDriversService _nearbyDriversService;
+        private readonly INearbyDriverService _nearbyDriversService;
+        private readonly IHubContext<LocationHub> _locationHubContext;
         private const string Passenger = "passenger";
         public RdieRequestController(IUnitOfWork unitOfWork
                 , IMapper mapper
@@ -38,7 +43,8 @@ namespace Proo.APIs.Controllers
                 IHubContext<RideHub> hubContext,
                 UserManager<ApplicationUser> userManager
                 , IPassengerRepository passengerRepo
-                , INearbyDriversService nearbyDriversService
+                , INearbyDriverService nearbyDriversService
+            , IHubContext<LocationHub> LocationHubContext
             )
         {
             _unitOfWork = unitOfWork;
@@ -48,6 +54,7 @@ namespace Proo.APIs.Controllers
             _userManager = userManager;
             _passengerRepo = passengerRepo;
             _nearbyDriversService = nearbyDriversService;
+            _locationHubContext = LocationHubContext;
         }
 
 
@@ -85,7 +92,7 @@ namespace Proo.APIs.Controllers
                 Category = request.Category,
                 CreatedAt = DateTime.Now,
                 PassengerId = passenger.Id,
-                Status = RideRequestStatus.Requested,
+                //Status = RideRequestStatus.Requested,
                 EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
                 //paymentMethod  TODO
             };
@@ -115,7 +122,7 @@ namespace Proo.APIs.Controllers
                 };
                 rideNotificationDtos.Add(notifications);
                 // send the notification to nearby driver 
-                await _hubContext.Clients.User(id.ToString()).SendAsync("receiveriderequest", notifications);
+                await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
             }
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
@@ -132,35 +139,78 @@ namespace Proo.APIs.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = Passenger)]
-        [HttpPost("NearbyDriver")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> NearbyDriver(FindDriversForUserDto request)
+
+        [HttpGet("getNearbyDriver")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> GetNearbyDriver(LocationForPassengerDto Dto)
         {
-            // 1- check passenger is exist 
-            var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
+            var AllDrivers = await _nearbyDriversService.GetAllNearbyAvailableDriversAsync(Dto.Lat, Dto.Long, 10, 20);
 
-            var passenger = await _passengerRepo.GetByUserId(user.Id);
-            if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
+            var drivers = new List<DriverLocationToReturnDto>();
+        
+            foreach (var entry in AllDrivers)
+            {
+                if (entry.ToString().IsNullOrEmpty())
+                    continue;
 
-            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
-            
-            if (nearbyDriverIds is not null) 
-                return NotFound(new ApiResponse(400, "Sorry Not Find Any NearbyDriver Now "));
-            
-            // Get all Dirver RealTime
-            var response = new ApiToReturnDtoResponse
+                var result = new DriverLocationToReturnDto
+                {
+                    Latitude = entry.Latitude,
+                    Longitude = entry.Longitude,
+                    DriverId = Guid.Parse(entry.Member).ToString()
+                };
+
+
+                drivers.Add(result);
+       
+            }
+
+            foreach (var driver in drivers)
+            {
+                await _locationHubContext.Clients.All.SendAsync("ReceiveDriverLocationUpdate", driver.DriverId, driver.Latitude, driver.Longitude);
+            }
+
+
+            return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
-                    Mas = "The Request Data succ and Notifi the drivers",
+                    Mas = "Get All Nearby Driver Succ.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = nearbyDriverIds
+                    Body = drivers
                 }
-            };
-
-            return Ok(response);
+            });
         }
+
+
+        ////[Authorize(Roles = Passenger)]
+        ////[HttpPost("NearbyDriver")]
+        ////public async Task<ActionResult<ApiToReturnDtoResponse>> NearbyDriver(FindDriversForUserDto request)
+        ////{
+        ////    // 1- check passenger is exist 
+        ////    var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+        ////    var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
+
+        ////    var passenger = await _passengerRepo.GetByUserId(user.Id);
+        ////    if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
+
+        ////    var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
+
+        ////    if (nearbyDriverIds is not null) 
+        ////        return NotFound(new ApiResponse(400, "Sorry Not Find Any NearbyDriver Now "));
+
+        ////    // Get all Dirver RealTime
+        ////    var response = new ApiToReturnDtoResponse
+        ////    {
+        ////        Data = new DataResponse
+        ////        {
+        ////            Mas = "The Request Data succ and Notifi the drivers",
+        ////            StatusCode = StatusCodes.Status200OK,
+        ////            Body = nearbyDriverIds
+        ////        }
+        ////    };
+
+        ////    return Ok(response);
+        ////}
 
         [HttpPost("SubmitBid")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> SubmitBid(BidDto bidDto)
