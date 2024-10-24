@@ -106,6 +106,10 @@ namespace Proo.APIs.Controllers
 
             var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 , request.DriverGenderSelection.ToString());
             List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
+
+            if (rideRequestModel.PassengerId != passenger.Id)
+                return BadRequest(new ApiResponse(400, "The Passenger doesn't matched in ride request."));
+
             // 6- Notify Drivers using signalR
             foreach (var id in nearbyDriverIds)
             {
@@ -119,6 +123,10 @@ namespace Proo.APIs.Controllers
                     DropOffAddress = rideRequestModel.DropoffAddress,
                     FarePrice = rideRequestModel.EstimatedPrice,
                     PassengerId = rideRequestModel.PassengerId,
+                    Picture = user.ProfilePictureUrl ?? "",
+                    Name = user.FullName ?? "",
+                    NumberOfTrips = await _unitOfWork.RideRepository.GetRidesCountForPassenger(rideRequestModel.PassengerId),
+               
                 };
                 rideNotificationDtos.Add(notifications);
                 // send the notification to nearby driver 

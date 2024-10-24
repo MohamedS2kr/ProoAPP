@@ -81,5 +81,12 @@ namespace Proo.Infrastructer.Repositories.Ride_Repository
                 throw;
             }
         }
+
+        public async Task<int> GetRidesCountForPassenger(string PassengerId)
+            => await _context.Rides.Where(r => r.PassengerId == PassengerId).CountAsync();
+
+        public async Task<int> GetRidesCountForDriver(string driverId)
+            => await _context.Rides.Where(r => r.DriverId == driverId).CountAsync();
+
     }
 }

@@ -47,6 +47,7 @@ namespace Proo.Infrastructer.Repositories
         public async Task<T?> GetDriverOrPassengerByIdAsync(string Id)
             => await _context.Set<T>().FindAsync(Id);
 
+
         public void Update(T model)
             => _context.Set<T>().Update(model);
 

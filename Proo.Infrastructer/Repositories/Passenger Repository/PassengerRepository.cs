@@ -25,5 +25,7 @@ namespace Proo.Infrastructer.Repositories.Passenger_Repository
 
         public async Task<Passenger?> GetByUserId(string userId)
             => await _context.Passengers.Where(p => p.UserId == userId).AsNoTracking().FirstOrDefaultAsync();
+
+        
     }
 }

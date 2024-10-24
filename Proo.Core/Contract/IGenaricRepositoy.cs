@@ -14,6 +14,8 @@ namespace Proo.Core.Contract
 
         void Update(T model);
         void Delete(T model);
+
+   
         Task<IReadOnlyList<T>> GetAll();
         
         Task<T?> GetByIdAsync(int id);

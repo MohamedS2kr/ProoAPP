@@ -12,5 +12,9 @@ namespace Proo.Core.Contract.RideService_Contract
         Task<Ride?> GetActiveTripForPassenger(string PassengerId);
         Task<Ride?> GetActiveTripForDriver(string driverId);
         Task<Ride?> GetTripForPassengerWithPendingPayment(int RideId, string PassengerId);
+        Task<int> GetRidesCountForPassenger(string PassengerId);
+        Task<int> GetRidesCountForDriver(string driverId);
+   
+      
     }
 }
