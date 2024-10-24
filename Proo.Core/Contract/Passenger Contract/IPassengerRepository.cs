@@ -11,5 +11,7 @@ namespace Proo.Core.Contract.Passenger_Contract
     {
         Task GetByIdAsync(string id);
         Task<Passenger?> GetByUserId(string userId);
+   
+     
     }
 }

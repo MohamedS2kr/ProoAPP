@@ -10,5 +10,9 @@
         public string DropOffAddress { get; set; }
         public double FarePrice { get; set; }
         public string PassengerId { get; set; }
+        public string Picture { get; set; }
+        public decimal rate { get; set; }
+        public int NumberOfTrips { get; set; }
+        public string Name { get; set; }
     }
 }
