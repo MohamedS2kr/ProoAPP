@@ -28,7 +28,7 @@ namespace Proo.Service._RideService
             return distance / averageSpeed * 60; // الوقت بالدقائق
         }
 
-        public double CalculatePrice(double distance, double baseFare = 5, double costPerKm = 2) /// pendding 
+        public double CalculatePrice(double distance, double baseFare = 5, double costPerKm = 10) /// pendding 
         {
             return baseFare + (distance * costPerKm);
         }
@@ -41,9 +41,11 @@ namespace Proo.Service._RideService
             if (category == "Ride")
                 return (distance, estimatedTime, price);
             else if (category == "Comfort")
-                return (distance, estimatedTime, price * 10);
+                return (distance, estimatedTime, price * 1.5);
             else if (category == "Scoter")
                 return (distance, estimatedTime, price / 0.50);
+            else if (category == "FastTripe")
+                return (distance, estimatedTime, price * 2);
             else
                 return (distance, estimatedTime, price);
         }
