@@ -160,6 +160,7 @@ namespace Proo.APIs
             builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
             builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
             builder.Services.AddScoped(typeof(INearbyDriverService), typeof(NearbyDriversService));
+            builder.Services.AddScoped(typeof(IRideAcceptanceService), typeof(RideAcceptanceService));
 
 
             #endregion
@@ -204,7 +205,7 @@ namespace Proo.APIs
 
             app.UseStaticFiles();
             app.MapHub<ChatHub>("/ChatHub");
-            app.MapHub<RideHub>("/RideRequestHub");
+            app.MapHub<RideHub>("/FastRideHub");
             app.MapHub<LocationHub>("/locationhub");
             app.MapControllers();
             

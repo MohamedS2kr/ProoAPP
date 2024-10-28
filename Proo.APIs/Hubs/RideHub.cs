@@ -5,6 +5,7 @@ namespace Proo.APIs.Hubs
 {
     public class RideHub : Hub
     {
+        
         public async Task SendRideRequest(RideNotificationDto notification)
         {
             await Clients.Group("NearbyDrivers").SendAsync("ReceiveRideRequest", notification);
@@ -22,5 +23,8 @@ namespace Proo.APIs.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, Context.UserIdentifier);
             await base.OnDisconnectedAsync(exception);
         }
+
+        
     }
 }
+
