@@ -30,7 +30,6 @@ namespace Proo.APIs.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IRideService _rideService;
         private readonly IHubContext<RideHub> _hubContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPassengerRepository _passengerRepo;
@@ -38,8 +37,7 @@ namespace Proo.APIs.Controllers
         private readonly IHubContext<LocationHub> _locationHubContext;
         private const string Passenger = "passenger";
         public RdieRequestController(IUnitOfWork unitOfWork
-                , IMapper mapper
-                , IRideService rideService,
+                , IMapper mapper,
                 IHubContext<RideHub> hubContext,
                 UserManager<ApplicationUser> userManager
                 , IPassengerRepository passengerRepo
@@ -49,7 +47,6 @@ namespace Proo.APIs.Controllers
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _rideService = rideService;
             _hubContext = hubContext;
             _userManager = userManager;
             _passengerRepo = passengerRepo;

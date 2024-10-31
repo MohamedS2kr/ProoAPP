@@ -143,39 +143,39 @@ namespace Proo.APIs.Controllers
         }
 
 
-        [Authorize(Roles = driver)]
-        [HttpPost("update-location")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateDriverLocation(DriverLocations driverLocations)
-        {
-            var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await  _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
-            if (user is null) return BadRequest(new ApiResponse(401));  // this validation is not important 
+        //[Authorize(Roles = driver)]
+        //[HttpPost("update-location")]
+        //public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateDriverLocation(DriverLocations driverLocations)
+        //{
+        //    var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+        //    var user = await  _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+        //    if (user is null) return BadRequest(new ApiResponse(401));  // this validation is not important 
 
-            var driver = await _driverRepo.getByUserId(user.Id);
+        //    var driver = await _driverRepo.getByUserId(user.Id);
 
-            if (driver is null) return BadRequest(new ApiResponse(400, "The driver not found"));
+        //    if (driver is null) return BadRequest(new ApiResponse(400, "The driver not found"));
 
-            if (driverLocations is null /*|| driverLocations.DriverId != driver.Id*/)
-                return BadRequest(new ApiResponse(400, "Invalid request data."));
+        //    if (driverLocations is null /*|| driverLocations.DriverId != driver.Id*/)
+        //        return BadRequest(new ApiResponse(400, "Invalid request data."));
 
-            if (driverLocations.Latitude < -90 || driverLocations.Latitude > 90 || driverLocations.Longitude < -180 || driverLocations.Longitude > 180)
-                return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
+        //    if (driverLocations.Latitude < -90 || driverLocations.Latitude > 90 || driverLocations.Longitude < -180 || driverLocations.Longitude > 180)
+        //        return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
             
-            // call Update driver location service 
-            await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude , driver.Status , user.Gender);
+        //    // call Update driver location service 
+        //    await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude , driver.Status , user.Gender);
 
-            await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", driver.Id, driverLocations.Latitude, driverLocations.Longitude);
+        //    await _hubContext.Clients.All.SendAsync("ReceiveLocationUpdate", driver.Id, driverLocations.Latitude, driverLocations.Longitude);
 
-            return Ok(new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "Driver location updated successfully.",
-                    StatusCode = StatusCodes.Status200OK ,
-                    Body = driverLocations 
-                }
-            });
-        }
+        //    return Ok(new ApiToReturnDtoResponse
+        //    {
+        //        Data = new DataResponse
+        //        {
+        //            Mas = "Driver location updated successfully.",
+        //            StatusCode = StatusCodes.Status200OK ,
+        //            Body = driverLocations 
+        //        }
+        //    });
+        //}
 
 
 

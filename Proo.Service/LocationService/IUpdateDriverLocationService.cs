@@ -9,6 +9,6 @@ namespace Proo.Service.LocationService
 {
     public interface IUpdateDriverLocationService
     {
-        Task UpdateDriverLocationAsync(string driverId, double lat, double Long , DriverStatus driverStatus ,Gender DriverGender);
+        Task UpdateDriverLocationAsync(string driverId, double lat, double Long , DriverStatus driverStatus ,Gender DriverGender, string vehicleType);
     }
 }
