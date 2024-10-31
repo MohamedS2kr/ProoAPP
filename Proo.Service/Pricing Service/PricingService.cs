@@ -37,9 +37,9 @@ namespace Proo.Service.Pricing_Service
             else
             {
                 // حساب السعر للمسافة التي تتجاوز الحد
-                double normalMiles = pricingTier.ThresholdMiles;
-                double extraMiles = distance - normalMiles;
-                price = (pricingTier.BasePricePerKilo * normalMiles) + (pricingTier.IncreasedPricePerKilo * extraMiles);
+                double normalKilos = pricingTier.ThresholdMiles;
+                double extraKilos = distance - normalKilos;
+                price = (pricingTier.BasePricePerKilo * normalKilos) + (pricingTier.IncreasedPricePerKilo * extraKilos);
             }
 
             return await Task.FromResult(price);
