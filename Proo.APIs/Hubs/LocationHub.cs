@@ -14,17 +14,14 @@ namespace Proo.APIs.Hubs
     public class LocationHub : Hub
     {
         private readonly IUpdateDriverLocationService _updateLocation;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly DriverRepository _driverRepo;
 
         public LocationHub(IUpdateDriverLocationService updateLocation 
-            , IUnitOfWork unitOfWork
             , UserManager<ApplicationUser> userManager
             , DriverRepository driverRepo)
         {
             _updateLocation = updateLocation;
-            _unitOfWork = unitOfWork;
             _userManager = userManager;
             _driverRepo = driverRepo;
         }
@@ -47,6 +44,7 @@ namespace Proo.APIs.Hubs
             var vehicles = driver.Vehicles;
 
             var vehicleType = vehicles.Select(v => v.vehicleModel?.VehicleType?.TypeName).FirstOrDefault();
+            var vehicleCategory = vehicles.Select(v => v.vehicleModel?.VehicleType?.CategoryOfVehicle?.Name).FirstOrDefault(); 
 
             if (driverLocations is null /*|| driverLocations.DriverId != driver.Id*/)
                 throw new HubException("Invalid request data.");
@@ -54,7 +52,9 @@ namespace Proo.APIs.Hubs
                 throw new HubException("Invalid latitude or longitude.");
 
             // call Update driver location service 
-            await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude, driver.Status, user.Gender , vehicleType);
+            await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude, driver.Status, user.Gender , vehicleType , vehicleCategory);
+
+            // إرسال الموقع المحدث إلى جميع العملاء
             await Clients.All.SendAsync("ReceiveLocationUpdate", driver.Id, driverLocations.Latitude, driverLocations.Longitude);
 
         }

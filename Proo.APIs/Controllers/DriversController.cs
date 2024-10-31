@@ -181,7 +181,7 @@ namespace Proo.APIs.Controllers
 
         [Authorize(Roles = driver)]
         [HttpPut("Cancel_Ride_By_Driver")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver()
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver(int rideRequestId , string Reason)
         {
 
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
@@ -201,7 +201,7 @@ namespace Proo.APIs.Controllers
             if (ride.Status != RideStatus.CanceledByPassenger
                 && ride.Status != RideStatus.Completed
                 && ride.Status != RideStatus.WAITING_FOR_PAYMENT) return BadRequest(new ApiResponse(400, "Can Not Canceled Ride "));
-
+        
 
             ride.Status = RideStatus.CanceledByDriver;
             ride.LastModifiedAt = DateTime.Now;
@@ -227,6 +227,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "The Ride Canceled and Notification the Passenger",
                     StatusCode = StatusCodes.Status200OK,
+                    Body = ride.Id
                 }
             });
         }

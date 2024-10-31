@@ -113,6 +113,7 @@ namespace Proo.APIs.Controllers
             return Ok(response);
 
         }
+
         [Authorize(Roles = passenger)]
         [HttpPost("Update_for_Passenger")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateSpecPassengers([FromForm] updateUserDto model)

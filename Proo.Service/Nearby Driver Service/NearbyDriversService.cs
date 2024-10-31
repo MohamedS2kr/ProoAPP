@@ -16,7 +16,7 @@ namespace Proo.Service.Nearby_Driver_Service
             _database = redis.GetDatabase();
         }
 
-        public async Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers , string GenderType)
+        public async Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers , string vehicleCategory, string GenderType )
         {
             // Get driver IDs within the given radius
             //var nearbyDrivers = await _database.GeoRadiusAsync(DriverGeoKey, pickupLng, pickupLat, radiusKm * 1000, GeoUnit.Kilometers, count: maxDrivers, order : Order.Ascending);
@@ -38,25 +38,27 @@ namespace Proo.Service.Nearby_Driver_Service
                 // Check if the driver is available by querying their status
                 var status = await _database.HashGetAsync($"driver:status:{driverId}", "status");
                 var driverGender = await _database.HashGetAsync($"driver:status:{driverId}", "driverGender");
+                var driverVehicleCategory = await _database.HashGetAsync($"driver:status:{driverId}", "vehicleCategory");
 
-                if(GenderType == "0") // femaleOnly
+
+                if (GenderType == "0") // femaleOnly
                 {
-                    if (status.HasValue && status.ToString() == "Avaiable" && driverGender.HasValue && driverGender == "Female")
+                    if (status.HasValue && status.ToString() == "Available" &&
+                        driverGender.HasValue && driverGender.ToString() == "Female" &&
+                        driverVehicleCategory.HasValue && driverVehicleCategory.ToString() == vehicleCategory)
                     {
                         aviableDriverIds.Add(driverId);
                     }
-
-                    // Stop if the maximum number of drivers is reached
-                    if (aviableDriverIds.Count >= maxDrivers)
-                        break;
                 }
-
-                if (status.HasValue && status.ToString() == "Avaiable")
+                else 
                 {
-                    aviableDriverIds.Add(driverId);
+                    if (status.HasValue && status.ToString() == "Available" &&
+                        driverVehicleCategory.HasValue && driverVehicleCategory.ToString() == vehicleCategory)
+                    {
+                        aviableDriverIds.Add(driverId);
+                    }
                 }
 
-                // Stop if the maximum number of drivers is reached
                 if (aviableDriverIds.Count >= maxDrivers)
                     break;
             }
