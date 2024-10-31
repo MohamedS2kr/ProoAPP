@@ -160,6 +160,7 @@ namespace Proo.APIs
             builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
             builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
             builder.Services.AddScoped(typeof(INearbyDriverService), typeof(NearbyDriversService));
+            builder.Services.AddScoped(typeof(IRideAcceptanceService), typeof(RideAcceptanceService));
 
 
             #endregion
