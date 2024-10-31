@@ -99,48 +99,52 @@ namespace Proo.APIs.Controllers
 
             _unitOfWork.Repositoy<RideRequests>().Add(rideRequestModel);
 
-
-            // 5- find the nearby drivers Ids  and check driver gender 
-            if (request.DriverGenderSelection == GenderType.FemaleOnly && user.Gender == Gender.Male)
-                return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
-
-            var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 , request.DriverGenderSelection.ToString());
-            List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
-
             if (rideRequestModel.PassengerId != passenger.Id)
                 return BadRequest(new ApiResponse(400, "The Passenger doesn't matched in ride request."));
 
+            #region Last version
+            // 5- find the nearby drivers Ids  and check driver gender 
+            //if (request.DriverGenderSelection == GenderType.FemaleOnly && user.Gender == Gender.Male)
+            //    return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
+
+            //var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude , request.PickupLongitude , 5 , 20 , request.DriverGenderSelection.ToString());
+            //List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
+
+
+
             // 6- Notify Drivers using signalR
-            foreach (var id in nearbyDriverIds)
-            {
-                var notifications = new RideNotificationDto
-                {
-                    PickupLat = rideRequestModel.PickupLatitude,
-                    PickupLng = rideRequestModel.PickupLongitude,
-                    PickupAddress = rideRequestModel.PickupAddress,
-                    DropOffLat = rideRequestModel.DropoffLatitude,
-                    DropOffLng = rideRequestModel.DropoffLongitude,
-                    DropOffAddress = rideRequestModel.DropoffAddress,
-                    FarePrice = rideRequestModel.EstimatedPrice,
-                    PassengerId = rideRequestModel.PassengerId,
-                    Picture = user.ProfilePictureUrl ?? "",
-                    Name = user.FullName ?? "",
-                    NumberOfTrips = await _unitOfWork.RideRepository.GetRidesCountForPassenger(rideRequestModel.PassengerId),
-               
-                };
-                rideNotificationDtos.Add(notifications);
-                // send the notification to nearby driver 
-                await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
-            }
+            //foreach (var id in nearbyDriverIds)
+            //{
+            //    var notifications = new RideNotificationDto
+            //    {
+            //        PickupLat = rideRequestModel.PickupLatitude,
+            //        PickupLng = rideRequestModel.PickupLongitude,
+            //        PickupAddress = rideRequestModel.PickupAddress,
+            //        DropOffLat = rideRequestModel.DropoffLatitude,
+            //        DropOffLng = rideRequestModel.DropoffLongitude,
+            //        DropOffAddress = rideRequestModel.DropoffAddress,
+            //        FarePrice = rideRequestModel.EstimatedPrice,
+            //        PassengerId = rideRequestModel.PassengerId,
+            //        Picture = user.ProfilePictureUrl ?? "",
+            //        Name = user.FullName ?? "",
+            //        NumberOfTrips = await _unitOfWork.RideRepository.GetRidesCountForPassenger(rideRequestModel.PassengerId),
+
+            //    };
+            //    rideNotificationDtos.Add(notifications);
+            //    // send the notification to nearby driver 
+            //    await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
+            //} 
+            #endregion
+
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
-                    Mas = "The Request Data succ and Notifi the drivers",
+                    Mas = "The request data is saved. Use the provided RideRequestId to notify nearby drivers.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = rideNotificationDtos
+                    Body = rideRequestModel.Id
                 }
             };
 
@@ -190,35 +194,7 @@ namespace Proo.APIs.Controllers
         }
 
 
-        ////[Authorize(Roles = Passenger)]
-        ////[HttpPost("NearbyDriver")]
-        ////public async Task<ActionResult<ApiToReturnDtoResponse>> NearbyDriver(FindDriversForUserDto request)
-        ////{
-        ////    // 1- check passenger is exist 
-        ////    var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-        ////    var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
-
-        ////    var passenger = await _passengerRepo.GetByUserId(user.Id);
-        ////    if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
-
-        ////    var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
-
-        ////    if (nearbyDriverIds is not null) 
-        ////        return NotFound(new ApiResponse(400, "Sorry Not Find Any NearbyDriver Now "));
-
-        ////    // Get all Dirver RealTime
-        ////    var response = new ApiToReturnDtoResponse
-        ////    {
-        ////        Data = new DataResponse
-        ////        {
-        ////            Mas = "The Request Data succ and Notifi the drivers",
-        ////            StatusCode = StatusCodes.Status200OK,
-        ////            Body = nearbyDriverIds
-        ////        }
-        ////    };
-
-        ////    return Ok(response);
-        ////}
+       
 
         [HttpPost("SubmitBid")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> SubmitBid(BidDto bidDto)
