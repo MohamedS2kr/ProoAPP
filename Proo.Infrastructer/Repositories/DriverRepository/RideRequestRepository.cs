@@ -31,11 +31,11 @@ namespace Proo.Infrastructer.Repositories.DriverRepository
             {
                 var OneMinuteAgo = DateTime.Now.AddMinutes(-1);
 
-                var tripReuest =  await _context.Set<RideRequests>().Where(r => r.PassengerId == PassengerId &&
+                var RideReuest =  await _context.RideRequests.Where(r => r.PassengerId == PassengerId &&
                 (r.Status > RideRequestStatus.NO_DRIVER_FOUND && r.Status < RideRequestStatus.TRIP_STARTED) ||
                 (r.Status == RideRequestStatus.NO_DRIVER_FOUND && r.LastModifiedAt < OneMinuteAgo )).SingleOrDefaultAsync();
 
-                return tripReuest;
+                return RideReuest;
             }
             catch (Exception ex)
             {
@@ -49,10 +49,10 @@ namespace Proo.Infrastructer.Repositories.DriverRepository
         {
             try
             {
-                var triprequest = await _context.Set<RideRequests>().Where(r => r.DriverId == driverId
+                var RideReuest = await _context.Set<RideRequests>().Where(r => r.DriverId == driverId
                 && (r.Status > RideRequestStatus.NO_DRIVER_FOUND && r.Status < RideRequestStatus.TRIP_STARTED)).SingleOrDefaultAsync();
 
-                return triprequest;
+                return RideReuest;
             }
             catch (Exception ex)
             {
