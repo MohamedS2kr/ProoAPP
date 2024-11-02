@@ -23,6 +23,66 @@ namespace Proo.Service.Pricing_Service
         }
         public async Task<object> CalculateTripPriceAsync(string vehicleType, double distance)
         {
+            #region test
+            //switch (vehicleCategory.ToLower())
+            //{
+            //    case "economy":
+            //        baseFare = 5;
+            //        initialDistanceRate = 2;
+            //        extraDistanceRate = 3;
+            //        timeRate = 0.5m;
+            //        surgeMultiplier = 1.2m;
+            //        break;
+            //    case "luxury":
+            //        baseFare = 10;
+            //        initialDistanceRate = 4;
+            //        extraDistanceRate = 5;
+            //        timeRate = 1;
+            //        surgeMultiplier = 1.5m;
+            //        break;
+            //    default:
+            //        throw new ArgumentException("Invalid vehicle category.");
+            //}
+
+            //// حساب التكلفة
+            //var totalFare = baseFare;
+
+            //if (distance <= extraDistanceThreshold)
+            //{
+            //    totalFare += distance * initialDistanceRate;
+            //}
+            //else
+            //{
+            //    totalFare += (extraDistanceThreshold * initialDistanceRate) + ((distance - extraDistanceThreshold) * extraDistanceRate);
+            //}
+
+            //totalFare += duration * timeRate;
+            //totalFare *= surgeMultiplier;
+
+            //return totalFare;
+
+            #region new version
+            //if (distanceInKm <= shortDistanceLimit)
+            //{
+            //    return baseFare;
+            //}
+
+            //decimal totalFare = 0;
+            //decimal remainingDistance = distanceInKm;
+
+            //foreach (var (distanceLimit, farePerKm) in fareTiers)
+            //{
+            //    var tierDistance = Math.Min(remainingDistance, distanceLimit);
+            //    totalFare += tierDistance * farePerKm;
+            //    remainingDistance -= tierDistance;
+
+            //    if (remainingDistance <= 0)
+            //        break;
+            //}
+            #endregion
+
+            #endregion
+
             var pricingTier = _priceEstimates.FirstOrDefault(p => p.VehicleType.Equals(vehicleType, StringComparison.OrdinalIgnoreCase));
 
             if (pricingTier == null)
