@@ -89,7 +89,7 @@ namespace Proo.APIs.Controllers
                 Category = request.Category,
                 CreatedAt = DateTime.Now,
                 PassengerId = passenger.Id,
-                //Status = RideRequestStatus.Requested,
+                Status = RideRequestStatus.Requested,
                 EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
                 //paymentMethod  TODO
             };

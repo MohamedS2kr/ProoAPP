@@ -9,6 +9,8 @@ using Proo.APIs.Dtos;
 using Proo.APIs.Dtos.Driver;
 using Proo.APIs.Dtos.Identity;
 using Proo.APIs.Dtos.Passenger;
+using Proo.APIs.Dtos.RideRequest;
+using Proo.APIs.Dtos.Rides;
 using Proo.APIs.Errors;
 using Proo.APIs.Hubs;
 using Proo.Core.Contract;
@@ -181,7 +183,7 @@ namespace Proo.APIs.Controllers
 
         [Authorize(Roles = driver)]
         [HttpPut("Cancel_Ride_By_Driver")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver(int rideRequestId , string Reason)
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideByDriver(CancelRidetDto model)
         {
 
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
@@ -194,6 +196,10 @@ namespace Proo.APIs.Controllers
 
             var Driver = await _driverRepo.getByUserId(UserByPhoneNumber.Id);
             if (Driver == null) return NotFound(new ApiResponse(404, "Driver Not Found"));
+
+            var Ride = await _unitOfWork.Repositoy<Ride>().GetByIdAsync(model.RideId);
+            if (Ride is null)
+                return NotFound(new ApiResponse(404, "The Ride is not found."));
 
             var ride = await _unitOfWork.RideRepository.GetActiveTripForDriver(Driver.Id);
             if (ride == null) return NotFound(new ApiResponse(404, "Not found Ongoing trips"));

@@ -24,6 +24,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
 using Proo.APIs.Hubs;
 using Proo.Core.Specifications.PassengerSpecifiactions;
+using Proo.APIs.Dtos.RideRequest;
 
 namespace Proo.APIs.Controllers
 {
@@ -155,26 +156,35 @@ namespace Proo.APIs.Controllers
 
 
         [Authorize(Roles = passenger)]
-        [HttpPost("Cancel_Trip_Request")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelTripRequest()
+        [HttpPost("Cancel_Ride_Request")]
+        public async Task<ActionResult<ApiToReturnDtoResponse>> CancelRideRequest(CancelRideRequestDto model)
         {
-            var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-            var passenger =await _passengerRepos.GetByUserId(user.Id);
-            if (passenger is null)
-                return NotFound(new ApiResponse(404, "The Passenger Not Found"));
-            
-            var requestedTrip = await _rideRequestRepo.GetActiveTripRequestForPassenger(passenger.Id);
-            if (requestedTrip is null)
-                return BadRequest(new ApiResponse(400, "Customer has no pending requested trip."));
-            
-            if(requestedTrip.Status == RideRequestStatus.TRIP_STARTED) 
-                return NotFound(new ApiResponse(404, "Cannot cancel a trip that has already started."));
+            var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
 
-            requestedTrip.Status = RideRequestStatus.CUSTOMER_CANCELED;
-            requestedTrip.LastModifiedAt = DateTime.Now;
+            var passenger = await _passengerRepos.GetByUserId(user.Id);
+            if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
 
-            _unitOfWork.Repositoy<RideRequests>().Update(requestedTrip);
+
+            // 2- check passenger has ongoing trip request 
+            var RideRequest = await _unitOfWork.Repositoy<RideRequests>().GetByIdAsync(model.RideRequestsId);
+            if (RideRequest is null) 
+                return NotFound(new ApiResponse(404, "The Ride Request is not found."));
+            
+            var rideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
+            if (rideRequest is null) return BadRequest(new ApiResponse(400, "Customer Not Exist in This request trip."));
+
+
+            if (RideRequest.Status == RideRequestStatus.TRIP_STARTED || RideRequest.Status == RideRequestStatus.CUSTOMER_CANCELED ) 
+                return NotFound(new ApiResponse(404, "Cannot cancel This trip that has already started OR Canceled."));
+
+            if (rideRequest.Id != model.RideRequestsId)
+                return BadRequest(new ApiResponse(400, "The Ride Request Not Match"));
+
+            RideRequest.Status = RideRequestStatus.CUSTOMER_CANCELED;
+            RideRequest.LastModifiedAt = DateTime.Now;
+
+            _unitOfWork.Repositoy<RideRequests>().Update(RideRequest);
 
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
