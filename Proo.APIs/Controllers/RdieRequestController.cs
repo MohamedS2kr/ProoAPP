@@ -141,7 +141,10 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "The request data is saved. Use the provided RideRequestId to notify nearby drivers.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = rideRequestModel.Id
+                    Body = new
+                    {
+                        RideRequestId = rideRequestModel.Id
+                    }
                 }
             };
 

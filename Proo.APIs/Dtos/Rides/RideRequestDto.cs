@@ -15,7 +15,7 @@ namespace Proo.APIs.Dtos.Rides
         public string Category { get; set; }
         public double FarePrice { get; set; }
 
-        public GenderType DriverGenderSelection { get; set; }
+        //public GenderType DriverGenderSelection { get; set; }
     }
 
     public enum GenderType
