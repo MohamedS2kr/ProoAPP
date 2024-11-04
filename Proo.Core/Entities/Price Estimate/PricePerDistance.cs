@@ -15,8 +15,6 @@ namespace Proo.Core.Entities.Price_Estimate
 
         // الأجرة لكل كيلومتر
         public decimal PricePerKm { get; set; }
-
-        // تعريف العلاقة مع `PriceCategoryTier`
         public int? PriceCategoryTierId { get; set; }
         public virtual PriceCategoryTier? PriceCategoryTier { get; set; }
     }
