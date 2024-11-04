@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using Proo.Core.Contract.Driver_Contract;
+using Proo.Core.Entities.Driver_Location;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +12,12 @@ namespace Proo.Service.Nearby_Driver_Service
     public class NearbyDriversService : INearbyDriverService
     {
         private readonly IDatabase _database;
+        private readonly IDriverRepository _driverRepo;
         private const string DriverGeoKey = "driver:locations";
-        public NearbyDriversService(IConnectionMultiplexer redis)
+        public NearbyDriversService(IConnectionMultiplexer redis , IDriverRepository driverRepo)
         {
             _database = redis.GetDatabase();
+            _driverRepo = driverRepo;
         }
 
         public async Task<List<Guid>> GetNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers , string vehicleCategory, string GenderType )
@@ -66,9 +70,9 @@ namespace Proo.Service.Nearby_Driver_Service
             return aviableDriverIds;
         }
 
-        public async Task<IEnumerable<GeoEntry>> GetAllNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers)
+        public async Task<List<DriverLocations>> GetAllNearbyAvailableDriversAsync(double pickupLat, double pickupLng, double radiusKm, int maxDrivers)
         {
-            var result = await _database.GeoSearchAsync(
+            var nearbyDrivers = await _database.GeoSearchAsync(
                key: DriverGeoKey,
                longitude: pickupLng,
                latitude: pickupLat,
@@ -77,14 +81,35 @@ namespace Proo.Service.Nearby_Driver_Service
                count: maxDrivers
                );
 
-            List<GeoEntry> geoEntries = new List<GeoEntry>();
+            var driverList = new List<DriverLocations>();
 
-            foreach (var entry in geoEntries)
+            foreach (var driver in nearbyDrivers)
             {
-                geoEntries.Add(entry);
+                var vehicleType = await GetVehicleTypeByDriverId(driver.Member , _driverRepo);
+
+                driverList.Add(new DriverLocations
+                {
+                    DriverId = driver.Member,
+                    Longitude = driver.Position.Value.Longitude,
+                    Latitude = driver.Position.Value.Latitude,
+                    VehicleType = vehicleType
+                });
+
             }
 
-            return geoEntries;
+
+            return driverList;
+        }
+
+        private async Task<string> GetVehicleTypeByDriverId(string driverId , IDriverRepository _driverRepo)
+        {
+
+            var driverDetails = await _driverRepo.GetDriverOrPassengerByIdAsync(driverId);
+
+            // Check if there are any vehicles and return the type name of the first vehicle
+            var vehicleTypeName = driverDetails?.Vehicles?.FirstOrDefault()?.vehicleModel?.VehicleType?.TypeName;
+
+            return vehicleTypeName; // Return the vehicle type name or null if not found
         }
 
     }

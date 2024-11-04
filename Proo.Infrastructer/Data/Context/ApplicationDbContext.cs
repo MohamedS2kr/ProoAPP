@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Proo.Core.Entities;
+using Proo.Core.Entities.Price_Estimate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,9 @@ namespace Proo.Infrastructer.Data.Context
         public DbSet<VehicleModel> VehicleModels { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
         public DbSet<CategoryOfVehicle> CategoryOfVehicles { get; set; }
+        public DbSet<PriceEstimatedPlan> priceEstimatedPlans { get; set; }
 
+        public DbSet<PricePerDistance> pricePerDistances { get; set; }
+        public DbSet<PriceCategoryTier> priceCategoryTiers { get; set; }
     }
 }

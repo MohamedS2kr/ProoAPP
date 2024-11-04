@@ -21,6 +21,8 @@ namespace Proo.Service.Pricing_Service
                 new PriceEstimate { VehicleType = "Economy", BasePricePerKilo = 0.75, IncreasedPricePerKilo = 1.00, ThresholdMiles = 5 }
             };
         }
+
+        #region test version
         public async Task<object> CalculateTripPriceAsync(string vehicleType, double distance)
         {
             #region test
@@ -103,7 +105,40 @@ namespace Proo.Service.Pricing_Service
             }
 
             return await Task.FromResult(price);
-        
+
         }
+        #endregion
+
+        //public decimal CalculateDistanceFare(decimal distanceInKm, string vehicleCategory)
+        //{
+        //    // تحقق مما إذا كانت الفئة متاحة في القاموس
+        //    if (!categoryFareTiers.ContainsKey(vehicleCategory))
+        //        throw new ArgumentException("Vehicle category not found.");
+
+        //    // احصل على قائمة أسعار الفئة المطلوبة
+        //    var fareTiers = categoryFareTiers[vehicleCategory];
+
+        //    // إذا كانت المسافة أقل من أو تساوي حد المسافة القصيرة
+        //    if (distanceInKm <= shortDistanceLimit)
+        //    {
+        //        return baseFare;
+        //    }
+
+        //    decimal totalFare = baseFare;
+        //    decimal remainingDistance = distanceInKm - shortDistanceLimit;
+
+        //    // حساب الأجرة حسب الفئة
+        //    foreach (var (distanceLimit, farePerKm) in fareTiers)
+        //    {
+        //        var tierDistance = Math.Min(remainingDistance, distanceLimit);
+        //        totalFare += tierDistance * farePerKm;
+        //        remainingDistance -= tierDistance;
+
+        //        if (remainingDistance <= 0)
+        //            break;
+        //    }
+
+        //    return totalFare;
+        //}
     }
 }

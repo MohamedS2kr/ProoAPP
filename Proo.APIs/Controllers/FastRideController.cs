@@ -54,162 +54,162 @@ namespace Proo.APIs.Controllers
             _nearbyDriversService = nearbyDriversService;
         }
         
-        [Authorize(Roles = Passenger)]
-        [HttpPost("FastRideRequest")]
+        //[Authorize(Roles = Passenger)]
+        //[HttpPost("FastRideRequest")]
      
-        public async Task<ActionResult<ApiToReturnDtoResponse>> RideRequest(RideRequestDto request)
-        {
-            // 1- check passenger is exist 
-            var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
+        //public async Task<ActionResult<ApiToReturnDtoResponse>> RideRequest(RideRequestDto request)
+        //{
+        //    // 1- check passenger is exist 
+        //    var userPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
+        //    var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == userPhoneNumber);
 
-            var passenger = await _passengerRepo.GetByUserId(user.Id);
-            if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
+        //    var passenger = await _passengerRepo.GetByUserId(user.Id);
+        //    if (passenger is null) return BadRequest(new ApiResponse(400, "The Passenger is not Exist."));
 
 
-            // 2- check passenger has ongoing trip request 
-            var rideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
-            if (rideRequest is not null) return BadRequest(new ApiResponse(400, "Customer has already a requested trip."));
+        //    // 2- check passenger has ongoing trip request 
+        //    var rideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
+        //    if (rideRequest is not null) return BadRequest(new ApiResponse(400, "Customer has already a requested trip."));
 
-            // 3- check passenger has ongoing trips
+        //    // 3- check passenger has ongoing trips
 
-            var unfinishedTrip = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
-            if (unfinishedTrip is not null) return BadRequest(new ApiResponse(400, "Customer has already an ongoing trip."));
+        //    var unfinishedTrip = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
+        //    if (unfinishedTrip is not null) return BadRequest(new ApiResponse(400, "Customer has already an ongoing trip."));
 
-            //4- store ride in ride table in database 
-            var rideRequestModel = new RideRequests
-            {
-                PickupAddress = request.PickupAddress,
-                PickupLatitude = request.PickupLatitude,
-                PickupLongitude = request.PickupLongitude,
-                DropoffAddress = request.DropOffAddress,
-                DropoffLatitude = request.DropoffLatitude,
-                DropoffLongitude = request.DropoffLongitude,
-                Category = request.Category,
-                CreatedAt = DateTime.Now,
-                PassengerId = passenger.Id,
-                Status = RideRequestStatus.Requested,
-                EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
-                //paymentMethod  TODO
-            };
+        //    //4- store ride in ride table in database 
+        //    var rideRequestModel = new RideRequests
+        //    {
+        //        PickupAddress = request.PickupAddress,
+        //        PickupLatitude = request.PickupLatitude,
+        //        PickupLongitude = request.PickupLongitude,
+        //        DropoffAddress = request.DropOffAddress,
+        //        DropoffLatitude = request.DropoffLatitude,
+        //        DropoffLongitude = request.DropoffLongitude,
+        //        Category = request.Category,
+        //        CreatedAt = DateTime.Now,
+        //        PassengerId = passenger.Id,
+        //        Status = RideRequestStatus.Requested,
+        //        EstimatedPrice = request.FarePrice, // TODO --> double - decimal 
+        //        //paymentMethod  TODO
+        //    };
 
-            _unitOfWork.Repositoy<RideRequests>().Add(rideRequestModel);
-            var count = await _unitOfWork.CompleteAsync();
-            if (count <= 0) return BadRequest(new ApiResponse(400));
+        //    _unitOfWork.Repositoy<RideRequests>().Add(rideRequestModel);
+        //    var count = await _unitOfWork.CompleteAsync();
+        //    if (count <= 0) return BadRequest(new ApiResponse(400));
 
-            // 5- find the nearby drivers Ids  and check driver gender 
-            if (request.DriverGenderSelection == GenderType.FemaleOnly && user.Gender == Gender.Male)
-                return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
+        //    // 5- find the nearby drivers Ids  and check driver gender 
+        //    if (request.DriverGenderSelection == GenderType.FemaleOnly && user.Gender == Gender.Male)
+        //        return BadRequest(new ApiResponse(400, "This Feature not supported for males"));
 
-            List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
-            var notifiedDrivers = new List<Guid>();
+        //    List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
+        //    var notifiedDrivers = new List<Guid>();
             
-            if (request.Category == "FastTripe")
-            {
-                var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 2, 20, request.DriverGenderSelection.ToString());
+        //    if (request.Category == "FastTripe")
+        //    {
+        //        var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 2, 20, request.DriverGenderSelection.ToString());
 
-                if (nearbyDriverIds == null || !nearbyDriverIds.Any())
-                {
-                    int driverIndex = 0;
-                    var isAccepted = false;
+        //        if (nearbyDriverIds == null || !nearbyDriverIds.Any())
+        //        {
+        //            int driverIndex = 0;
+        //            var isAccepted = false;
                     
-                    do
-                    {
-                        // التحقق إذا كانت هناك قائمة للسائقين المتاحين ولم يتم قبول الطلب بعد
-                        if (driverIndex >= nearbyDriverIds.Count)
-                        {
-                            break; // إنهاء الحلقة إذا انتهت قائمة السائقين
-                        }
+        //            do
+        //            {
+        //                // التحقق إذا كانت هناك قائمة للسائقين المتاحين ولم يتم قبول الطلب بعد
+        //                if (driverIndex >= nearbyDriverIds.Count)
+        //                {
+        //                    break; // إنهاء الحلقة إذا انتهت قائمة السائقين
+        //                }
 
-                        var driverId = nearbyDriverIds[driverIndex];
+        //                var driverId = nearbyDriverIds[driverIndex];
                         
-                        if (notifiedDrivers.Contains(driverId))
-                        {
-                            driverIndex++;
-                            continue;
-                        }
-                        var notifications = new RideNotificationDto
-                        {
-                            PickupLat = rideRequestModel.PickupLatitude,
-                            PickupLng = rideRequestModel.PickupLongitude,
-                            PickupAddress = rideRequestModel.PickupAddress,
-                            DropOffLat = rideRequestModel.DropoffLatitude,
-                            DropOffLng = rideRequestModel.DropoffLongitude,
-                            DropOffAddress = rideRequestModel.DropoffAddress,
-                            FarePrice = rideRequestModel.EstimatedPrice,
-                            PassengerId = rideRequestModel.PassengerId,
-                            Picture = user.ProfilePictureUrl ?? "",
-                            Name = user.FullName ?? "",
-                            NumberOfTrips = await _unitOfWork.RideRepository.GetRidesCountForPassenger(rideRequestModel.PassengerId),
-                        };
+        //                if (notifiedDrivers.Contains(driverId))
+        //                {
+        //                    driverIndex++;
+        //                    continue;
+        //                }
+        //                var notifications = new RideNotificationDto
+        //                {
+        //                    PickupLat = rideRequestModel.PickupLatitude,
+        //                    PickupLng = rideRequestModel.PickupLongitude,
+        //                    PickupAddress = rideRequestModel.PickupAddress,
+        //                    DropOffLat = rideRequestModel.DropoffLatitude,
+        //                    DropOffLng = rideRequestModel.DropoffLongitude,
+        //                    DropOffAddress = rideRequestModel.DropoffAddress,
+        //                    FarePrice = rideRequestModel.EstimatedPrice,
+        //                    PassengerId = rideRequestModel.PassengerId,
+        //                    Picture = user.ProfilePictureUrl ?? "",
+        //                    Name = user.FullName ?? "",
+        //                    NumberOfTrips = await _unitOfWork.RideRepository.GetRidesCountForPassenger(rideRequestModel.PassengerId),
+        //                };
 
-                        rideNotificationDtos.Add(notifications);
+        //                rideNotificationDtos.Add(notifications);
 
-                        // إرسال الإشعار للسائق الحالي
-                        await _hubContext.Clients.User(driverId.ToString()).SendAsync("ReceiveFastRideRequest", notifications);
+        //                // إرسال الإشعار للسائق الحالي
+        //                await _hubContext.Clients.User(driverId.ToString()).SendAsync("ReceiveFastRideRequest", notifications);
                         
-                        notifiedDrivers.Add(driverId);
-                        // انتظار قبول السائق مع مهلة زمنية
-                        var taskSource = _rideAcceptanceService.GetOrAddRideAcceptanceSource(driverId.ToString());
-                        isAccepted = await Task.WhenAny(taskSource.Task, Task.Delay(TimeSpan.FromSeconds(15))) == taskSource.Task && taskSource.Task.Result;
+        //                notifiedDrivers.Add(driverId);
+        //                // انتظار قبول السائق مع مهلة زمنية
+        //                var taskSource = _rideAcceptanceService.GetOrAddRideAcceptanceSource(driverId.ToString());
+        //                isAccepted = await Task.WhenAny(taskSource.Task, Task.Delay(TimeSpan.FromSeconds(15))) == taskSource.Task && taskSource.Task.Result;
 
 
-                        if (isAccepted)
-                        {
-                            rideRequestModel.Status = RideRequestStatus.CUSTOMER_ACCEPTED; //Driver لحد ما نعدل ونخليه 
-                            var count01 = await _unitOfWork.CompleteAsync();
-                            if (count01 <= 0) return BadRequest(new ApiResponse(400));
-                            break; // خروج من الحلقة لأن السائق قبل الطلب
-                        }
+        //                if (isAccepted)
+        //                {
+        //                    rideRequestModel.Status = RideRequestStatus.CUSTOMER_ACCEPTED; //Driver لحد ما نعدل ونخليه 
+        //                    var count01 = await _unitOfWork.CompleteAsync();
+        //                    if (count01 <= 0) return BadRequest(new ApiResponse(400));
+        //                    break; // خروج من الحلقة لأن السائق قبل الطلب
+        //                }
                         
-                        driverIndex++;
+        //                driverIndex++;
                         
 
-                    } while (!isAccepted && driverIndex < nearbyDriverIds.Count );
-                }
-                else
-                {
-                    return BadRequest(new ApiResponse(400, "No drivers available nearby."));
-                }
-            }
-            else
-            {
-                var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
-                if (nearbyDriverIds == null || !nearbyDriverIds.Any())
-                    return BadRequest(new ApiResponse(400, "No drivers available nearby."));
-                // 6- Notify Drivers using signalR
-                foreach (var id in nearbyDriverIds)
-                {
-                    var notifications = new RideNotificationDto
-                    {
-                        PickupLat = rideRequestModel.PickupLatitude,
-                        PickupLng = rideRequestModel.PickupLongitude,
-                        PickupAddress = rideRequestModel.PickupAddress,
-                        DropOffLat = rideRequestModel.DropoffLatitude,
-                        DropOffLng = rideRequestModel.DropoffLongitude,
-                        DropOffAddress = rideRequestModel.DropoffAddress,
-                        FarePrice = rideRequestModel.EstimatedPrice,
-                        PassengerId = rideRequestModel.PassengerId,
-                    };
-                    rideNotificationDtos.Add(notifications);
+        //            } while (!isAccepted && driverIndex < nearbyDriverIds.Count );
+        //        }
+        //        else
+        //        {
+        //            return BadRequest(new ApiResponse(400, "No drivers available nearby."));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 5, 20, request.DriverGenderSelection.ToString());
+        //        if (nearbyDriverIds == null || !nearbyDriverIds.Any())
+        //            return BadRequest(new ApiResponse(400, "No drivers available nearby."));
+        //        // 6- Notify Drivers using signalR
+        //        foreach (var id in nearbyDriverIds)
+        //        {
+        //            var notifications = new RideNotificationDto
+        //            {
+        //                PickupLat = rideRequestModel.PickupLatitude,
+        //                PickupLng = rideRequestModel.PickupLongitude,
+        //                PickupAddress = rideRequestModel.PickupAddress,
+        //                DropOffLat = rideRequestModel.DropoffLatitude,
+        //                DropOffLng = rideRequestModel.DropoffLongitude,
+        //                DropOffAddress = rideRequestModel.DropoffAddress,
+        //                FarePrice = rideRequestModel.EstimatedPrice,
+        //                PassengerId = rideRequestModel.PassengerId,
+        //            };
+        //            rideNotificationDtos.Add(notifications);
 
-                    // send the notification to nearby driver 
-                    await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
+        //            // send the notification to nearby driver 
+        //            await _hubContext.Clients.User(id.ToString()).SendAsync("ReceiveRideRequest", notifications);
 
-                }
-            }
+        //        }
+        //    }
            
-            var response = new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "The Request Data succ and Notifi the drivers",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = rideNotificationDtos
-                }
-            };
-            return Ok(response);
-        }
+        //    var response = new ApiToReturnDtoResponse
+        //    {
+        //        Data = new DataResponse
+        //        {
+        //            Mas = "The Request Data succ and Notifi the drivers",
+        //            StatusCode = StatusCodes.Status200OK,
+        //            Body = rideNotificationDtos
+        //        }
+        //    };
+        //    return Ok(response);
+        //}
         
         [Authorize(Roles = driver)]
         [HttpPost("Accept-FastRide-Request")]

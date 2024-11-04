@@ -152,46 +152,46 @@ namespace Proo.APIs.Controllers
         }
 
 
-        [HttpGet("getNearbyDriver")]
-        public async Task<ActionResult<ApiToReturnDtoResponse>> GetNearbyDriver(LocationForPassengerDto Dto)
-        {
-            var AllDrivers = await _nearbyDriversService.GetAllNearbyAvailableDriversAsync(Dto.Lat, Dto.Long, 10, 20);
+        //[HttpGet("getNearbyDriver")]
+        //public async Task<ActionResult<ApiToReturnDtoResponse>> GetNearbyDriver(LocationForPassengerDto Dto)
+        //{
+        //    var AllDrivers = await _nearbyDriversService.GetAllNearbyAvailableDriversAsync(Dto.Lat, Dto.Long, 10, 20);
 
-            var drivers = new List<DriverLocationToReturnDto>();
+        //    var drivers = new List<DriverLocationToReturnDto>();
         
-            foreach (var entry in AllDrivers)
-            {
-                if (entry.ToString().IsNullOrEmpty())
-                    continue;
+        //    foreach (var entry in AllDrivers)
+        //    {
+        //        if (entry.ToString().IsNullOrEmpty())
+        //            continue;
 
-                var result = new DriverLocationToReturnDto
-                {
-                    Latitude = entry.Latitude,
-                    Longitude = entry.Longitude,
-                    DriverId = Guid.Parse(entry.Member).ToString()
-                };
+        //        var result = new DriverLocationToReturnDto
+        //        {
+        //            Latitude = entry.Latitude,
+        //            Longitude = entry.Longitude,
+        //            DriverId = Guid.Parse(entry.Member).ToString()
+        //        };
 
 
-                drivers.Add(result);
+        //        drivers.Add(result);
        
-            }
+        //    }
 
-            foreach (var driver in drivers)
-            {
-                await _locationHubContext.Clients.All.SendAsync("ReceiveDriverLocationUpdate", driver.DriverId, driver.Latitude, driver.Longitude);
-            }
+        //    foreach (var driver in drivers)
+        //    {
+        //        await _locationHubContext.Clients.All.SendAsync("ReceiveDriverLocationUpdate", driver.DriverId, driver.Latitude, driver.Longitude);
+        //    }
 
 
-            return Ok(new ApiToReturnDtoResponse
-            {
-                Data = new DataResponse
-                {
-                    Mas = "Get All Nearby Driver Succ.",
-                    StatusCode = StatusCodes.Status200OK,
-                    Body = drivers
-                }
-            });
-        }
+        //    return Ok(new ApiToReturnDtoResponse
+        //    {
+        //        Data = new DataResponse
+        //        {
+        //            Mas = "Get All Nearby Driver Succ.",
+        //            StatusCode = StatusCodes.Status200OK,
+        //            Body = drivers
+        //        }
+        //    });
+        //}
 
 
        

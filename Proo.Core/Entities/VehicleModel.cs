@@ -14,6 +14,6 @@ namespace Proo.Core.Entities
         public virtual VehicleType VehicleType { get; set; }
 
         // Add navigation property for Vehicles
-        public virtual Vehicle? Vehicle { get; set; }
+        public virtual ICollection<Vehicle>? Vehicles { get; set; }
     }
 }

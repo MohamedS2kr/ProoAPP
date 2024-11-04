@@ -14,6 +14,11 @@ namespace Proo.Core.Entities.Price_Estimate
         public double LowEstimate { get; set; }
         public double HighEstimate { get; set; }
         public double SurgeMultiplier { get; set; }
+        public string EstimatedTime { get; set; } // Estimated time of arrival
+
+
+
+
         public double BasePricePerKilo { get; set; } // سعر الأساس لكل kilo
         public double IncreasedPricePerKilo { get; set; } // السعر المعزز لكل kilo
         public double ThresholdMiles { get; set; } // الحد الأقصى للمسافة قبل تغيير السعر

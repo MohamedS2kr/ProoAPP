@@ -26,10 +26,10 @@ namespace Proo.Infrastructer.Data.Config
                    .OnDelete(DeleteBehavior.Cascade);
 
             // Define one-to-one relationship with Vehicle
-            builder.HasOne(vm => vm.Vehicle)
-                   .WithOne(v => v.vehicleModel)
-                   .HasForeignKey<Vehicle>(v => v.VehicleModelId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(vm => vm.Vehicles)
+            //       .WithOne(v => v.vehicleModel)
+            //       .HasForeignKey<Vehicle>(v => v.VehicleModelId)
+            //       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

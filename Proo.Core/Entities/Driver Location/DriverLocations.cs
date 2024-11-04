@@ -8,9 +8,10 @@ namespace Proo.Core.Entities.Driver_Location
 {
     public class DriverLocations
     {
-        //public string DriverId { get; set; } = null!;
+        public string DriverId { get; set; } = null!;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public string VehicleType { get; set; }
         //public DateTime Timestamp { get; set; }
     }
 }

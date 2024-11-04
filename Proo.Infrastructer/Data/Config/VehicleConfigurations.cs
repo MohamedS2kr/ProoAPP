@@ -27,11 +27,10 @@ namespace Proo.Infrastructer.Data.Config
                 .HasForeignKey(v => v.DriverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // One-to-One Relationship
+            // One-to-many Relationship
             builder.HasOne(v => v.vehicleModel)
-                   .WithOne(vm => vm.Vehicle)
-                   .HasForeignKey<Vehicle>(v => v.VehicleModelId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(m => m.Vehicles)
+                .HasForeignKey(v => v.VehicleModelId);
         }
     }
 }
