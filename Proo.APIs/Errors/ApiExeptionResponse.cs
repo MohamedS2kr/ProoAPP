@@ -1,4 +1,7 @@
-﻿namespace Proo.APIs.Errors
+﻿
+#nullable enable
+
+namespace Proo.APIs.Errors
 {
     public class ApiExeptionResponse : ApiResponse
     {

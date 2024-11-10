@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace Proo.Core.Specifications
 {
     public class BaseSpecifications<T> : ISpecifications<T> where T : BaseEntity

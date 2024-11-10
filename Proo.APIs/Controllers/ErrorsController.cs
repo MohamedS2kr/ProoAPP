@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Proo.APIs.Errors;
-
+#nullable enable
 namespace Proo.APIs.Controllers
 {
     [ApiExplorerSettings(IgnoreApi =true)]

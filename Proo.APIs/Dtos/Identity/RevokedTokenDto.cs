@@ -1,4 +1,6 @@
-﻿namespace Proo.APIs.Dtos.Identity
+﻿#nullable enable
+
+namespace Proo.APIs.Dtos.Identity
 {
     public class RevokedTokenDto
     {

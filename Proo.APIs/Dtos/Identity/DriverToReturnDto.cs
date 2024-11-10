@@ -1,7 +1,7 @@
 ﻿using Proo.Core.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-
+#nullable enable
 namespace Proo.APIs.Dtos.Identity
 {
     public class DriverToReturnDto

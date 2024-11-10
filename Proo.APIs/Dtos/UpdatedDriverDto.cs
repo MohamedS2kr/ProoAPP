@@ -1,6 +1,6 @@
 ﻿using Proo.Core.Entities;
 using System.ComponentModel.DataAnnotations;
-
+#nullable enable
 namespace Proo.APIs.Dtos
 {
     public class UpdatedDriverDto

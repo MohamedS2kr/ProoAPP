@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace Proo.Infrastructer.Repositories.Ride_Repository
 {
     public class RideRepository : IRideRepository

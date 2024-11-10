@@ -1,4 +1,4 @@
-﻿
+﻿#nullable enable
 namespace Proo.APIs.Errors
 {
     public class ApiResponse
