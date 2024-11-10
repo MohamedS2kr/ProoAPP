@@ -80,7 +80,8 @@ namespace Proo.APIs
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+                options.UseLazyLoadingProxies()
+                .UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
@@ -116,9 +117,11 @@ namespace Proo.APIs
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
-                    builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
-                    .WithExposedHeaders("Content-Disposition")
-                    .SetPreflightMaxAge(TimeSpan.FromMinutes(10)));
+                    builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                   );
             });
 
 
