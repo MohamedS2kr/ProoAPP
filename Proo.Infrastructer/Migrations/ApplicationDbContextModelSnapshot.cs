@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proo.Infrastructer.Data.Context;
 
@@ -12,10 +11,9 @@ using Proo.Infrastructer.Data.Context;
 namespace Proo.Infrastructer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241110172927_initialDBCreation")]
-    partial class initialDBCreation
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

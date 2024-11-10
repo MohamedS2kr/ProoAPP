@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Data.Config.Migrations
+namespace Proo.Infrastructer.Migrations
 {
     public partial class initialDBCreation : Migration
     {
