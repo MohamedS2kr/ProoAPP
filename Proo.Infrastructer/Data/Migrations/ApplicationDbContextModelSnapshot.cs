@@ -8,7 +8,7 @@ using Proo.Infrastructer.Data.Context;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Data.Migrations
+namespace Proo.Infrastructer.Data.Config.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -294,6 +294,10 @@ namespace Proo.Infrastructer.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -861,13 +865,13 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasOne("Proo.Core.Entities.Driver", "Driver")
                         .WithMany()
                         .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Proo.Core.Entities.RideRequests", "Ride")
                         .WithMany()
                         .HasForeignKey("RideRequestsId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Driver");
@@ -927,7 +931,7 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasOne("Proo.Core.Entities.Ride", "Ride")
                         .WithMany()
                         .HasForeignKey("RideId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Passenger");

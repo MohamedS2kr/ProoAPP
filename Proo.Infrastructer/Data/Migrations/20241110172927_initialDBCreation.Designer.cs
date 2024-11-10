@@ -9,11 +9,11 @@ using Proo.Infrastructer.Data.Context;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Data.Migrations
+namespace Proo.Infrastructer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241020235932_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241110172927_initialDBCreation")]
+    partial class initialDBCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -299,6 +299,10 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -469,6 +473,74 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasIndex("RideId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PriceCategoryTier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PriceEstimatedPlanId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PriceEstimatedPlanId");
+
+                    b.ToTable("priceCategoryTiers");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PriceEstimatedPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<decimal>("basePrice")
+                        .HasColumnType("decimal");
+
+                    b.Property<decimal>("shortDistanceLimit")
+                        .HasColumnType("decimal");
+
+                    b.Property<decimal>("shortDistancePrice")
+                        .HasColumnType("decimal");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("priceEstimatedPlans");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PricePerDistance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<decimal>("DistanceLimit")
+                        .HasColumnType("decimal");
+
+                    b.Property<int?>("PriceCategoryTierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PricePerKm")
+                        .HasColumnType("decimal");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PriceCategoryTierId");
+
+                    b.ToTable("pricePerDistances");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -651,8 +723,7 @@ namespace Proo.Infrastructer.Data.Migrations
 
                     b.HasIndex("DriverId");
 
-                    b.HasIndex("VehicleModelId")
-                        .IsUnique();
+                    b.HasIndex("VehicleModelId");
 
                     b.ToTable("Vehicles");
                 });
@@ -796,13 +867,13 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasOne("Proo.Core.Entities.Driver", "Driver")
                         .WithMany()
                         .HasForeignKey("DriverId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Proo.Core.Entities.RideRequests", "Ride")
                         .WithMany()
                         .HasForeignKey("RideRequestsId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Driver");
@@ -862,7 +933,7 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.HasOne("Proo.Core.Entities.Ride", "Ride")
                         .WithMany()
                         .HasForeignKey("RideId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Passenger");
@@ -879,6 +950,24 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Ride");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PriceCategoryTier", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Price_Estimate.PriceEstimatedPlan", "PriceEstimatedPlan")
+                        .WithMany("CategoryPriceTiers")
+                        .HasForeignKey("PriceEstimatedPlanId");
+
+                    b.Navigation("PriceEstimatedPlan");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PricePerDistance", b =>
+                {
+                    b.HasOne("Proo.Core.Entities.Price_Estimate.PriceCategoryTier", "PriceCategoryTier")
+                        .WithMany("PricePerDistances")
+                        .HasForeignKey("PriceCategoryTierId");
+
+                    b.Navigation("PriceCategoryTier");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.Ride", b =>
@@ -986,8 +1075,8 @@ namespace Proo.Infrastructer.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Proo.Core.Entities.VehicleModel", "vehicleModel")
-                        .WithOne("Vehicle")
-                        .HasForeignKey("Proo.Core.Entities.Vehicle", "VehicleModelId")
+                        .WithMany("Vehicles")
+                        .HasForeignKey("VehicleModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1039,9 +1128,19 @@ namespace Proo.Infrastructer.Data.Migrations
                     b.Navigation("Rides");
                 });
 
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PriceCategoryTier", b =>
+                {
+                    b.Navigation("PricePerDistances");
+                });
+
+            modelBuilder.Entity("Proo.Core.Entities.Price_Estimate.PriceEstimatedPlan", b =>
+                {
+                    b.Navigation("CategoryPriceTiers");
+                });
+
             modelBuilder.Entity("Proo.Core.Entities.VehicleModel", b =>
                 {
-                    b.Navigation("Vehicle");
+                    b.Navigation("Vehicles");
                 });
 
             modelBuilder.Entity("Proo.Core.Entities.VehicleType", b =>

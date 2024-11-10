@@ -26,7 +26,7 @@ using Proo.APIs.Dtos.Driver;
 
 namespace Proo.APIs.Controllers
 {
-    public class RdieRequestController : BaseApiController
+    public class RideRequestController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -36,7 +36,7 @@ namespace Proo.APIs.Controllers
         private readonly INearbyDriverService _nearbyDriversService;
         private readonly IHubContext<LocationHub> _locationHubContext;
         private const string Passenger = "passenger";
-        public RdieRequestController(IUnitOfWork unitOfWork
+        public RideRequestController(IUnitOfWork unitOfWork
                 , IMapper mapper,
                 IHubContext<RideHub> hubContext,
                 UserManager<ApplicationUser> userManager

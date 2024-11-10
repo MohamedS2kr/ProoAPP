@@ -16,11 +16,13 @@ namespace Proo.Infrastructer.Data.Config
             builder.HasKey(b => b.Id);
             builder.HasOne(b => b.Driver)
                 .WithMany()
-                .HasForeignKey(b => b.DriverId);
+                .HasForeignKey(b => b.DriverId)
+                .OnDelete(DeleteBehavior.NoAction); 
 
             builder.HasOne(b => b.Ride)
                 .WithMany()
-                .HasForeignKey(b => b.RideRequestsId);
+                .HasForeignKey(b => b.RideRequestsId)
+                .OnDelete(DeleteBehavior.NoAction); 
 
             builder.Property(b => b.OfferedPrice).HasColumnType("decimal(10,2)");
         }

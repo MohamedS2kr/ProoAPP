@@ -56,13 +56,22 @@ namespace Proo.APIs.Controllers
         public async Task<ActionResult<ApiToReturnDtoResponse>> GetVehicleModelsByVehicleType(int vehicleTypeId)
         {
             var vehicleModels = await _vehicleModelService.GetVehicleModelsByVehicleTypeIdAsync(vehicleTypeId);
+
+            var vehiclemodelDtos = vehicleModels.Select(vehiclemodel => new ReturnVehicleModelDTO
+            {
+                Id=vehiclemodel.Id,
+                ModelName=vehiclemodel.ModelName,
+                VehicleTypeId=vehiclemodel.VehicleTypeId
+
+            }).ToList();
+            
             return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle models retrieved successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = vehicleModels
+                    Body = vehiclemodelDtos
                 }
             });
         }
@@ -73,14 +82,20 @@ namespace Proo.APIs.Controllers
             var vehicleModel = await _unitOfWork.Repositoy<VehicleModel>().GetByIdAsync(id);
             if (vehicleModel == null)
                 return NotFound(new ApiResponse(404, "Vehicle model not found."));
+            var vehiclemodelDto = new ReturnVehicleModelDTO
+            {
+                Id= vehicleModel.Id,
+                ModelName= vehicleModel.ModelName,
+                VehicleTypeId= vehicleModel.VehicleTypeId
 
+            };
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle model retrieved successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = vehicleModel
+                    Body = vehiclemodelDto
                 }
             };
 
@@ -105,14 +120,20 @@ namespace Proo.APIs.Controllers
 
             if (result <= 0)
                 return BadRequest(new ApiResponse(400, "Error updating vehicle model."));
+            var vehiclemodelDto = new ReturnVehicleModelDTO
+            {
+                Id = existingVehicleModel.Id,
+                ModelName = existingVehicleModel.ModelName,
+                VehicleTypeId = existingVehicleModel.VehicleTypeId
 
+            };
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle model updated successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = existingVehicleModel
+                    Body = vehiclemodelDto
                 }
             };
 

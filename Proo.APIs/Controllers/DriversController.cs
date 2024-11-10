@@ -240,7 +240,7 @@ namespace Proo.APIs.Controllers
 
 
         [Authorize(Roles = driver)]
-        [HttpPost("RatingByDriver")]
+        [HttpPost("RatingRideByDriver")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> RatingRideByDriver(RatingDriverDto model)
         {
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);

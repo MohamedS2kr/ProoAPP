@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Proo.Infrastructer.Data.Migrations
+namespace Proo.Infrastructer.Data.Config.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class initialDBCreation : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -50,11 +50,27 @@ namespace Proo.Infrastructer.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CategoryOfVehicles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "priceEstimatedPlans",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    basePrice = table.Column<decimal>(type: "decimal", nullable: false),
+                    shortDistanceLimit = table.Column<decimal>(type: "decimal", nullable: false),
+                    shortDistancePrice = table.Column<decimal>(type: "decimal", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_priceEstimatedPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -223,6 +239,25 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "priceCategoryTiers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PriceEstimatedPlanId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_priceCategoryTiers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_priceCategoryTiers_priceEstimatedPlans_PriceEstimatedPlanId",
+                        column: x => x.PriceEstimatedPlanId,
+                        principalTable: "priceEstimatedPlans",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -328,6 +363,26 @@ namespace Proo.Infrastructer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "pricePerDistances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DistanceLimit = table.Column<decimal>(type: "decimal", nullable: false),
+                    PricePerKm = table.Column<decimal>(type: "decimal", nullable: false),
+                    PriceCategoryTierId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_pricePerDistances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_pricePerDistances_priceCategoryTiers_PriceCategoryTierId",
+                        column: x => x.PriceCategoryTierId,
+                        principalTable: "priceCategoryTiers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bids",
                 columns: table => new
                 {
@@ -347,14 +402,12 @@ namespace Proo.Infrastructer.Data.Migrations
                         name: "FK_Bids_Drivers_DriverId",
                         column: x => x.DriverId,
                         principalTable: "Drivers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Bids_RideRequests_RideRequestsId",
                         column: x => x.RideRequestsId,
                         principalTable: "RideRequests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -487,8 +540,7 @@ namespace Proo.Infrastructer.Data.Migrations
                         name: "FK_PassengerRatings_Rides_RideId",
                         column: x => x.RideId,
                         principalTable: "Rides",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -592,6 +644,16 @@ namespace Proo.Infrastructer.Data.Migrations
                 column: "RideId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_priceCategoryTiers_PriceEstimatedPlanId",
+                table: "priceCategoryTiers",
+                column: "PriceEstimatedPlanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_pricePerDistances_PriceCategoryTierId",
+                table: "pricePerDistances",
+                column: "PriceCategoryTierId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RideRequests_DriverId",
                 table: "RideRequests",
                 column: "DriverId");
@@ -636,8 +698,7 @@ namespace Proo.Infrastructer.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_VehicleModelId",
                 table: "Vehicles",
-                column: "VehicleModelId",
-                unique: true);
+                column: "VehicleModelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VehicleTypes_CategoryOfVehicleId",
@@ -675,6 +736,9 @@ namespace Proo.Infrastructer.Data.Migrations
                 name: "Payments");
 
             migrationBuilder.DropTable(
+                name: "pricePerDistances");
+
+            migrationBuilder.DropTable(
                 name: "RefreshToken");
 
             migrationBuilder.DropTable(
@@ -687,10 +751,16 @@ namespace Proo.Infrastructer.Data.Migrations
                 name: "Rides");
 
             migrationBuilder.DropTable(
+                name: "priceCategoryTiers");
+
+            migrationBuilder.DropTable(
                 name: "VehicleModels");
 
             migrationBuilder.DropTable(
                 name: "RideRequests");
+
+            migrationBuilder.DropTable(
+                name: "priceEstimatedPlans");
 
             migrationBuilder.DropTable(
                 name: "VehicleTypes");

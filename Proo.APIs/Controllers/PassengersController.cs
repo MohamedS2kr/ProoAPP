@@ -313,7 +313,7 @@ namespace Proo.APIs.Controllers
         }
 
         [Authorize(Roles = passenger)]
-        [HttpPost("RatingByPassenger")]
+        [HttpPost("RatingRideByPassenger")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> RatingRideByPassenger(RatingPassgengerDto model)
         {
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);

@@ -174,7 +174,7 @@ namespace Proo.APIs
             var _roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
             try
             {
-                await _context.Database.MigrateAsync();
+               // await _context.Database.MigrateAsync();
                 await ApplicationIdentityDataSeed.SeedRoleForUserAsync(_roleManager);
 
             }

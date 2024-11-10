@@ -16,9 +16,16 @@ namespace Proo.Infrastructer.Data.Config
             builder
                 .HasOne(p => p.Passenger)
                 .WithMany(pp => pp.PassengerRatings)
-                .HasForeignKey(p => p.PassengerId);
+                .HasForeignKey(p => p.PassengerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            
+            builder.HasOne(pr => pr.Ride)
+             .WithMany()
+             .HasForeignKey(pr => pr.RideId)
+             .OnDelete(DeleteBehavior.NoAction); 
+
+            builder.Property(pr => pr.Score).IsRequired();
+            builder.Property(pr => pr.Review).HasColumnType("nvarchar(max)");
         }
     }
 }

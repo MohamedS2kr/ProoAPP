@@ -62,14 +62,19 @@ namespace Proo.APIs.Controllers
             var vehicleType = await _unitOfWork.Repositoy<VehicleType>().GetByIdAsync(id);
             if (vehicleType == null)
                 return NotFound(new ApiResponse(404, "Vehicle type not found."));
-
+            var VehicletypeDto = new ReturnVehicleTypeDTO
+            {
+                Id=vehicleType.Id,
+                TypeName=vehicleType.TypeName,
+                CategoryOfVehicleId=vehicleType.CategoryOfVehicleId
+            };
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle type retrieved successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = vehicleType
+                    Body = VehicletypeDto
                 }
             };
 
@@ -81,14 +86,19 @@ namespace Proo.APIs.Controllers
             var vehicleTypes = await _vehicleTypeService.GetVehicleTypesByCategoryIdAsync(categoryId);
             if (!vehicleTypes.Any())
                 return NotFound(new ApiResponse(404, "No vehicle types found for the specified category."));
-
+            var vehicleTypeDtos = vehicleTypes.Select(vehicletype => new ReturnVehicleTypeDTO
+            {
+            Id=vehicletype.Id,
+            TypeName=vehicletype.TypeName,
+            CategoryOfVehicleId = vehicletype.CategoryOfVehicleId
+            }).ToList();
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle types retrieved successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = vehicleTypes
+                    Body = vehicleTypeDtos
                 }
             };
 
@@ -113,14 +123,19 @@ namespace Proo.APIs.Controllers
 
             if (result <= 0)
                 return BadRequest(new ApiResponse(400, "Error updating vehicle type."));
-
+            var vehicletypeDto = new ReturnVehicleTypeDTO
+            {
+                Id= existingVehicleType.Id,
+                TypeName= existingVehicleType.TypeName,
+                CategoryOfVehicleId= existingVehicleType.CategoryOfVehicleId
+            };
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Vehicle type updated successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = existingVehicleType
+                    Body = vehicletypeDto
                 }
             };
 
