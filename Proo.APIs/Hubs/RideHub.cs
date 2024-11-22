@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Proo.APIs.Dtos.Rides;
+using Proo.Core.Contract.Dtos.Rides;
 
 namespace Proo.APIs.Hubs
 {
     public class RideHub : Hub
     {
-        
+
         public async Task SendRideRequest(RideNotificationDto notification)
         {
             await Clients.Group("NearbyDrivers").SendAsync("ReceiveRideRequest", notification);
@@ -24,7 +24,7 @@ namespace Proo.APIs.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        
+
     }
 }
 

@@ -13,7 +13,7 @@ namespace Proo.Core.Contract
         IGenaricRepositoy<T> Repositoy<T>() where T : BaseEntity;
 
         Task<int> CompleteAsync();
-
+        int Complete();
         public IRideRequestRepository RideRequestRepository { get;  }
         public IRideRepository RideRepository { get;  }
 

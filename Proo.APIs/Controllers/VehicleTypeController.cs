@@ -1,17 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.VehicleType;
-using Proo.APIs.Errors;
+﻿using Microsoft.AspNetCore.Mvc;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.VehicleType;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Entities;
 using Proo.Service.VehicleTypeService;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
-  
-    public class VehicleTypeController :BaseApiController
+
+    public class VehicleTypeController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVehicleTypeService _vehicleTypeService;
@@ -54,7 +53,7 @@ namespace Proo.APIs.Controllers
             return Ok(response);
         }
 
-       
+
         // GET: api/vehicletype/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> GetVehicleTypeById(int id)
@@ -64,9 +63,9 @@ namespace Proo.APIs.Controllers
                 return NotFound(new ApiResponse(404, "Vehicle type not found."));
             var VehicletypeDto = new ReturnVehicleTypeDTO
             {
-                Id=vehicleType.Id,
-                TypeName=vehicleType.TypeName,
-                CategoryOfVehicleId=vehicleType.CategoryOfVehicleId
+                Id = vehicleType.Id,
+                TypeName = vehicleType.TypeName,
+                CategoryOfVehicleId = vehicleType.CategoryOfVehicleId
             };
             var response = new ApiToReturnDtoResponse
             {
@@ -88,9 +87,9 @@ namespace Proo.APIs.Controllers
                 return NotFound(new ApiResponse(404, "No vehicle types found for the specified category."));
             var vehicleTypeDtos = vehicleTypes.Select(vehicletype => new ReturnVehicleTypeDTO
             {
-            Id=vehicletype.Id,
-            TypeName=vehicletype.TypeName,
-            CategoryOfVehicleId = vehicletype.CategoryOfVehicleId
+                Id = vehicletype.Id,
+                TypeName = vehicletype.TypeName,
+                CategoryOfVehicleId = vehicletype.CategoryOfVehicleId
             }).ToList();
             var response = new ApiToReturnDtoResponse
             {
@@ -104,7 +103,7 @@ namespace Proo.APIs.Controllers
 
             return Ok(response);
         }
-    
+
         // PUT: api/vehicletype/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateVehicleType(int id, [FromBody] VehicleTypeDTO vehicleTypeDto)
@@ -125,9 +124,9 @@ namespace Proo.APIs.Controllers
                 return BadRequest(new ApiResponse(400, "Error updating vehicle type."));
             var vehicletypeDto = new ReturnVehicleTypeDTO
             {
-                Id= existingVehicleType.Id,
-                TypeName= existingVehicleType.TypeName,
-                CategoryOfVehicleId= existingVehicleType.CategoryOfVehicleId
+                Id = existingVehicleType.Id,
+                TypeName = existingVehicleType.TypeName,
+                CategoryOfVehicleId = existingVehicleType.CategoryOfVehicleId
             };
             var response = new ApiToReturnDtoResponse
             {

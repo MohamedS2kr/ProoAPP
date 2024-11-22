@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
-using Proo.APIs.Dtos.Passenger;
+using Proo.Core.Contract.Dtos.Passenger;
 using Proo.Core.Entities;
 
 namespace Proo.APIs.Helpers
@@ -15,11 +14,11 @@ namespace Proo.APIs.Helpers
         }
         public string Resolve(ApplicationUser source, ProfileDto destination, string destMember, ResolutionContext context)
         {
-            if(!string.IsNullOrEmpty(source.ProfilePictureUrl)) 
+            if (!string.IsNullOrEmpty(source.ProfilePictureUrl))
             {
                 return $"{_configuration["ApiBaseUrl"]}/files/ProfilePicture/{source.ProfilePictureUrl}";
             }
-            return string.Empty ;
+            return string.Empty;
         }
     }
 }

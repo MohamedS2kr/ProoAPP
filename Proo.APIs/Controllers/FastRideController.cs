@@ -1,28 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Proo.APIs.Dtos.Rides;
-using Proo.APIs.Dtos;
-using Proo.APIs.Errors;
-using Proo.Core.Entities;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
-using System.Security.Claims;
-using AutoMapper;
-using Proo.APIs.Hubs;
-using Proo.Core.Contract.Passenger_Contract;
-using Proo.Core.Contract.RideService_Contract;
-using Proo.Core.Contract;
 using Microsoft.EntityFrameworkCore;
-using Proo.Service._RideService;
-using Proo.Core.Specifications.BidSpecifications;
-using Proo.Service.Nearby_Driver_Service;
+using Proo.APIs.Hubs;
+using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Rides;
+using Proo.Core.Contract.Errors;
+using Proo.Core.Contract.Passenger_Contract;
+using Proo.Core.Entities;
+using Proo.Service._RideService;
+using Proo.Service.Nearby_Driver_Service;
+using System.Security.Claims;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
-    
+
     public class FastRideController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -41,7 +37,7 @@ namespace Proo.APIs.Controllers
                 UserManager<ApplicationUser> userManager
                 , IPassengerRepository passengerRepo
                 , INearbyDriverService nearbyDriversService
-                
+
             )
         {
             _unitOfWork = unitOfWork;
@@ -53,10 +49,10 @@ namespace Proo.APIs.Controllers
             _passengerRepo = passengerRepo;
             _nearbyDriversService = nearbyDriversService;
         }
-        
+
         //[Authorize(Roles = Passenger)]
         //[HttpPost("FastRideRequest")]
-     
+
         //public async Task<ActionResult<ApiToReturnDtoResponse>> RideRequest(RideRequestDto request)
         //{
         //    // 1- check passenger is exist 
@@ -103,7 +99,7 @@ namespace Proo.APIs.Controllers
 
         //    List<RideNotificationDto> rideNotificationDtos = new List<RideNotificationDto>();
         //    var notifiedDrivers = new List<Guid>();
-            
+
         //    if (request.Category == "FastTripe")
         //    {
         //        var nearbyDriverIds = await _nearbyDriversService.GetNearbyAvailableDriversAsync(request.PickupLatitude, request.PickupLongitude, 2, 20, request.DriverGenderSelection.ToString());
@@ -112,7 +108,7 @@ namespace Proo.APIs.Controllers
         //        {
         //            int driverIndex = 0;
         //            var isAccepted = false;
-                    
+
         //            do
         //            {
         //                // التحقق إذا كانت هناك قائمة للسائقين المتاحين ولم يتم قبول الطلب بعد
@@ -122,7 +118,7 @@ namespace Proo.APIs.Controllers
         //                }
 
         //                var driverId = nearbyDriverIds[driverIndex];
-                        
+
         //                if (notifiedDrivers.Contains(driverId))
         //                {
         //                    driverIndex++;
@@ -147,7 +143,7 @@ namespace Proo.APIs.Controllers
 
         //                // إرسال الإشعار للسائق الحالي
         //                await _hubContext.Clients.User(driverId.ToString()).SendAsync("ReceiveFastRideRequest", notifications);
-                        
+
         //                notifiedDrivers.Add(driverId);
         //                // انتظار قبول السائق مع مهلة زمنية
         //                var taskSource = _rideAcceptanceService.GetOrAddRideAcceptanceSource(driverId.ToString());
@@ -161,9 +157,9 @@ namespace Proo.APIs.Controllers
         //                    if (count01 <= 0) return BadRequest(new ApiResponse(400));
         //                    break; // خروج من الحلقة لأن السائق قبل الطلب
         //                }
-                        
+
         //                driverIndex++;
-                        
+
 
         //            } while (!isAccepted && driverIndex < nearbyDriverIds.Count );
         //        }
@@ -198,7 +194,7 @@ namespace Proo.APIs.Controllers
 
         //        }
         //    }
-           
+
         //    var response = new ApiToReturnDtoResponse
         //    {
         //        Data = new DataResponse
@@ -210,7 +206,7 @@ namespace Proo.APIs.Controllers
         //    };
         //    return Ok(response);
         //}
-        
+
         [Authorize(Roles = driver)]
         [HttpPost("Accept-FastRide-Request")]
         public async Task<ActionResult> AcceptRideRequest([FromBody] AcceptRideRequestDto acceptRideRequestDto)
@@ -260,14 +256,14 @@ namespace Proo.APIs.Controllers
             // Notify passenger about acceptance (you can add SignalR notification here)
             //await _hubContext.Clients.User(rideRequest.PassengerId).SendAsync("RideRequestAccepted", new { rideRequest.Id, }); 
 
-           
+
             return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Ride request accepted successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                   
+
                 }
             });
         }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Proo.APIs.Errors;
+﻿using Proo.Core.Contract.Errors;
 using System.Net;
 using System.Text.Json;
 
@@ -11,7 +10,7 @@ namespace Proo.APIs.Middlewares
         private readonly ILoggerFactory _loggerFactory;
         private readonly IHostEnvironment _env;
 
-        public ExeptionMiddleware(RequestDelegate next , ILoggerFactory loggerFactory , IHostEnvironment env)
+        public ExeptionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IHostEnvironment env)
         {
             _next = next;
             _loggerFactory = loggerFactory;
@@ -33,7 +32,7 @@ namespace Proo.APIs.Middlewares
 
                 // return Response itself [header , body]
 
-                httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 httpContext.Response.ContentType = "application/json";
 
                 var response = _env.IsDevelopment() ? new ApiExeptionResponse((int)HttpStatusCode.InternalServerError,
@@ -45,7 +44,7 @@ namespace Proo.APIs.Middlewares
                 await httpContext.Response.WriteAsync(json);
             }
 
-            
+
         }
     }
 }

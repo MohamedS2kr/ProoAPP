@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.CategoryOfVehicle;
-using Proo.APIs.Errors;
+﻿using Microsoft.AspNetCore.Mvc;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.CategoryOfVehicle;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Entities;
 using Proo.Infrastructer.Document;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
-   
+
     public class CategoryOfVehicleController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -29,7 +28,7 @@ namespace Proo.APIs.Controllers
             {
                 Name = category.Name,
                 Description = category.Description,
-                ImageUrl = DocumentSettings.UploadFile(category.ImageOfCategory,"CategoryPicture")
+                ImageUrl = DocumentSettings.UploadFile(category.ImageOfCategory, "CategoryPicture")
             };
             _unitOfWork.Repositoy<CategoryOfVehicle>().Add(cat);
             var result = await _unitOfWork.CompleteAsync();
@@ -58,8 +57,8 @@ namespace Proo.APIs.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
-               Description=category.Description,
-               ImageOfCategory=category.ImageUrl
+                Description = category.Description,
+                ImageOfCategory = category.ImageUrl
             }).ToList();
             var response = new ApiToReturnDtoResponse
             {
@@ -105,7 +104,7 @@ namespace Proo.APIs.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> UpdateCategory(int id, [FromForm] CategoryDTO category)
         {
-            if (category == null )
+            if (category == null)
                 return BadRequest(new ApiResponse(400, "Invalid category data."));
 
             var existingCategory = await _unitOfWork.Repositoy<CategoryOfVehicle>().GetByIdAsync(id);
@@ -131,7 +130,7 @@ namespace Proo.APIs.Controllers
                 Id = existingCategory.Id,
                 Name = existingCategory.Name,
                 Description = existingCategory.Description,
-                ImageOfCategory = existingCategory.ImageUrl 
+                ImageOfCategory = existingCategory.ImageUrl
             };
             var response = new ApiToReturnDtoResponse
             {
@@ -165,7 +164,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Category deleted successfully.",
                     StatusCode = StatusCodes.Status200OK,
-                    Body = null 
+                    Body = null
                 }
             };
 

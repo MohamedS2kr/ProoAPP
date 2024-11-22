@@ -6,17 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Proo.APIs.Errors;
 using Proo.APIs.Helpers;
 using Proo.APIs.Hubs;
 using Proo.APIs.Middlewares;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Contract.RideService_Contract;
 using Proo.Core.Entities;
-using Proo.Core.Entities.Driver_Location;
 using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Data.Context;
 using Proo.Infrastructer.Identity.DataSeed;
@@ -27,13 +26,12 @@ using Proo.Infrastructer.Repositories.Ride_Repository;
 using Proo.Service._RideService;
 using Proo.Service.Identity;
 using Proo.Service.LocationService;
+using Proo.Service.Mappers;
 using Proo.Service.Nearby_Driver_Service;
 using Proo.Service.VehicleModelService;
 using Proo.Service.VehicleTypeService;
 using StackExchange.Redis;
-using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 
 
 
@@ -57,8 +55,8 @@ namespace Proo.APIs
                     {
                         Name = "Authorization",
                         Description = "Enter the Bearer Authorization : `Bearer Generated-JWT-Token`",
-                        In = ParameterLocation.Header ,
-                        Type = SecuritySchemeType.ApiKey ,
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.ApiKey,
                         Scheme = "Bearer"
                     });
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -151,8 +149,12 @@ namespace Proo.APIs
 
 
             builder.Services.AddScoped<ITokenService, TokenServices>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IPassengerService, PassengerService>();
+            builder.Services.AddScoped<IDriverService, DriverService>();
             builder.Services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfwork));
-            builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddAutoMapper(typeof(DriverMapper));
+            builder.Services.AddAutoMapper(typeof(PassengerMapper));
             builder.Services.AddScoped(typeof(IGenaricRepositoy<>), typeof(GenaricRepository<>));
             builder.Services.AddScoped(typeof(IDriverRepository), typeof(DriverRepository));
             builder.Services.AddScoped(typeof(IRideRequestRepository), typeof(RideRequestRepository));
@@ -164,6 +166,7 @@ namespace Proo.APIs
             builder.Services.AddSingleton(typeof(IUpdateDriverLocationService), typeof(UpdateDriverLocationService));
             builder.Services.AddScoped(typeof(INearbyDriverService), typeof(NearbyDriversService));
             builder.Services.AddScoped(typeof(IRideAcceptanceService), typeof(RideAcceptanceService));
+            builder.Services.AddScoped<PassengerMapper>();
 
 
             #endregion
@@ -177,7 +180,7 @@ namespace Proo.APIs
             var _roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
             try
             {
-               // await _context.Database.MigrateAsync();
+                // await _context.Database.MigrateAsync();
                 await ApplicationIdentityDataSeed.SeedRoleForUserAsync(_roleManager);
 
             }
@@ -212,7 +215,7 @@ namespace Proo.APIs
             app.MapHub<RideRequestHub>("/notifyNearbyDrivers");
             app.MapHub<LocationHub>("/locationhub");
             app.MapControllers();
-            
+
             #endregion
 
 

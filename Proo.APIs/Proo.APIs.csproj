@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\AdminDto\" />
     <Folder Include="wwwroot\files\LicenseId\" />
     <Folder Include="wwwroot\files\DriverNationalId\" />
     <Folder Include="wwwroot\files\VehiclePicture\" />

@@ -1,25 +1,19 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.Rides;
-using Proo.APIs.Errors;
 using Proo.APIs.Hubs;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
-using Proo.Core.Contract.Passenger_Contract;
-using Proo.Core.Contract.RideService_Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Rides;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Entities;
-using Proo.Core.Specifications.BidSpecifications;
-using Proo.Core.Specifications.DriverSpecifiactions;
-using Proo.Infrastructer.Data.Context;
 using Proo.Service._RideService;
 using System.Security.Claims;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -52,9 +46,9 @@ namespace Proo.APIs.Controllers
         {
             // get driver      enhansement
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber ==  phoneNumber);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user is null) return BadRequest(new ApiResponse(401));
-            
+
 
             // Step 1: check valid ride request exists
             var rideReqeust = await _unitOfWork.Repositoy<RideRequests>().GetByIdAsync(tripRequestId);
@@ -78,7 +72,7 @@ namespace Proo.APIs.Controllers
             // Step 5: create trip entity  TODO using mapper
             var RideEntity = new Ride
             {
-                
+
             };
 
             // Step 6: perform database operations
@@ -133,7 +127,7 @@ namespace Proo.APIs.Controllers
         [HttpPost("calc_price_time_destance")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> CalcPriceAndTimeAndDestance(calculatePriceAnddectaceDto CalcDto)
         {
-            var result = new LocationService().CalculateDestanceAndTimeAndPrice(CalcDto.PickUpLat, CalcDto.PickUpLon, CalcDto.DroppOffLat, CalcDto.DroppOffLon,CalcDto.Category);
+            var result = new LocationService().CalculateDestanceAndTimeAndPrice(CalcDto.PickUpLat, CalcDto.PickUpLon, CalcDto.DroppOffLat, CalcDto.DroppOffLon, CalcDto.Category);
 
             return (new ApiToReturnDtoResponse
             {

@@ -6,6 +6,7 @@ using Proo.Infrastructer.Data.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +29,11 @@ namespace Proo.Infrastructer.Repositories
         public  async Task<IReadOnlyList<T>> GetAll()
         {
            return await _context.Set<T>().AsNoTracking().ToListAsync();
+        }
+
+        public List<T> GetBy(Expression<Func<T,bool>> query)
+        {
+            return _context.Set<T>().Where(query).ToList();
         }
 
         public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec)
