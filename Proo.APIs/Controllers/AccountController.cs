@@ -1,30 +1,29 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.Identity;
-using Proo.APIs.Errors;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Identity;
+using Proo.Core.Contract.Dtos.Passenger;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Contract.IdentityInterface;
 using Proo.Core.Entities;
-using Proo.Infrastructer.Data;
 using Proo.Infrastructer.Document;
-using StackExchange.Redis;
-using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Security.Claims;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse= Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
-    
+
     public class AccountController : BaseApiController
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserService _userService;
+        private readonly IPassengerService _passengerService;
+        private readonly IDriverService _driverService;
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -36,13 +35,19 @@ namespace Proo.APIs.Controllers
         public AccountController(UserManager<ApplicationUser> userManager
             , SignInManager<ApplicationUser> signInManager
             , ITokenService tokenService
+            , IUserService userService
+            , IPassengerService passengerService
+            , IDriverService driverService
             , IUnitOfWork unitOfWork
-            ,RoleManager<IdentityRole> roleManager
+            , RoleManager<IdentityRole> roleManager
            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _userService = userService;
+            _passengerService = passengerService;
+            _driverService= driverService;
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
         }
@@ -51,17 +56,17 @@ namespace Proo.APIs.Controllers
         [HttpPost("ResendOtp")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> ResendOtp(ResendOtpDto model)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
+            var user = _userService.GetBy(p => p.PhoneNumber == model.PhoneNumber).FirstOrDefault();
             if (user is null) return NotFound(new ApiResponse(404, "The Number Not Registered yet"));
 
-           if(user.OtpExpiryTime < DateTime.Now )
-           {
+            if (user.OtpExpiryTime < DateTime.Now)
+            {
                 // generate new otp 
                 user.OtpCode = "123456";
                 user.OtpExpiryTime = DateTime.Now.AddMinutes(2);
                 user.IsPhoneNumberConfirmed = false;
 
-                var result = await _userManager.UpdateAsync(user);
+                var result = await _userService.Update(user);
                 if (!result.Succeeded)
                     return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
@@ -73,13 +78,13 @@ namespace Proo.APIs.Controllers
                         Mas = "ReSend new Otp succ , check your phone sms ,and verifiy the otp.",
                         StatusCode = StatusCodes.Status200OK,
                         Body = user.OtpCode
-                       
+
                     }
 
                 };
 
                 return Ok(response);
-           }
+            }
 
 
             return BadRequest(new ApiResponse(400, "The Otp is not Expired .. "));
@@ -89,13 +94,13 @@ namespace Proo.APIs.Controllers
         [HttpPost("VerifyOtp")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> VerifyOtp(VerifiDto model)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(p => p.PhoneNumber == model.PhoneNumber);
-            if (user is null) return NotFound(new ApiResponse(404,"The Number Not Registered yet"));
+            var user = _userService.GetBy(p => p.PhoneNumber == model.PhoneNumber).FirstOrDefault();
+            if (user is null) return NotFound(new ApiResponse(404, "The Number Not Registered yet"));
 
             if (user.OtpCode != model.Otp)
                 return BadRequest(new ApiResponse(400, "Invalid OTP."));
 
-            if(user.OtpExpiryTime < DateTime.Now)
+            if (user.OtpExpiryTime < DateTime.Now)
                 return BadRequest(new ApiResponse(400, "expired OTP."));
 
             user.IsPhoneNumberConfirmed = true;
@@ -103,8 +108,8 @@ namespace Proo.APIs.Controllers
             //user.OtpCode = null;
             user.OtpExpiryTime = null;
 
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded) 
+            var result = await _userService.Update(user);
+            if (!result.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
 
@@ -116,7 +121,7 @@ namespace Proo.APIs.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Body = new VerifyOtpDto
                     {
-                        Token = await _tokenService.CreateTokenAsync(user, _userManager)
+                        Token = await _tokenService.CreateTokenAsync(user)
                     }
 
                 }
@@ -128,53 +133,49 @@ namespace Proo.APIs.Controllers
         // Register endpoint if role is passenger [user]
         [Authorize]
         [HttpPost("Register_for_user")] // POST : baseurl/api/Account/Register_for_user
-        public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser(RegisterForUserDto model )
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterForUser(RegisterForUserDto model)
         {
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            var GetUserByPhone = _userService.GetBy(U => U.PhoneNumber == UserPhoneNumber).FirstOrDefault();
 
-            if (GetUserByPhone is null) return BadRequest(new ApiResponse(400,"The Number Not Found And Invaild Token Claims"));
+            if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
 
             GetUserByPhone.FullName = model.FullName;
             GetUserByPhone.Gender = model.Gender;
 
-            var passenger = new Passenger
+            var passenger = new PassengerDto
             {
                 UserId = GetUserByPhone.Id
             };
 
-            _unitOfWork.Repositoy<Passenger>().Add(passenger);
             
-            var addPassenger = await _unitOfWork.CompleteAsync();
+
+            var addPassenger = _passengerService.Add(passenger);
             if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
-            var result = await _userManager.UpdateAsync(GetUserByPhone);
+            var result =await _userService.Update(GetUserByPhone);
             if (!result.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-            if (!await _roleManager.RoleExistsAsync(model.Role))
-                return BadRequest(new ApiResponse(400, "The Role is Invalid"));
 
-            if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
+            if (await _userService.ValidateUserRole(GetUserByPhone, "Passenger"))
                 return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
 
-            if(!(Passenger.ToLower() == model.Role.ToLower())) 
-                    return BadRequest(new ApiResponse(400, "The Role Must Be Passenger Only"));
 
-            var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+            var addRole = await _userService.UpdateUserRole(GetUserByPhone, "Passenger");
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
-          
+
 
             var userDto = new UserDto();
 
             userDto.FullName = GetUserByPhone.FullName;
             userDto.Gender = GetUserByPhone.Gender;
             userDto.PhoneNumber = GetUserByPhone.PhoneNumber;
-            userDto.Role = _userManager.GetRolesAsync(GetUserByPhone).Result;
-            userDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
+            userDto.Role = _userService.GetUserRole(GetUserByPhone).Result;
+            userDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone);
 
 
             if (GetUserByPhone.RefreshTokens.Any(t => t.IsActive))
@@ -189,7 +190,7 @@ namespace Proo.APIs.Controllers
                 userDto.RefreshToken = refreshToken.Token;
                 userDto.RefreshTokenExpiredation = refreshToken.ExpirsesOn;
                 GetUserByPhone.RefreshTokens.Add(refreshToken);
-                var IsSucces = await _userManager.UpdateAsync(GetUserByPhone);
+                var IsSucces = await _userService.Update(GetUserByPhone);
                 if (!IsSucces.Succeeded)
                     return Ok(new ApiValidationResponse() { Errors = IsSucces.Errors.Select(E => E.Description) });
             }
@@ -197,29 +198,29 @@ namespace Proo.APIs.Controllers
             SetRefreshTokenInCookies(userDto.RefreshToken, userDto.RefreshTokenExpiredation);
 
             var response = new ApiToReturnDtoResponse
+            {
+                Data = new DataResponse
                 {
-                    Data = new DataResponse
-                    {
-                        Mas = "The Passenger register succ",
-                        StatusCode = StatusCodes.Status200OK,
-                        Body = userDto
-                    }
+                    Mas = "The Passenger register succ",
+                    StatusCode = StatusCodes.Status200OK,
+                    Body = userDto
+                }
 
-                };
+            };
 
-                return Ok(response); 
-          
+            return Ok(response);
+
         }
 
 
         [Authorize]
         [HttpPost("Register_for_driver")] // POST : baseurl/api/Account/Register_for_driver
-        public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterFordriver([FromForm] DriverDto model)
+        public async Task<ActionResult<ApiToReturnDtoResponse>> RegisterFordriver([FromForm] RegisterDriverDto model)
         {
 
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
 
-            var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
+            var GetUserByPhone = _userService.GetBy(U => U.PhoneNumber == UserPhoneNumber).FirstOrDefault();
 
             if (GetUserByPhone is null) return BadRequest(new ApiResponse(400, "The Number Not Found And Invaild Token Claims"));
 
@@ -228,26 +229,26 @@ namespace Proo.APIs.Controllers
             GetUserByPhone.DateOfBirth = model.DateOfBirth;
             GetUserByPhone.ProfilePictureUrl = DocumentSettings.UploadFile(model.ProfilePictureUrl, "ProfilePicture");
 
-            var result = await _userManager.UpdateAsync(GetUserByPhone);
+            var result = await _userService.Update(GetUserByPhone);
             if (!result.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
-            var getRole = await _userManager.GetRolesAsync(GetUserByPhone);
+            var getRole = await _userService.GetUserRole(GetUserByPhone);
 
             if (!await _roleManager.RoleExistsAsync(model.Role))
                 return BadRequest(new ApiResponse(400, "The Role is Invalid"));
 
-            if (await _userManager.IsInRoleAsync(GetUserByPhone, model.Role))
+            if (await _userService.ValidateUserRole(GetUserByPhone, model.Role))
                 return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
 
             if (!(Driver.ToLower() == model.Role.ToLower()))
                 return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
 
-            var addRole = await _userManager.AddToRoleAsync(GetUserByPhone, model.Role);
+            var addRole = await _userService.UpdateUserRole(GetUserByPhone, model.Role);
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
-            var driver = new Driver
+            var driver = new DriverDto
             {
                 UserId = GetUserByPhone.Id,
                 DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
@@ -258,7 +259,7 @@ namespace Proo.APIs.Controllers
                 NationalIdExpiringDate = model.NationalIdExpiringDate
             };
 
-            _unitOfWork.Repositoy<Driver>().Add(driver);
+            _driverService.Add(driver);
 
 
             Color color = ColorTranslator.FromHtml(model.Colour);
@@ -290,7 +291,7 @@ namespace Proo.APIs.Controllers
             driverToReturnDto.PhoneNumber = GetUserByPhone.PhoneNumber;
             driverToReturnDto.DateOfBirth = (DateTime)GetUserByPhone.DateOfBirth;
             driverToReturnDto.Role = _userManager.GetRolesAsync(GetUserByPhone).Result;
-            driverToReturnDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone, _userManager);
+            driverToReturnDto.Token = await _tokenService.CreateTokenAsync(GetUserByPhone);
             driverToReturnDto.DrivingLicenseIdFront = driver.DrivingLicenseIdFront;
             driverToReturnDto.DrivingLicenseIdBack = driver.DrivingLicenseIdBack;
             driverToReturnDto.NationalIdFront = driver.NationalIdFront;
@@ -422,7 +423,7 @@ namespace Proo.APIs.Controllers
             {
                 var loginToreturnDto = new LoginToreturnDto();
 
-                loginToreturnDto.Token = await _tokenService.CreateTokenAsync(existingUserByPhone, _userManager);
+                loginToreturnDto.Token = await _tokenService.CreateTokenAsync(existingUserByPhone);
                 loginToreturnDto.Otp = existingUserByPhone.OtpCode;
                 loginToreturnDto.Roles = _userManager.GetRolesAsync(existingUserByPhone).Result;
 
@@ -509,7 +510,7 @@ namespace Proo.APIs.Controllers
 
             var userDto = new UserDto();
 
-            userDto.Token = await _tokenService.CreateTokenAsync(user, _userManager);
+            userDto.Token = await _tokenService.CreateTokenAsync(user);
             userDto.FullName = user.FullName;
             userDto.Gender = user.Gender;
             userDto.PhoneNumber = user.PhoneNumber;
@@ -574,7 +575,7 @@ namespace Proo.APIs.Controllers
                 {
                     Mas = "Logged out successfully",
                     StatusCode = StatusCodes.Status200OK,
-                   
+
 
                 }
             });

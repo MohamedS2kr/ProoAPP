@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.VehicleModel;
-using Proo.APIs.Errors;
+﻿using Microsoft.AspNetCore.Mvc;
 using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.VehicleModel;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Entities;
 using Proo.Service.VehicleModelService;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
-    
+
     public class VehicleModelController : BaseApiController
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -59,12 +58,12 @@ namespace Proo.APIs.Controllers
 
             var vehiclemodelDtos = vehicleModels.Select(vehiclemodel => new ReturnVehicleModelDTO
             {
-                Id=vehiclemodel.Id,
-                ModelName=vehiclemodel.ModelName,
-                VehicleTypeId=vehiclemodel.VehicleTypeId
+                Id = vehiclemodel.Id,
+                ModelName = vehiclemodel.ModelName,
+                VehicleTypeId = vehiclemodel.VehicleTypeId
 
             }).ToList();
-            
+
             return Ok(new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
@@ -84,9 +83,9 @@ namespace Proo.APIs.Controllers
                 return NotFound(new ApiResponse(404, "Vehicle model not found."));
             var vehiclemodelDto = new ReturnVehicleModelDTO
             {
-                Id= vehicleModel.Id,
-                ModelName= vehicleModel.ModelName,
-                VehicleTypeId= vehicleModel.VehicleTypeId
+                Id = vehicleModel.Id,
+                ModelName = vehicleModel.ModelName,
+                VehicleTypeId = vehicleModel.VehicleTypeId
 
             };
             var response = new ApiToReturnDtoResponse

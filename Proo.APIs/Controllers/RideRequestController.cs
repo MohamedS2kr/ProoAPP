@@ -1,28 +1,21 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Proo.APIs.Dtos.Rides;
-using Proo.APIs.Dtos;
-using Proo.APIs.Errors;
+using Microsoft.EntityFrameworkCore;
+using Proo.APIs.Hubs;
+using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Rides;
+using Proo.Core.Contract.Errors;
+using Proo.Core.Contract.Passenger_Contract;
 using Proo.Core.Entities;
 using Proo.Core.Specifications.BidSpecifications;
 using Proo.Core.Specifications.DriverSpecifiactions;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
-using System.Security.Claims;
-using AutoMapper;
-using Proo.APIs.Hubs;
-using Proo.Core.Contract.Driver_Contract;
-using Proo.Core.Contract.Passenger_Contract;
-using Proo.Core.Contract.RideService_Contract;
-using Proo.Core.Contract;
-using Microsoft.EntityFrameworkCore;
-using Proo.APIs.Dtos.Passenger;
-using Castle.Core.Internal;
 using Proo.Service.Nearby_Driver_Service;
-using StackExchange.Redis;
-using Proo.APIs.Dtos.Driver;
+using System.Security.Claims;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -158,7 +151,7 @@ namespace Proo.APIs.Controllers
         //    var AllDrivers = await _nearbyDriversService.GetAllNearbyAvailableDriversAsync(Dto.Lat, Dto.Long, 10, 20);
 
         //    var drivers = new List<DriverLocationToReturnDto>();
-        
+
         //    foreach (var entry in AllDrivers)
         //    {
         //        if (entry.ToString().IsNullOrEmpty())
@@ -173,7 +166,7 @@ namespace Proo.APIs.Controllers
 
 
         //        drivers.Add(result);
-       
+
         //    }
 
         //    foreach (var driver in drivers)
@@ -194,7 +187,7 @@ namespace Proo.APIs.Controllers
         //}
 
 
-       
+
 
         [HttpPost("SubmitBid")]
         public async Task<ActionResult<ApiToReturnDtoResponse>> SubmitBid(BidDto bidDto)

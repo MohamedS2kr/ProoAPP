@@ -18,12 +18,14 @@ namespace Proo.Service.Identity
     public class TokenServices : ITokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TokenServices(IConfiguration configuration)
+        public TokenServices(IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
+            _userManager = userManager;
             _configuration = configuration;
         }
-        public async Task<string> CreateTokenAsync(ApplicationUser user, UserManager<ApplicationUser> userManager)
+        public async Task<string> CreateTokenAsync(ApplicationUser user)
         {
 
             //1. Header
@@ -35,7 +37,7 @@ namespace Proo.Service.Identity
                 
             };
 
-            var UserRoles = await userManager.GetRolesAsync(user);
+            var UserRoles = await _userManager.GetRolesAsync(user);
 
             foreach (var Role in UserRoles)
             {

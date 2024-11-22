@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.33" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Contract\Dtos\AdminDto\" />
+  </ItemGroup>
+
 </Project>

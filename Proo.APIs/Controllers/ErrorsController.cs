@@ -1,11 +1,9 @@
-﻿using AutoMapper.Configuration.Annotations;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Proo.APIs.Errors;
+﻿using Microsoft.AspNetCore.Mvc;
+using Proo.Core.Contract.Errors;
 #nullable enable
 namespace Proo.APIs.Controllers
 {
-    [ApiExplorerSettings(IgnoreApi =true)]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ErrorsController : BaseApiController
     {
 

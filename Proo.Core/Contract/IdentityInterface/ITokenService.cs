@@ -10,7 +10,7 @@ namespace Proo.Core.Contract.IdentityInterface
 {
     public interface ITokenService
     {
-        Task<string> CreateTokenAsync(ApplicationUser user, UserManager<ApplicationUser> userManager);
+        Task<string> CreateTokenAsync(ApplicationUser user);
 
         RefreshToken GenerateRefreshtoken();
         

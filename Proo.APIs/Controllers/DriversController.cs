@@ -1,31 +1,23 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Proo.APIs.Dtos;
-using Proo.APIs.Dtos.Driver;
-using Proo.APIs.Dtos.Identity;
-using Proo.APIs.Dtos.Passenger;
-using Proo.APIs.Dtos.RideRequest;
-using Proo.APIs.Dtos.Rides;
-using Proo.APIs.Errors;
 using Proo.APIs.Hubs;
 using Proo.Core.Contract;
 using Proo.Core.Contract.Driver_Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Driver;
+using Proo.Core.Contract.Dtos.Identity;
+using Proo.Core.Contract.Dtos.Rides;
+using Proo.Core.Contract.Errors;
 using Proo.Core.Entities;
-using Proo.Core.Entities.Driver_Location;
 using Proo.Core.Specifications.DriverSpecifiactions;
-using Proo.Core.Specifications.PassengerSpecifiactions;
 using Proo.Infrastructer.Document;
-using Proo.Infrastructer.Repositories;
-using Proo.Infrastructer.Repositories.DriverRepository;
 using Proo.Service.LocationService;
-using StackExchange.Redis;
 using System.Security.Claims;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -38,7 +30,7 @@ namespace Proo.APIs.Controllers
         private readonly IDriverRepository _driverRepo;
         private readonly IHubContext<LocationHub> _hubContext;
 
-        public DriversController(IUnitOfWork unitOfWork 
+        public DriversController(IUnitOfWork unitOfWork
             , UserManager<ApplicationUser> userManager
             , IUpdateDriverLocationService updateLocation
             , IDriverRepository driverRepo
@@ -64,7 +56,7 @@ namespace Proo.APIs.Controllers
 
             // get spec user 
             var spec = new DriverWithApplicationUserSpecifiaction(user.Id);
-            var driver = await  _unitOfWork.Repositoy<Driver>().GetByIdWithSpecAsync(spec);
+            var driver = await _unitOfWork.Repositoy<Driver>().GetByIdWithSpecAsync(spec);
 
             if (driver is null) return BadRequest(new ApiResponse(400));
 
@@ -75,7 +67,7 @@ namespace Proo.APIs.Controllers
                     Mas = "The Driver Data",
                     StatusCode = StatusCodes.Status200OK,
                     Body = driver
-                    
+
                 }
             };
 
@@ -162,7 +154,7 @@ namespace Proo.APIs.Controllers
 
         //    if (driverLocations.Latitude < -90 || driverLocations.Latitude > 90 || driverLocations.Longitude < -180 || driverLocations.Longitude > 180)
         //        return BadRequest(new ApiResponse(400 , "Invalid latitude or longitude."));
-            
+
         //    // call Update driver location service 
         //    await _updateLocation.UpdateDriverLocationAsync(driver.Id, driverLocations.Latitude, driverLocations.Longitude , driver.Status , user.Gender);
 
@@ -207,7 +199,7 @@ namespace Proo.APIs.Controllers
             if (ride.Status != RideStatus.CanceledByPassenger
                 && ride.Status != RideStatus.Completed
                 && ride.Status != RideStatus.WAITING_FOR_PAYMENT) return BadRequest(new ApiResponse(400, "Can Not Canceled Ride "));
-        
+
 
             ride.Status = RideStatus.CanceledByDriver;
             ride.LastModifiedAt = DateTime.Now;
@@ -267,7 +259,7 @@ namespace Proo.APIs.Controllers
             };
             _unitOfWork.Repositoy<DriverRating>().Add(driverRating);
 
-            
+
 
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0)

@@ -45,6 +45,9 @@ namespace Proo.Infrastructer.Data
         public async Task<int> CompleteAsync()
             => await _context.SaveChangesAsync();
 
+        public int Complete()
+            =>  _context.SaveChanges();
+
         public async ValueTask DisposeAsync()
             => await _context.DisposeAsync();
 

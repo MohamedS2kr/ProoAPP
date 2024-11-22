@@ -1,30 +1,25 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Proo.APIs.Dtos.Identity;
-using Proo.APIs.Dtos;
-using Proo.Core.Entities;
-using Proo.Infrastructer.Data.Context;
-using System.Security.Claims;
-using static Proo.APIs.Dtos.ApiToReturnDtoResponse;
-using Proo.APIs.Errors;
-using Proo.Infrastructer.Document;
-using Proo.APIs.Dtos.Passenger;
-using AutoMapper;
-using Proo.Core.Contract;
-using Proo.Infrastructer.Repositories.DriverRepository;
-using Proo.Core.Contract.RideService_Contract;
-using Proo.Infrastructer.Data;
-using Proo.Core.Contract.Passenger_Contract;
-using Proo.APIs.Dtos.Rides;
-using Proo.Core.Specifications.BidSpecifications;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Proo.APIs.Hubs;
+using Proo.Core.Contract;
+using Proo.Core.Contract.Dtos;
+using Proo.Core.Contract.Dtos.Passenger;
+using Proo.Core.Contract.Dtos.RideRequest;
+using Proo.Core.Contract.Dtos.Rides;
+using Proo.Core.Contract.Errors;
+using Proo.Core.Contract.Passenger_Contract;
+using Proo.Core.Contract.RideService_Contract;
+using Proo.Core.Entities;
+using Proo.Core.Specifications.BidSpecifications;
 using Proo.Core.Specifications.PassengerSpecifiactions;
-using Proo.APIs.Dtos.RideRequest;
+using Proo.Infrastructer.Data.Context;
+using Proo.Infrastructer.Document;
+using System.Security.Claims;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -41,9 +36,9 @@ namespace Proo.APIs.Controllers
         private readonly IHubContext<RideHub> _hubContext;
 
         public PassengersController(UserManager<ApplicationUser> userManager
-                                    ,SignInManager<ApplicationUser> signInManager
-                                    ,IMapper mapper
-                                    ,IUnitOfWork unitOfWork,
+                                    , SignInManager<ApplicationUser> signInManager
+                                    , IMapper mapper
+                                    , IUnitOfWork unitOfWork,
                                      IRideRequestRepository rideRequestRepo,
                                      IPassengerRepository passengerRepos,
                                      IHubContext<RideHub> hubContext)
@@ -68,7 +63,7 @@ namespace Proo.APIs.Controllers
 
             if (GetUserByPhone is null) return BadRequest(400);
             var result = _mapper.Map<ProfileDto>(GetUserByPhone);
-            
+
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
@@ -88,18 +83,18 @@ namespace Proo.APIs.Controllers
         public async Task<ActionResult<ApiToReturnDtoResponse>> GetPassengerHistoryRide()
         {
             var PhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
-            var UserByPhoneNumber =await _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == PhoneNumber);
-            
+            var UserByPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == PhoneNumber);
+
             if (UserByPhoneNumber is null) return NotFound(new ApiResponse(404, "This User Not Found"));
-            
-            var passenger =await _passengerRepos.GetByUserId(UserByPhoneNumber.Id);
+
+            var passenger = await _passengerRepos.GetByUserId(UserByPhoneNumber.Id);
             if (passenger is null) return NotFound(new ApiResponse(404, "This Passenger Not Found"));
 
             var spec = new PassengerWithRideAndRatingSpecifications(passenger.Id);
-            var Ride =await _unitOfWork.Repositoy<Ride>().GetAllWithSpecAsync(spec);
+            var Ride = await _unitOfWork.Repositoy<Ride>().GetAllWithSpecAsync(spec);
 
             if (Ride.Count == 0) return NotFound(new ApiResponse(404, "Not Found any Ride For This Passenger"));
-            
+
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
@@ -137,7 +132,7 @@ namespace Proo.APIs.Controllers
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
             var mappedResult = _mapper.Map<ProfileDto>(GetUserByPhone);
-            
+
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
@@ -168,14 +163,14 @@ namespace Proo.APIs.Controllers
 
             // 2- check passenger has ongoing trip request 
             var RideRequest = await _unitOfWork.Repositoy<RideRequests>().GetByIdAsync(model.RideRequestsId);
-            if (RideRequest is null) 
+            if (RideRequest is null)
                 return NotFound(new ApiResponse(404, "The Ride Request is not found."));
-            
+
             var rideRequest = await _unitOfWork.RideRequestRepository.GetActiveTripRequestForPassenger(passenger.Id);
             if (rideRequest is null) return BadRequest(new ApiResponse(400, "Customer Not Exist in This request trip."));
 
 
-            if (RideRequest.Status == RideRequestStatus.TRIP_STARTED || RideRequest.Status == RideRequestStatus.CUSTOMER_CANCELED ) 
+            if (RideRequest.Status == RideRequestStatus.TRIP_STARTED || RideRequest.Status == RideRequestStatus.CUSTOMER_CANCELED)
                 return NotFound(new ApiResponse(404, "Cannot cancel This trip that has already started OR Canceled."));
 
             if (rideRequest.Id != model.RideRequestsId)
@@ -188,14 +183,14 @@ namespace Proo.APIs.Controllers
 
             var count = await _unitOfWork.CompleteAsync();
             if (count <= 0) return BadRequest(new ApiResponse(400));
-            
+
             var response = new ApiToReturnDtoResponse
             {
                 Data = new DataResponse
                 {
                     Mas = "Cancel TripRequest Succussed",
                     StatusCode = StatusCodes.Status200OK,
-                    
+
                 }
             };
 
@@ -209,7 +204,7 @@ namespace Proo.APIs.Controllers
             //1. Get User and Check is Exist or not 
             var UserPhoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
             var user = await _userManager.Users.FirstOrDefaultAsync(U => U.PhoneNumber == UserPhoneNumber);
-            
+
             var passenger = await _passengerRepos.GetByUserId(user.Id);
             if (passenger is null)
                 return NotFound(new ApiResponse(404, "The Passenger Not Found"));
@@ -232,7 +227,7 @@ namespace Proo.APIs.Controllers
             //Check BidStatus
             if (bid.BidStatus == BidStatus.Rejected)
                 return BadRequest(new ApiResponse(400, "This Bid Is Rejected"));
-            
+
             // Update
             bid.BidStatus = BidStatus.Rejected;
 
@@ -243,9 +238,9 @@ namespace Proo.APIs.Controllers
             //Notification This Driver 
             // step 7: Notify the passenger 
             var DriverId = bid.DriverId;
-            
+
             await _hubContext.Clients.User(DriverId).SendAsync("RejectedBid", new
-            {    
+            {
                 Message = "This Offer Rejected",
             });
 
@@ -279,7 +274,7 @@ namespace Proo.APIs.Controllers
             var ride = await _unitOfWork.RideRepository.GetActiveTripForPassenger(Passenger.Id);
             if (ride == null) return NotFound(new ApiResponse(404, "Not found Ongoing trips"));
 
-            if (ride.Status != RideStatus.CanceledByDriver 
+            if (ride.Status != RideStatus.CanceledByDriver
                 && ride.Status != RideStatus.Completed
                 && ride.Status != RideStatus.WAITING_FOR_PAYMENT) return BadRequest(new ApiResponse(400, "Can Not Canceled Ride "));
 
@@ -318,21 +313,21 @@ namespace Proo.APIs.Controllers
         {
             var phoneNumber = User.FindFirstValue(ClaimTypes.MobilePhone);
             var GetUserByPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
-            
+
             var passenger = await _passengerRepos.GetByUserId(GetUserByPhone.Id);
 
             if (passenger == null) return NotFound(new ApiResponse(404, "Passenger Not Found"));
 
             var ride = await _unitOfWork.RideRepository.GetActiveTripForPassenger(passenger.Id);
-            
+
             if (ride is null) return NotFound(new ApiResponse(404, "The passenger Is Not Going Ride"));
 
             if (ride.Status != RideStatus.Completed)
                 return BadRequest(new ApiResponse(400, "ride Not Completed Yet"));
-            
+
             if (0 <= model.Score && model.Score <= 5)
                 return BadRequest(new ApiResponse(400, "Score Out Of Range"));
-            
+
             var passengerRating = new PassengerRating()
             {
                 RideId = ride.Id,

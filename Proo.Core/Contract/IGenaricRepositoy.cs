@@ -3,6 +3,7 @@ using Proo.Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,8 +15,7 @@ namespace Proo.Core.Contract
 
         void Update(T model);
         void Delete(T model);
-
-   
+        List<T> GetBy(Expression<Func<T, bool>> query);
         Task<IReadOnlyList<T>> GetAll();
         
         Task<T?> GetByIdAsync(int id);
