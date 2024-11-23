@@ -4,7 +4,12 @@
     {
         public string TypeName { get; set; }
         public int CategoryOfVehicleId { get; set; }
+        public virtual CategoryOfVehicleDto? CategoryOfVehicle { get; set; }
+
     }
+
+    
+
     public class ReturnVehicleTypeDTO
     {
         public int Id { get; set; }

@@ -1,9 +1,13 @@
-﻿namespace Proo.Core.Contract.Dtos.VehicleModel
+﻿using Proo.Core.Contract.Dtos.VehicleType;
+
+namespace Proo.Core.Contract.Dtos.VehicleModel
 {
     public class VehicleModelDTO
     {
         public string ModelName { get; set; }
         public int VehicleTypeId { get; set; }
+        public virtual VehicleTypeDTO VehicleType { get; set; }
+
     }
     public class ReturnVehicleModelDTO
     {

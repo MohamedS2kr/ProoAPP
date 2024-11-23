@@ -242,25 +242,9 @@ namespace Proo.APIs.Controllers
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
-            var driver = new DriverDto
-            {
-                UserId = GetUserByPhone.Id,
-                DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
-                DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
-                NationalIdFront = DocumentSettings.UploadFile(model.NationalIdFront, "DriverNationalId"),
-                NationalIdBack = DocumentSettings.UploadFile(model.NationalIdBack, "DriverNationalId"),
-                DrivingLicenseExpiringDate = model.ExpiringDate,
-                NationalIdExpiringDate = model.NationalIdExpiringDate
-            };
-
-            _driverService.Add(driver);
-
-
             Color color = ColorTranslator.FromHtml(model.Colour);
-
-            var vehicle = new Vehicle
+            var vehicle = new VehicleDto
             {
-                DriverId = driver.Id,
                 VehicleLicenseIdFront = DocumentSettings.UploadFile(model.VehicleLicenseIdFront, "VehicleLicenseId"),
                 VehicleLicenseIdBack = DocumentSettings.UploadFile(model.VehicleLicenseIdBack, "VehicleLicenseId"),
                 VehiclePicture = DocumentSettings.UploadFile(model.VehiclePicture, "VehiclePicture"),
@@ -272,8 +256,21 @@ namespace Proo.APIs.Controllers
                 YeareOfManufacuter = model.YeareOfManufacuter,
                 Colour = DocumentSettings.GetColorName(color)
             };
+            var drivervehicles=new List<VehicleDto>();
+            drivervehicles.Add(vehicle);
+            var driver = new DriverDto
+            {
+                UserId = GetUserByPhone.Id,
+                DrivingLicenseIdFront = DocumentSettings.UploadFile(model.LicenseIdFront, "LicenseId"),
+                DrivingLicenseIdBack = DocumentSettings.UploadFile(model.LicenseIdBack, "LicenseId"),
+                NationalIdFront = DocumentSettings.UploadFile(model.NationalIdFront, "DriverNationalId"),
+                NationalIdBack = DocumentSettings.UploadFile(model.NationalIdBack, "DriverNationalId"),
+                DrivingLicenseExpiringDate = model.ExpiringDate,
+                NationalIdExpiringDate = model.NationalIdExpiringDate,
+                Vehicles= drivervehicles
+            };
 
-            _unitOfWork.Repositoy<Vehicle>().Add(vehicle);
+            _driverService.Add(driver);
             var count = await _unitOfWork.CompleteAsync();
 
             if (count <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));

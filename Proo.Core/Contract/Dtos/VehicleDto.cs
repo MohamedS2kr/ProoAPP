@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Proo.Core.Contract.Dtos.VehicleModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,5 +27,7 @@ namespace Proo.Core.Contract.Dtos
 
         // Foreign key to model
         public int VehicleModelId { get; set; }
+        public virtual VehicleModelDTO? vehicleModel { get; set; }
+
     }
 }
