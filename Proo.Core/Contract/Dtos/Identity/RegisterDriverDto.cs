@@ -17,7 +17,6 @@ namespace Proo.Core.Contract.Dtos.Identity
         [Required]
         public DateTime DateOfBirth { get; set; }
 
-        public string Role { get; set; }
         [Required]
         public Gender Gender { get; set; }
 

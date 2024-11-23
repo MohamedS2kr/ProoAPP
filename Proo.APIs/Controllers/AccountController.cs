@@ -12,7 +12,7 @@ using Proo.Core.Entities;
 using Proo.Infrastructer.Document;
 using System.Drawing;
 using System.Security.Claims;
-using DataResponse= Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
+using DataResponse = Proo.Core.Contract.Dtos.ApiToReturnDtoResponse.DataResponse;
 
 namespace Proo.APIs.Controllers
 {
@@ -27,8 +27,6 @@ namespace Proo.APIs.Controllers
         private readonly ITokenService _tokenService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private const string Passenger = "passenger";
-        private const string Driver = "Driver";
 
         //private readonly ICachService _cachService;
 
@@ -47,7 +45,7 @@ namespace Proo.APIs.Controllers
             _tokenService = tokenService;
             _userService = userService;
             _passengerService = passengerService;
-            _driverService= driverService;
+            _driverService = driverService;
             _unitOfWork = unitOfWork;
             _roleManager = roleManager;
         }
@@ -149,12 +147,12 @@ namespace Proo.APIs.Controllers
                 UserId = GetUserByPhone.Id
             };
 
-            
+
 
             var addPassenger = _passengerService.Add(passenger);
             if (addPassenger <= 0) return BadRequest(new ApiResponse(400, "The error logged when occured save changed."));
 
-            var result =await _userService.Update(GetUserByPhone);
+            var result = await _userService.Update(GetUserByPhone);
             if (!result.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
 
@@ -235,16 +233,12 @@ namespace Proo.APIs.Controllers
 
             var getRole = await _userService.GetUserRole(GetUserByPhone);
 
-            if (!await _roleManager.RoleExistsAsync(model.Role))
-                return BadRequest(new ApiResponse(400, "The Role is Invalid"));
 
-            if (await _userService.ValidateUserRole(GetUserByPhone, model.Role))
+            if (await _userService.ValidateUserRole(GetUserByPhone, "Driver"))
                 return BadRequest(new ApiResponse(400, "The User Is Already assign to this Role"));
 
-            if (!(Driver.ToLower() == model.Role.ToLower()))
-                return BadRequest(new ApiResponse(400, "The Role Must Be Driver Only"));
 
-            var addRole = await _userService.UpdateUserRole(GetUserByPhone, model.Role);
+            var addRole = await _userService.UpdateUserRole(GetUserByPhone, "Driver");
             if (!addRole.Succeeded)
                 return Ok(new ApiValidationResponse() { Errors = addRole.Errors.Select(E => E.Description) });
 
