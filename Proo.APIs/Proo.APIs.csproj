@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\files\NationalId\**" />
-    <Content Remove="wwwroot\files\NationalId\**" />
-    <EmbeddedResource Remove="wwwroot\files\NationalId\**" />
-    <None Remove="wwwroot\files\NationalId\**" />
+    <Compile Remove="wwwroot\files\**" />
+    <Content Remove="wwwroot\files\**" />
+    <EmbeddedResource Remove="wwwroot\files\**" />
+    <None Remove="wwwroot\files\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,11 +30,7 @@
 
   <ItemGroup>
     <Folder Include="Dtos\AdminDto\" />
-    <Folder Include="wwwroot\files\LicenseId\" />
-    <Folder Include="wwwroot\files\DriverNationalId\" />
-    <Folder Include="wwwroot\files\VehiclePicture\" />
-    <Folder Include="wwwroot\files\ProfilePicture\" />
-    <Folder Include="wwwroot\files\VehicleLicenseId\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
