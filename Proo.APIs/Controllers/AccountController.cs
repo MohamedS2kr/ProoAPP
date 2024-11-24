@@ -106,7 +106,24 @@ namespace Proo.APIs.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) 
                 return Ok(new ApiValidationResponse() { Errors = result.Errors.Select(E => E.Description) });
+            var driver = new Driver();
+            if(await _userManager.IsInRoleAsync(user,"Driver"))
+            {
+                driver=await _unitOfWork.Repositoy<Driver>().GetBy(x => x.UserId == user.Id);
+            }
+            var driverToReturnDto = new DriverToReturnDto();
 
+            driverToReturnDto.FullName = user.FullName;
+            driverToReturnDto.Gender = user.Gender;
+            driverToReturnDto.PhoneNumber = user.PhoneNumber;
+            driverToReturnDto.DateOfBirth = (DateTime)user.DateOfBirth;
+            driverToReturnDto.Role = _userManager.GetRolesAsync(user).Result;
+            driverToReturnDto.DrivingLicenseIdFront = driver.DrivingLicenseIdFront;
+            driverToReturnDto.DrivingLicenseIdBack = driver.DrivingLicenseIdBack;
+            driverToReturnDto.NationalIdFront = driver.NationalIdFront;
+            driverToReturnDto.NationalIdBack = driver.NationalIdBack;
+            driverToReturnDto.NationalIdExpiringDate = driver.NationalIdExpiringDate;
+            driverToReturnDto.ExpiringDateOfDrivingLicense = driver.DrivingLicenseExpiringDate;
 
             return Ok(new ApiToReturnDtoResponse
             {
@@ -116,7 +133,8 @@ namespace Proo.APIs.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Body = new VerifyOtpDto
                     {
-                        Token = await _tokenService.CreateTokenAsync(user, _userManager)
+                        Token = await _tokenService.CreateTokenAsync(user, _userManager),
+                        Profile= driverToReturnDto
                     }
 
                 }
