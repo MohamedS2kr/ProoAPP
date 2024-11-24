@@ -6,6 +6,7 @@ using Proo.Infrastructer.Data.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,6 +43,11 @@ namespace Proo.Infrastructer.Repositories
         public async Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec)
         {
             return await ApplySpecification(spec).FirstOrDefaultAsync();
+        }
+
+        public async Task<T?> GetBy(Expression<Func<T,bool>> predicate)
+        {
+            return await _context.Set<T>().Where(predicate).FirstOrDefaultAsync();
         }
 
         public async Task<T?> GetDriverOrPassengerByIdAsync(string Id)

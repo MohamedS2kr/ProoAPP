@@ -3,6 +3,7 @@ using Proo.Core.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace Proo.Core.Contract
         Task<IReadOnlyList<T>> GetAll();
         
         Task<T?> GetByIdAsync(int id);
-
+        Task<T?> GetBy(Expression<Func<T, bool>> predicate);
         Task<T?> GetDriverOrPassengerByIdAsync(string Id);
         Task<T?> GetByIdWithSpecAsync(ISpecifications<T> spec);
 
